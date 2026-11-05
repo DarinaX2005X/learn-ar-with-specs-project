@@ -1,3 +1,11 @@
+import {
+  Articulation,
+  GraspPlan,
+  Digit,
+  DIGITS,
+  planGrasp,
+  handRigMath,
+} from "./GraspRig";
 import { ActorPose } from "../Scripts/TableKit/TableKit";
 export type Point = readonly [number, number, number];
 /** x,y,z,w, matching glTF. Lens quat constructor is supplied at the boundary. */
@@ -67,6 +75,8 @@ export const SHIPPED_RIGHT_ARM = {
   palmRotation: [Math.SQRT1_2, 0, 0, Math.SQRT1_2] as Rotation,
 };
 export interface ArmSolution {
+  grasp?: GraspPlan;
+  graspResidualCm?: number;
   shoulderRotation: Rotation;
   elbowRotation: Rotation;
   wristRotation: Rotation;
@@ -81,29 +91,45 @@ export interface ArmSolution {
  * not a bone length, actor floor point or ruby. Elbow chooses an outward/back
  * pole and is independent of accumulated animation state.
  */
-export function solveRightArm(target: Point, maxBodyShift = 0.72): ArmSolution {
+export function solveRightArm(
+  target: Point,
+  maxBodyShift = 0.72,
+  hand?: { rotation: Rotation; contact: Point; shoulderOffset?: Point },
+): ArmSolution {
   if (
     !target.every(Number.isFinite) ||
     !Number.isFinite(maxBodyShift) ||
     maxBodyShift < 0
   )
     throw new Error("Use a finite arm target");
-  const r = SHIPPED_RIGHT_ARM,
+  const r = hand
+      ? {
+          ...SHIPPED_RIGHT_ARM,
+          palmRotation: hand.rotation,
+          contact: hand.contact,
+          shoulder: add(
+            SHIPPED_RIGHT_ARM.shoulder,
+            hand.shoulderOffset ?? [0, 0, 0],
+          ),
+        }
+      : SHIPPED_RIGHT_ARM,
     L1 = length(r.upper),
     L2 = length(r.lower),
+    minReach = Math.abs(L1 - L2) + 1e-5,
     maxReach = L1 + L2 - 1e-5;
   const wristTarget = sub(target, rotatePoint(r.palmRotation, r.contact));
   const delta = sub(wristTarget, r.shoulder),
     d = length(delta),
     direction = unit(delta);
-  const excess = Math.max(0, d - maxReach);
-  // Smooth bounded body lean: no movement inside normal arm reach, full contact
-  // through the supported lean range, honest residual beyond that range.
-  const shift = mul(direction, Math.min(maxBodyShift, excess));
+  // Unequal bone lengths also limit how close the wrist can fold toward the
+  // shoulder. Recoil on the return from a rim touch using the same lean budget.
+  const reachableDistance = Math.max(minReach, Math.min(maxReach, d));
+  const shiftDistance = Math.max(-maxBodyShift, Math.min(maxBodyShift, d - reachableDistance));
+  const shift = mul(direction, shiftDistance);
   const shoulder = add(r.shoulder, shift),
     ray = sub(wristTarget, shoulder);
   const distance = Math.max(
-    Math.abs(L1 - L2) + 1e-5,
+    minReach,
     Math.min(maxReach, length(ray)),
   );
   const axis = unit(ray),
@@ -132,14 +158,15 @@ export function solveRightArm(target: Point, maxBodyShift = 0.72): ArmSolution {
     shoulderRotation,
     elbowRotation,
     wristRotation,
-    shift,
+    add(shift, hand?.shoulderOffset ?? [0, 0, 0]),
+    r.contact,
   );
   const residualCm = length(sub(actual, target));
   return {
     shoulderRotation,
     elbowRotation,
     wristRotation,
-    upperBodyOffset: shift,
+    upperBodyOffset: add(shift, hand?.shoulderOffset ?? [0, 0, 0]),
     contact: actual,
     target,
     residualCm,
@@ -152,6 +179,7 @@ export function forwardArm(
   elbow: Rotation,
   wrist: Rotation,
   body: Point,
+  contact: Point = SHIPPED_RIGHT_ARM.contact,
 ): Point {
   const r = SHIPPED_RIGHT_ARM,
     q = multiplyRotation(shoulder, elbow);
@@ -160,7 +188,7 @@ export function forwardArm(
       add(add(r.shoulder, body), rotatePoint(shoulder, r.upper)),
       rotatePoint(q, r.lower),
     ),
-    rotatePoint(multiplyRotation(q, wrist), r.contact),
+    rotatePoint(multiplyRotation(q, wrist), contact),
   );
 }
 export interface ArmTransform<V, Q> {
@@ -175,6 +203,12 @@ export interface ArmMath<V, Q> {
   quaternion(x: number, y: number, z: number, w: number): Q;
 }
 export interface MountedArm<V, Q> {
+  digits?: Partial<
+    Record<
+      Digit,
+      { proximal: ArmNode<V, Q>; middle: ArmNode<V, Q>; distal: ArmNode<V, Q> }
+    >
+  >;
   /** Wrapper containing torso, head and both arms; legs stay on the floor. */
   upperBody: ArmNode<V, Q>;
   shoulder: ArmNode<V, Q>;
@@ -190,6 +224,7 @@ export class LensArmAdapter<V, Q> {
   private shoulder: ArmTransform<V, Q>;
   private elbow: ArmTransform<V, Q>;
   private wrist: ArmTransform<V, Q>;
+  private digits = new Map<Digit, readonly ArmTransform<V, Q>[]>();
   constructor(
     nodes: MountedArm<V, Q>,
     private math: ArmMath<V, Q>,
@@ -199,12 +234,24 @@ export class LensArmAdapter<V, Q> {
     this.shoulder = nodes.shoulder.getTransform();
     this.elbow = nodes.elbow.getTransform();
     this.wrist = nodes.wrist.getTransform();
+    for (const digit of DIGITS) {
+      const d = nodes.digits?.[digit];
+      if (d)
+        this.digits.set(digit, [
+          d.proximal.getTransform(),
+          d.middle.getTransform(),
+          d.distal.getTransform(),
+        ]);
+    }
   }
   /** Actor yaw is the actual native root yaw, including any mesh facing correction.
    * actor position and target are absolute story cm within the wing. */
   apply(
-    actor: Pick<ActorPose, "positionCm" | "yawRad">,
+    actor: Pick<ActorPose, "positionCm" | "yawRad"> & {
+      upperBodyOffsetCm?: Point;
+    },
     targetStoryCm: Point,
+    articulation?: Articulation,
   ): ArmSolution {
     const d = sub(targetStoryCm, actor.positionCm),
       c = Math.cos(actor.yawRad),
@@ -215,7 +262,32 @@ export class LensArmAdapter<V, Q> {
       d[1] * factor,
       (s * d[0] + c * d[2]) * factor,
     ];
-    const solved = solveRightArm(target);
+    const plan = articulation
+      ? planGrasp(target, [c, 0, s], [-s, 0, c], articulation)
+      : undefined;
+    const contact = plan
+      ? rotatePoint(inverseRotation(plan.rotation), sub(target, plan.wrist))
+      : undefined;
+    const solved = plan
+      ? solveRightArm(target, 0.72, {
+          rotation: plan.rotation,
+          contact: contact!,
+          shoulderOffset: mul(actor.upperBodyOffsetCm ?? [0, 0, 0], factor),
+        })
+      : solveRightArm(target);
+    if (plan) {
+      solved.grasp = plan;
+      solved.graspResidualCm = plan.maxResidualCm + solved.residualCm;
+      for (const finger of plan.fingers) {
+        const transforms = this.digits.get(finger.digit);
+        if (transforms)
+          transforms.forEach((transform, i) =>
+            transform.setLocalRotation(
+              this.math.quaternion(...finger.rotations[i]),
+            ),
+          );
+      }
+    }
     this.upper.setLocalPosition(
       this.math.vector(
         ...mul(solved.upperBodyOffset, this.localUnitsPerTableCm),

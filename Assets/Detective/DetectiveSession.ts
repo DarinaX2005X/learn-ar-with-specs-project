@@ -395,6 +395,8 @@ export class DetectiveSession {
   /** At most two bounded solver slices per frame. Never run proof in render. */
   update(seconds: number): void {
     if (this.disposed) return;
+    const previousTick = this.state.tick;
+    const wasChecking = this.state.checking;
     if (this.state.playing && Number.isFinite(seconds) && seconds > 0) {
       this.elapsed += Math.min(seconds, 0.25);
       while (this.elapsed >= 0.5) {
@@ -420,7 +422,10 @@ export class DetectiveSession {
         }
       }
     }
-    this.emit();
+    // The native pose samples presentationTick() on every display frame.
+    // Refresh evidence, controls and paper only when their state changes.
+    if (this.state.tick !== previousTick || this.state.checking !== wasChecking)
+      this.emit();
   }
   dispose(): void {
     this.disposed = true;

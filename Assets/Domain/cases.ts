@@ -69,40 +69,75 @@ export function createMuseumTheft(open = true): CaseDraft {
   draft.id = "museum-theft";
   // The actor reaches from beside the vitrine rather than standing inside it.
   draft.room.exhibit.position = { x: 2.7, y: 1, z: 4 };
-  const entryScreen = draft.room.walls.find(wall => wall.id === "entry-screen")!;
-  const eastScreen = draft.room.walls.find(wall => wall.id === "east-screen")!;
+  const entryScreen = draft.room.walls.find(
+    (wall) => wall.id === "entry-screen",
+  )!;
+  const eastScreen = draft.room.walls.find(
+    (wall) => wall.id === "east-screen",
+  )!;
   entryScreen.b.x = 2.05;
   eastScreen.a.x = 3.2;
   eastScreen.b.x = 3.2;
   draft.tracks = [
     track("A", [
-      [0, 1.8, 0.9],
-      [6, 2.15, 0.92],
-      [12, 2.55, 0.95],
-      [18, 2.85, 1.05],
-      [24, 3.1, 1.2],
+      [0, 1.8, 0.9, Math.atan2(0.45, -0.05)],
+      [3, 1.8, 0.9, Math.atan2(0.45, -0.05)],
+      [5, 2.25, 0.85, Math.atan2(0.45, -0.05)],
+      [6, 2.25, 0.85, Math.atan2(0.3, 0.1)],
+      [8, 2.55, 0.95, Math.atan2(0.3, 0.1)],
+      [12, 2.55, 0.95, Math.atan2(0.3, 0.1)],
+      [14, 2.85, 1.05, Math.atan2(0.3, 0.1)],
+      [15, 2.85, 1.05, Math.atan2(0.25, 0.15)],
+      [17, 3.1, 1.2, Math.atan2(0.25, 0.15)],
+      [24, 3.1, 1.2, Math.atan2(0.25, 0.15)],
     ]),
     track("B", [
-      [0, 1.8, 3.2],
-      [8, 2.15, 3.8],
-      [12, 2.3, 4],
-      [16, 2.5, 4.2],
-      [24, 2.1, 3.4],
+      [0, 1.8, 3.2, Math.atan2(0.4, 0.6)],
+      [4, 1.8, 3.2, Math.atan2(0.4, 0.6)],
+      [6, 2.2, 3.8, Math.atan2(0.4, 0.6)],
+      [7, 2.2, 3.8, 0],
+      [8, 2.2, 4, 0],
+      [9, 2.2, 4, Math.PI / 2],
+      [10, 2.3, 4, Math.PI / 2],
+      [12, 2.3, 4, Math.PI / 2],
+      [14, 2.3, 4, Math.PI / 2, true],
+      [15, 2.15, 4, Math.PI / 2],
+      [16, 2.15, 4, -Math.PI / 2],
+      [17, 2.05, 4, -Math.PI / 2],
+      [18, 2.05, 4, Math.atan2(-0.25, -0.8)],
+      [21, 1.8, 3.2, Math.atan2(-0.25, -0.8)],
+      [24, 1.8, 3.2, Math.atan2(-0.25, -0.8)],
     ]),
     track("C", [
-      [0, 5.2, 3.3],
-      [8, 5.5, 3.4],
-      [12, 5.6, 3.6],
-      [16, 5.4, 3.9],
-      [24, 5.2, 4.2],
+      [0, 5.2, 3.3, Math.PI / 2],
+      [4, 5.2, 3.3, Math.PI / 2],
+      [6, 5.8, 3.3, Math.PI / 2],
+      [7, 5.8, 3.3, Math.atan2(-0.2, 0.3)],
+      [9, 5.6, 3.6, Math.atan2(-0.2, 0.3)],
+      [12, 5.6, 3.6, Math.atan2(-0.2, 0.3)],
+      [16, 5.6, 3.6, Math.atan2(-0.2, 0.3)],
+      [20, 5.2, 4.2, Math.atan2(-0.2, 0.3)],
+      [24, 5.2, 4.2, Math.atan2(-0.2, 0.3)],
     ]),
   ];
   return draft;
 }
-function track(id: "A" | "B" | "C", tuples: number[][]): Track {
+function track(
+  id: "A" | "B" | "C",
+  tuples: (number[] | [number, number, number, number, boolean])[],
+): Track {
   return {
     id,
-    keys: tuples.map(([tick, x, z]): Key => ({ tick, x, z, yaw: 0, y: 1 })),
+    keys: tuples.map(
+      ([tick, x, z, yaw = 0, backward]): Key => ({
+        tick,
+        x,
+        z,
+        yaw,
+        y: 1,
+        ...(backward === true ? { backward: true } : {}),
+      }),
+    ),
   };
 }
 export function createPackingCase(
@@ -139,39 +174,71 @@ export function createPackingCase(
       track("A", [
         [0, 1.3, 4.2],
         [7, 1.3, 4.2],
-        [11, 2.2, 3.65],
-        [12, 2.2, 3.65],
-        [13, 2.9, 3.7],
-        [14, 3.5, 3.7],
-        [15, 4.05, 3.65],
-        [16, 4.45, 3.65],
-        [17, 4.98, 3.55],
-        [18, 5.25, 3.65],
+        [10, 2.8, 4.2],
+        [11, 2.8, 3.65, -Math.PI / 2],
+        [12, 2.65, 3.65, -Math.PI / 2],
+        [13, 2.65, 3.65, -Math.PI / 2],
+        [14, 3.65, 3.65, Math.PI],
+        [15, 3.65, 3.65, Math.PI],
+        [16, ...(recipient === "B" ? [3.65, 3.65, Math.PI] : [4.4, 3.55, 0])],
+        [17, 4.4, 3.55, 0],
+        [18, 4.4, 3.55, 0],
         [20, 5.4, 4.55],
         [24, 5.4, 4.55],
       ]),
       track("B", [
         [0, 6.4, 2.05],
-        [14, 4.68, 3],
-        [15, 4.15, 3.62],
-        [16, 4.28, 3],
+        [10, 6.4, 2.05],
+        [14, 3.65, 3, 0],
+        [15, 3.65, 3, 0],
+        [16, 3.65, 3, 0],
         [18, 4.1, 2.2],
-        [20, 4.7, 1.3],
-        [22, 5.7, 1.2],
-        [24, 6.4, 1.4],
+        [
+          20,
+          ...(options.canvas && recipient === "C" ? [5.2, 2.2] : [4.85, 1.4]),
+          -Math.PI / 2,
+        ],
+        [22, 5.45, 1.2, Math.PI / 2],
+        [23, 5.45, 1.2, Math.PI / 2],
+        [24, 5.75, 0.6],
       ]),
       track("C", [
         [0, 1.6, 2.75],
-        [5, 2.2, 3.65],
-        [6, 2.2, 3.65],
-        [8, 2.1, 4.55],
-        [12, 3.8, 4.55],
-        [16, 5.1, 4.35],
-        [17, 5, 3.62],
-        [18, 5.68, 3.36],
-        [20, 6.1, 2.3],
-        [22, 5.8, 1.32],
-        [24, 5.25, 1.32],
+        [2, 1.6, 2.75],
+        [4, 1.6, 3.65, Math.PI / 2],
+        [5, 1.75, 3.65, Math.PI / 2],
+        [6, 1.75, 3.65, Math.PI / 2, true],
+        [7, 1.6, 3.65, Math.PI / 2],
+        [8, 1.6, 3.65, -Math.PI / 2],
+        [9, 1.0, 3.65, -Math.PI / 2],
+        [10, 1.0, 4.55, 0],
+        [11, 1.0, 4.55, Math.PI / 2],
+        [14, 3.8, 4.55],
+        [16, 4.4, 4.2, Math.PI],
+        [17, 4.4, 4.2, Math.PI],
+        [18, 4.4, 4.2, Math.PI],
+        [
+          19,
+          ...(options.canvas && recipient === "C" ? [3.9, 3.75] : [5.6, 4.4]),
+        ],
+        [
+          20,
+          ...(options.canvas && recipient === "C" ? [3.4, 3.3] : [6.1, 3.3]),
+        ],
+        [
+          22,
+          ...(options.canvas && recipient === "C" ? [4.35, 1.4] : [6.05, 1.2]),
+          -Math.PI / 2,
+        ],
+        [
+          23,
+          ...(options.canvas && recipient === "C" ? [4.35, 1.4] : [6.05, 1.2]),
+          -Math.PI / 2,
+        ],
+        [
+          24,
+          ...(options.canvas && recipient === "C" ? [4.35, 1.4] : [5.75, 1.8]),
+        ],
       ]),
     ],
     casting: { A: "Conservator", B: "Courier", C: "Guard" },
@@ -188,7 +255,7 @@ export function createPackingCase(
         kind: "Stash",
         carrier: recipient,
         box: options.canvas ? "canvas trunk" : "brass case",
-        tick: options.canvas ? 20 : 22,
+        tick: options.canvas && recipient === "B" ? 20 : 22,
       },
     ],
     room: {

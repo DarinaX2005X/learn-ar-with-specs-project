@@ -21,13 +21,14 @@ class Quaternion {
     Object.assign(this, { w, x, y, z });
     this.yaw = 0;
   }
-  static fromEulerAngles(x, y, z) {
-    const q = new Quaternion(1, 0, 0, 0);
-    q.yaw = y;
-    q.pitch = x;
-    q.roll = z;
-    return q;
+  static fromEulerAngles(x,y,z) {
+    const sx=Math.sin(x/2),cx=Math.cos(x/2),sy=Math.sin(y/2),cy=Math.cos(y/2),sz=Math.sin(z/2),cz=Math.cos(z/2);
+    const q=new Quaternion(cx*cy*cz+sx*sy*sz,sx*cy*cz-cx*sy*sz,cx*sy*cz+sx*cy*sz,cx*cy*sz-sx*sy*cz);
+    q.yaw=y;q.pitch=x;q.roll=z;return q;
   }
+  multiply(b){const a=this;return new Quaternion(a.w*b.w-a.x*b.x-a.y*b.y-a.z*b.z,a.w*b.x+a.x*b.w+a.y*b.z-a.z*b.y,a.w*b.y-a.x*b.z+a.y*b.w+a.z*b.x,a.w*b.z+a.x*b.y-a.y*b.x+a.z*b.w);}
+  inverse(){return new Quaternion(this.w,-this.x,-this.y,-this.z);}
+  rotate(p){const q=this.multiply(new Quaternion(0,p.x,p.y,p.z)).multiply(this.inverse());return new Vector(q.x,q.y,q.z);}
   // A valid quaternion may return an equivalent Euler representation whose Y
   // folds outside +-90 degrees. IK must retain the authored heading instead.
   toEulerAngles() {
@@ -78,24 +79,12 @@ class Transform {
       p.z * this.scale.z,
     );
   }
-  getWorldRotation() {
-    const y =
-      (this.node.parent?.transform.getWorldRotation().yaw ?? 0) +
-      this.rotation.yaw;
-    return Quaternion.fromEulerAngles(0, y, 0);
-  }
+  getWorldRotation() { return this.node.parent ? this.node.parent.transform.getWorldRotation().multiply(this.rotation) : this.rotation; }
   getWorldPosition() {
     if (!this.node.parent) return this.position;
     const t = this.node.parent.transform,
       s = t.getWorldScale(),
-      p = turn(
-        new Vector(
-          this.position.x * s.x,
-          this.position.y * s.y,
-          this.position.z * s.z,
-        ),
-        t.getWorldRotation().yaw,
-      ),
+      p = t.getWorldRotation().rotate(new Vector(this.position.x*s.x,this.position.y*s.y,this.position.z*s.z)),
       base = t.getWorldPosition();
     return new Vector(base.x + p.x, base.y + p.y, base.z + p.z);
   }
@@ -106,20 +95,11 @@ class Transform {
     }
     const t = this.node.parent.transform,
       base = t.getWorldPosition(),
-      local = turn(
-        new Vector(p.x - base.x, p.y - base.y, p.z - base.z),
-        -t.getWorldRotation().yaw,
-      ),
+      local = t.getWorldRotation().inverse().rotate(new Vector(p.x-base.x,p.y-base.y,p.z-base.z)),
       s = t.getWorldScale();
     this.position = new Vector(local.x / s.x, local.y / s.y, local.z / s.z);
   }
-  setWorldRotation(q) {
-    this.rotation = Quaternion.fromEulerAngles(
-      0,
-      q.yaw - (this.node.parent?.transform.getWorldRotation().yaw ?? 0),
-      0,
-    );
-  }
+  setWorldRotation(q) { this.rotation=this.node.parent ? this.node.parent.transform.getWorldRotation().inverse().multiply(q) : q; }
   setWorldScale(s) {
     const p =
       this.node.parent?.transform.getWorldScale() ?? new Vector(1, 1, 1);
@@ -203,6 +183,10 @@ const globals = {
   HorizontalOverflow: { Wrap: 0 },
   Rect: { create: (...values) => values },
   console,
+  isNull: node => !node || node.destroyed,
+  vec4: class {constructor(...values){this.values=values;}},
+  MeshBuilder: class { appendVerticesInterleaved(){} appendIndices(){} updateMesh(){} getMesh(){return{};} },
+  MeshTopology: {Triangles:0}, MeshIndexType:{UInt16:0},
 };
 const cache = new Map(),
   assets = path.resolve(__dirname, "../../Assets");
@@ -226,6 +210,7 @@ function load(file) {
   );
   return module.exports;
 }
+const {insideComparisonWindow} = load(path.join(assets,"Runtime/ComparisonFocus.ts"));
 const D = load(path.join(assets, "Domain/index.ts")),
   S = load(path.join(assets, "Spatial/index.ts")),
   { ComparisonHall } = load(path.join(assets, "Runtime/ComparisonHall.ts"));
@@ -242,6 +227,7 @@ function find(root, name) {
     if (result) return result;
   }
 }
+const material = { clone: () => ({mainPass:{}}) };
 function makeMuseum(board) {
   nodes = [];
   const root = new Node("Countercase"),
@@ -279,7 +265,11 @@ function makeMuseum(board) {
     const node = new Node(name);
     node.setParent(theatre);
   }
-  const pane = new Node("OriginalRecordedGlass");
+  for (const name of ["WorkshopRecording__brass","WorkshopRecording__recordingDarkGlass","WorkshopRecording__leather","WorkshopRecording__wood","Anchor_PinGlass","Anchor_PinHandle"]) {
+    const n = new Node(name);n.setParent(building);n.transform.position=new Vector(-353,102.5,326);
+  }
+  for (const name of ["Use_PinGlass","Use_LoupeDetail"]) { const n=new Node(name);n.setParent(root); }
+  const pane = new Node("PublicRecordedGlass");
   pane.setParent(root);
   return { root, building, bench, theatre, pane };
 }
@@ -303,7 +293,7 @@ function test(name, fn) {
 }
 test("explicit comparison mounts two legal public plays on the existing connected bench", () => {
   const museum = makeMuseum(sealed.board),
-    hall = new ComparisonHall(museum.root, {}),
+    hall = new ComparisonHall(museum.root, material),
     original = JSON.stringify(sealed.clues);
   a.equal(hall.sync(sealed.board, undefined, context), false);
   a.equal(
@@ -350,7 +340,7 @@ test("explicit comparison mounts two legal public plays on the existing connecte
 });
 test("one authoritative clock seeks both plays through all 25 ticks and reversal", () => {
   const museum = makeMuseum(sealed.board),
-    hall = new ComparisonHall(museum.root, {});
+    hall = new ComparisonHall(museum.root, material);
   hall.sync(sealed.board, request, context);
   for (const tick of [...Array(25).keys(), 12, 11, 0]) {
     hall.sync(sealed.board, request, { ...context, tick });
@@ -359,7 +349,13 @@ test("one authoritative clock seeks both plays through all 25 ticks and reversal
       const wing = find(museum.root, "PossibleReconstruction_" + (i + 1)),
         view = S.renderHistory(sealed.board, pair[i], tick),
         ruby = find(wing, "Ruby");
-      a.equal(ruby.enabled, view.ruby.visible);
+      a.equal(
+        ruby.enabled,
+        view.ruby.visible && insideComparisonWindow(
+          hall.read().focus, view.ruby.positionCm[0] / 100, view.ruby.positionCm[2] / 100,
+        ),
+        "Bench cutaway shows the ruby exactly while inside its public action window",
+      );
       a.deepEqual(plain(ruby.transform.position), {
         x: view.ruby.positionCm[0] * 0.06,
         y: view.ruby.positionCm[1] * 0.06,
@@ -374,7 +370,7 @@ test("exit, role switch, repeated exit and disposal remove every retained recons
   let stopped = 0;
   const hall = new ComparisonHall(
     museum.root,
-    {},
+    material,
     { stopSound: () => stopped++ },
   );
   const originalTransform = plain(museum.bench.transform.getWorldPosition());
@@ -404,20 +400,20 @@ test("incompatible, same-answer, illegal, stale or script-bearing proposals neve
     (r) => ({ ...r, pair: [{ ...pair[0], take: "A" }, pair[1]] }),
   ]) {
     const m = makeMuseum(sealed.board),
-      hall = new ComparisonHall(m.root, {});
+      hall = new ComparisonHall(m.root, material);
     a.equal(hall.sync(sealed.board, change(request), context), false);
     a.equal(find(m.root, "ComparisonWorkbench"), undefined);
   }
   const open = compile(D.createMuseumTheft(true)),
     m = makeMuseum(open.board),
-    hall = new ComparisonHall(m.root, {});
+    hall = new ComparisonHall(m.root, material);
   a.equal(
     hall.sync(open.board, { ...request, tape: open.clues }, context),
     false,
   );
   const m2 = makeMuseum(sealed.board);
   find(m2.theatre, "Guard").createComponent("Component.ScriptComponent");
-  const hall2 = new ComparisonHall(m2.root, {});
+  const hall2 = new ComparisonHall(m2.root, material);
   a.equal(hall2.sync(sealed.board, request, context), false);
   a.equal(find(m2.root, "ComparisonWorkbench"), undefined);
 });
@@ -437,7 +433,7 @@ test("selected evidence scope remains honest and a changed selection invalidates
     selectedPair = S.compatiblePair(open.board, v, "taker");
   a(selectedPair);
   const m = makeMuseum(open.board),
-    hall = new ComparisonHall(m.root, {}),
+    hall = new ComparisonHall(m.root, material),
     r = {
       pair: selectedPair,
       field: "taker",
@@ -459,7 +455,7 @@ test("selected evidence scope remains honest and a changed selection invalidates
 });
 test("standing selected-wing view and return preserve context without moving a camera", () => {
   const m = makeMuseum(sealed.board),
-    hall = new ComparisonHall(m.root, {});
+    hall = new ComparisonHall(m.root, material);
   hall.sync(sealed.board, request, context);
   hall.applyCaseView({
     kind: "room",
@@ -499,7 +495,7 @@ test("packing comparison uses one taker and two recipients on the same clock", (
     D.answer(packing.board, p[1], "recipient"),
   );
   const museum = makeMuseum(packing.board),
-    hall = new ComparisonHall(museum.root, {}),
+    hall = new ComparisonHall(museum.root, material),
     r = { pair: p, field: "recipient", scope: "all", tape: packing.clues };
   for (const tick of [12, 14, 15, 16, 17, 22, 24, 12])
     a.equal(hall.sync(packing.board, r, { ...context, tick }), true);
@@ -518,37 +514,45 @@ test("packing comparison uses one taker and two recipients on the same clock", (
 });
 test("native hand targets use authored yaw even when quaternion Euler angles fold", () => {
   const museum = makeMuseum(sealed.board),
-    hall = new ComparisonHall(museum.root, {});
+    hall = new ComparisonHall(museum.root, material);
   hall.sync(sealed.board, request, context);
   for (let i = 0; i < 2; i++) {
     const view = S.renderHistory(sealed.board, pair[i], 12),
       role = pair[i].casting[pair[i].take],
       pose = view.actors.find((p) => p.role === role),
       target = view.hands.find((h) => h.track === pair[i].take).handCm,
-      yaw = pose.yawRad + Math.PI;
+      track=sealed.board.tracks.find(track=>pair[i].casting[track.id]===role),
+      G=load(path.join(assets,"Spatial/PlantedGait.ts")),
+      gait=G.samplePlantedGait(G.compilePlantedGait(track),12),
+      yaw = gait.bodyYaw + Math.PI;
     const dx = target[0] - pose.positionCm[0],
       dy = target[1] - pose.positionCm[1],
       dz = target[2] - pose.positionCm[2];
     const local = [
-      (Math.cos(yaw) * dx - Math.sin(yaw) * dz) * 0.06,
-      dy * 0.06,
-      (Math.sin(yaw) * dx + Math.cos(yaw) * dz) * 0.06,
+      (Math.cos(yaw) * dx - Math.sin(yaw) * dz - gait.upperBodyOffsetCm[0]) * 0.06,
+      (dy-gait.upperBodyOffsetCm[1]) * 0.06,
+      (Math.sin(yaw) * dx + Math.cos(yaw) * dz - gait.upperBodyOffsetCm[2]) * 0.06,
     ];
-    const expected = S.solveRightArm(local),
+    const hand=view.hands.find(h=>h.track===pair[i].take);
+    let expected=S.solveRightArm(local);
+    if(hand.articulation){
+      const A=load(path.join(assets,"Spatial/ArmIK.ts")),P=load(path.join(assets,"Spatial/GraspRig.ts"));
+      const plan=P.planGrasp(local,[Math.cos(yaw),0,Math.sin(yaw)],[-Math.sin(yaw),0,Math.cos(yaw)],hand.articulation);
+      const contact=A.rotatePoint(A.inverseRotation(plan.rotation),local.map((n,k)=>n-plan.wrist[k]));
+      expected=A.solveRightArm(local,.72,{rotation:plan.rotation,contact});
+    }
+    const
       shoulder = find(
         find(find(museum.root, "PossibleReconstruction_" + (i + 1)), role),
         "Shoulder_R",
       ).transform.rotation;
-    a.deepEqual(
-      [shoulder.x, shoulder.y, shoulder.z, shoulder.w],
-      plain(expected.shoulderRotation),
-    );
+    [shoulder.x,shoulder.y,shoulder.z,shoulder.w].forEach((value,i)=>a(Math.abs(value-expected.shoulderRotation[i])<1e-10));
   }
   hall.exit();
 });
 test("fractional presentation samples the shared clock without changing recorded evidence", () => {
   const museum = makeMuseum(sealed.board),
-    hall = new ComparisonHall(museum.root, {});
+    hall = new ComparisonHall(museum.root, material);
   hall.sync(sealed.board, request, context);
   const originalRecording = JSON.stringify(sealed.clues);
   hall.presentPose(12.5);

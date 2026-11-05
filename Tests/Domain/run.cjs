@@ -133,7 +133,7 @@ test("ownership chain proves taker/cache, preserves two recipient counterhistori
   assert.deepEqual(v.fieldValues.taker, ["Conservator"]);
   assert.deepEqual(v.fieldValues.recipient.sort(), ["Courier", "Guard"]);
   assert.deepEqual(v.fieldValues.cache, ["brass case"]);
-  assert.equal(v.historyCount, 4);
+  assert.equal(v.historyCount, 8);
   for (const h of v.examplesByField.recipient)
     assert.deepEqual(D.observe(packing.sealed.board, h), packing.sealed.clues);
   assert.equal(
@@ -296,11 +296,11 @@ function bruteForce(board, tape, ids) {
       }
   return matches;
 }
-test("factored search agrees with full independent enumeration (960 chain histories)", () => {
+test("factored search agrees with full independent enumeration (810 chain histories)", () => {
   const b = packing.sealed.board,
     t = packing.sealed.clues;
   const legal = bruteForce(b, { ...t, clues: [] }, []);
-  assert.equal(legal.length, 960);
+  assert.equal(legal.length, 810);
   for (const ids of [
     t.clues.map((c) => c.id),
     ["frame:entrance:12"],

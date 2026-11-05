@@ -189,7 +189,19 @@ const globals = {
   MeshTopology: {Triangles:0}, MeshIndexType:{UInt16:0},
 };
 const cache = new Map(),
-  assets = path.resolve(__dirname, "../../Assets");
+  assets = process.env.ACTOR_ASSETS ?? path.resolve(__dirname, "../../Assets");
+const overlayRoot=process.env.ACTOR_OVERLAY_ROOT;
+const overlayMap=new Map(overlayRoot ? [
+ ["Runtime/ComparisonHall.ts","staging/worldrenderer/actor-wave/ComparisonHall.ts"],
+ ["Runtime/MuseumScene/ActorRig.ts","staging/worldrenderer/actor-wave/MuseumScene/ActorRig.ts"],
+ ["Spatial/PlantedGait.ts","staging/actor-motion/Spatial/PlantedGait.ts"],
+ ["Domain/TrackMotion.ts","staging/actor-motion/Domain/TrackMotion.ts"],
+ ["Spatial/ArmIK.ts","staging/grasp-rig/promotion/Spatial/ArmIK.ts"],
+ ["Spatial/GraspRig.ts","staging/grasp-rig/promotion/Spatial/GraspRig.ts"],
+ ["Spatial/Reconstruction.ts","staging/grasp-motion/Spatial/Reconstruction.ts"],
+ ["Domain/ContactPose.ts","staging/grasp-motion/Domain/ContactPose.ts"]
+].map(([target,source])=>[path.join(assets,target),path.join(overlayRoot,source)]) : []);
+function sourceText(file){const source=overlayMap.get(path.normalize(file))??file;const text=fs.readFileSync(source,"utf8");return overlayRoot ? text.replace('../../project/Assets/Scripts/TableKit/TableKit','../Scripts/TableKit/TableKit') : text;}
 function load(file) {
   file = path.resolve(file);
   if (cache.has(file)) return cache.get(file).exports;
@@ -197,7 +209,7 @@ function load(file) {
   cache.set(file, module);
   const staged = path.join(__dirname,path.basename(file));
   const source = file.includes(path.sep+"Runtime"+path.sep) && fs.existsSync(staged) ? staged : file;
-  const code = ts.transpileModule(fs.readFileSync(source, "utf8"), {
+  const code = ts.transpileModule(sourceText(source), {
     compilerOptions: {
       target: ts.ScriptTarget.ES2021,
       module: ts.ModuleKind.CommonJS,
@@ -216,9 +228,9 @@ const { insideComparisonWindow,comparisonFocusWindow,clipComparisonWall } = load
 const originalRead=ts.sys.readFile;
 const host=ts.createCompilerHost({});
 const hostRead=host.readFile.bind(host);
-host.readFile=file=>{const candidate=path.join(__dirname,path.basename(file));return file.includes("/Runtime/")&&fs.existsSync(candidate)?fs.readFileSync(candidate,"utf8"):hostRead(file);};
+host.readFile=file=>{if(overlayMap.has(path.normalize(file)))return sourceText(file);const candidate=path.join(__dirname,path.basename(file));return file.includes("/Runtime/")&&fs.existsSync(candidate)?fs.readFileSync(candidate,"utf8"):hostRead(file);};
 const hostExists=host.fileExists.bind(host);
-host.fileExists=file=>hostExists(file)||(file.includes("/Runtime/")&&fs.existsSync(path.join(__dirname,path.basename(file))));
+host.fileExists=file=>overlayMap.has(path.normalize(file))||hostExists(file)||(file.includes("/Runtime/")&&fs.existsSync(path.join(__dirname,path.basename(file))));
 const program=ts.createProgram([path.resolve(assets,"../Support/StudioLib.d.ts"),path.join(assets,"Runtime/ComparisonHall.ts")],{strict:true,skipLibCheck:true,noEmit:true,target:ts.ScriptTarget.ES2021,module:ts.ModuleKind.CommonJS,lib:["lib.es2021.d.ts"]},host);
 const diagnostics=ts.getPreEmitDiagnostics(program);
 if(diagnostics.length)throw Error(ts.formatDiagnosticsWithColorAndContext(diagnostics,{getCanonicalFileName:x=>x,getCurrentDirectory:()=>process.cwd(),getNewLine:()=>"\n"}));
@@ -526,26 +538,55 @@ test("native hand targets use authored yaw even when quaternion Euler angles fol
       role = pair[i].casting[pair[i].take],
       pose = view.actors.find((p) => p.role === role),
       target = view.hands.find((h) => h.track === pair[i].take).handCm,
-      yaw = pose.yawRad + Math.PI;
+      track=sealed.board.tracks.find(track=>pair[i].casting[track.id]===role),
+      G=load(path.join(assets,"Spatial/PlantedGait.ts")),
+      gait=G.samplePlantedGait(G.compilePlantedGait(track),12),
+      yaw = gait.bodyYaw + Math.PI;
     const dx = target[0] - pose.positionCm[0],
       dy = target[1] - pose.positionCm[1],
       dz = target[2] - pose.positionCm[2];
     const local = [
-      (Math.cos(yaw) * dx - Math.sin(yaw) * dz) * 0.06,
-      dy * 0.06,
-      (Math.sin(yaw) * dx + Math.cos(yaw) * dz) * 0.06,
+      (Math.cos(yaw) * dx - Math.sin(yaw) * dz - gait.upperBodyOffsetCm[0]) * 0.06,
+      (dy-gait.upperBodyOffsetCm[1]) * 0.06,
+      (Math.sin(yaw) * dx + Math.cos(yaw) * dz - gait.upperBodyOffsetCm[2]) * 0.06,
     ];
-    const expected = S.solveRightArm(local),
+    const hand=view.hands.find(h=>h.track===pair[i].take);
+    let expected=S.solveRightArm(local);
+    if(hand.articulation){
+      const A=load(path.join(assets,"Spatial/ArmIK.ts")),P=load(path.join(assets,"Spatial/GraspRig.ts"));
+      const plan=P.planGrasp(local,[Math.cos(yaw),0,Math.sin(yaw)],[-Math.sin(yaw),0,Math.cos(yaw)],hand.articulation);
+      const contact=A.rotatePoint(A.inverseRotation(plan.rotation),local.map((n,k)=>n-plan.wrist[k]));
+      expected=A.solveRightArm(local,.72,{rotation:plan.rotation,contact});
+    }
+    const
       shoulder = find(
         find(find(museum.root, "PossibleReconstruction_" + (i + 1)), role),
         "Shoulder_R",
       ).transform.rotation;
-    a.deepEqual(
-      [shoulder.x, shoulder.y, shoulder.z, shoulder.w],
-      plain(expected.shoulderRotation),
-    );
+    [shoulder.x,shoulder.y,shoulder.z,shoulder.w].forEach((value,i)=>a(Math.abs(value-expected.shoulderRotation[i])<1e-10));
   }
   hall.exit();
+});
+test("both physical wings and room version use the same planted native rigs",()=>{
+ const museum=makeMuseum(sealed.board),hall=new ComparisonHall(museum.root,material);a(hall.sync(sealed.board,request,context));
+ const G=load(path.join(assets,"Spatial/PlantedGait.ts"));
+ for(const tick of [0,.25,4.5,8,10.25,12,15.5,24,12.25,0]){
+   hall.presentPose(tick);
+   for(let i=0;i<2;i++)for(const track of sealed.board.tracks){
+     const actor=find(find(museum.root,"PossibleReconstruction_"+(i+1)),pair[i].casting[track.id]);
+     const gait=G.samplePlantedGait(G.compilePlantedGait(track),tick);
+     a(find(actor,"LocomotionBody"));
+     for(const side of ["L","R"]){
+       a(find(actor,"FootPivot_"+side));
+       const actual=find(actor,"Hip_"+side).transform.position,expected=gait.legs[side].hipPositionCm;
+       for(const [axis,k]of [["x",0],["y",1],["z",2]])a(Math.abs(actual[axis]-expected[k]*.0006)<1e-9);
+       const knee=find(actor,"Knee_"+side).transform.rotation,q=gait.legs[side].kneeRotation;
+       a.deepEqual([knee.x,knee.y,knee.z,knee.w],plain(q));
+     }
+   }
+ }
+ hall.applyCaseView({kind:"room",placement:{originCm:[0,0,0],scale:1,yawRad:0}});hall.presentPose(12.5);
+ a(hall.wings.every(wing=>wing.gaits.size===sealed.board.tracks.length));hall.exit();a.equal(hall.wings.length,0);
 });
 test("fractional presentation samples the shared clock without changing recorded evidence", () => {
   const museum = makeMuseum(sealed.board),

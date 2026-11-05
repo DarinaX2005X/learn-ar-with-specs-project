@@ -36,7 +36,9 @@ export function poseAt(track: Track, tick: number): Vec3 & { yaw: number } {
     const p = keys[j],
       q = keys[j + 1];
     if (q && (q.x !== p.x || q.z !== p.z))
-      yaw = Math.atan2(q.x - p.x, q.z - p.z);
+      yaw = p.backward
+        ? Math.atan2(p.x - q.x, p.z - q.z)
+        : Math.atan2(q.x - p.x, q.z - p.z);
   }
   return {
     x: a.x + (b.x - a.x) * f,

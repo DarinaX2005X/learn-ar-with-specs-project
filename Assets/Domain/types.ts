@@ -13,6 +13,8 @@ export interface Key {
   z: number;
   y?: number;
   yaw: number;
+  /** Outgoing route segment travels backward while facing its opposite heading. */
+  backward?: boolean;
 }
 export interface Track {
   id: TrackId;

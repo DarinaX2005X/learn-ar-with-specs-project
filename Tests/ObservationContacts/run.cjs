@@ -275,6 +275,27 @@ function run(rearCamera) {
     assert.equal(session.snapshot().glass.length, n + 1);
     assert(session.snapshot().glass.some((glass) => glass.id === id));
   };
+  if (!rearCamera) {
+    // Scrub to a frame before the alarm, then play it using the physical clock.
+    // An unconditional replay here used to jump the figure straight to the theft.
+    const alarmTick = compiled.sealed.board.alarmTick;
+    for (let tick = session.snapshot().tick; tick > 3; tick--)
+      click("EntryClockPrevious");
+    click("EntryClock");
+    assert.equal(session.snapshot().tick, 3);
+    assert.equal(session.snapshot().playing, true);
+    session.update(0.25);
+    assert.equal(session.presentationTick(), 3.5);
+    session.update(0.25);
+    click("EntryClock");
+    assert.equal(session.snapshot().playing, false);
+    click("EntryClock");
+    assert.equal(session.presentationTick(), 4);
+    click("EntryClockReset");
+    assert.equal(session.presentationTick(), alarmTick);
+    click("EntryClock");
+    assert.equal(session.snapshot().playing, false);
+  }
   click("Sourceentrance");
   const taking = session
     .snapshot()

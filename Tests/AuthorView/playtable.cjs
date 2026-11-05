@@ -393,7 +393,30 @@ assert.equal(
   trialDraft,
   "Held camera drag/release must not edit the trial",
 );
-tap("CurtainClose");
+const handle = at("CurtainHandle").input;
+const rail = active.getDraft().room.mirror;
+const widthCm = rail.width * 100;
+const motion = (axis, cm) => handle.onDragUpdate.emit({
+  dragVector: new V(axis.x * cm, axis.y * cm, axis.z * cm),
+});
+handle.onTriggerStart.emit();
+handle.onDragStart.emit();
+motion(rail.normal, widthCm);
+assert.equal(active.snapshot().draft.room.mirror.aperture, 1);
+motion(rail.right, -widthCm / 4);
+assert.equal(active.snapshot().draft.room.mirror.aperture, 0.75);
+handle.onTriggerCanceled.emit();
+assert.equal(active.snapshot().draft.room.mirror.aperture, 1);
+assert.equal(active.snapshot().preview, false);
+const revisionBeforeDrag = active.getDraft().rev;
+handle.onTriggerStart.emit();
+handle.onDragStart.emit();
+motion(rail.right, -widthCm / 2);
+assert.equal(active.snapshot().draft.room.mirror.aperture, 0.5);
+motion(rail.right, -widthCm / 2);
+handle.onDragEnd.emit();
+handle.onTriggerEnd.emit();
+assert.equal(active.getDraft().rev, revisionBeforeDrag + 1);
 assert.equal(active.getDraft().room.mirror.aperture, 0);
 assert.equal(base.getDraft().room.mirror.aperture, 1);
 tap("AuthorViewCompareChange");

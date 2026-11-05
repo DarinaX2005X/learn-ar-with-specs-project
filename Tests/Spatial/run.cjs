@@ -1,5 +1,6 @@
 const a = require("node:assert/strict");
 const S = require("./build/Spatial/index.js");
+const P = require("./build/Spatial/PlantedGait.js");
 const D = require("./build/Domain/index.js");
 const C = require("./build/Domain/cases.js");
 const K = require("./build/Scripts/TableKit/TableKit.js");
@@ -17,9 +18,10 @@ function compiled(d) {
 const mirror = compiled(C.createMirrorCase(false));
 test("recording steps retain a readable stride, stationary figures stand still", () => {
   const moving = C.createMuseumTheft().tracks[0];
-  const atThree = S.gaitAt(moving, 3);
-  a.ok(Math.abs(atThree) > 0.05);
-  a.ok(Math.abs(S.gaitAt(moving, 3.25) - atThree) > 0.001);
+  const atFour = S.gaitAt(moving, 4);
+  a.equal(S.gaitAt(moving, 2), 0, "the initial pause has no invented stride");
+  a.ok(Math.abs(atFour) > 0.05);
+  a.ok(Math.abs(S.gaitAt(moving, 4.25) - atFour) > 0.001);
   const stopped = { ...moving, keys: [
     { tick: 0, x: 0, z: 0, yaw: 0 },
     { tick: 4, x: 1, z: 0, yaw: 0 },
@@ -27,7 +29,7 @@ test("recording steps retain a readable stride, stationary figures stand still",
   ] };
   a.equal(S.gaitAt(stopped, 5), 0);
   a.equal(S.gaitAt(stopped, 8), 0);
-  a.equal(S.gaitAt(moving, 3), atThree);
+  a.equal(S.gaitAt(moving, 4), atFour);
 });
 const board = mirror.sealed.board;
 const verdict = D.prove(board, mirror.sealed.clues, [], "Underdetermined");
@@ -78,8 +80,8 @@ test("take clears the case and a rim contact touches brass without picking up th
       const hand = view.hands.find(({ track }) => track === brush.track);
       const [x, height, z] = hand.handCm;
       const distance = Math.max(Math.abs(x - exhibit.x * 100), Math.abs(z - exhibit.z * 100));
-      a.ok(Math.abs(distance - 23) < 0.00001);
-      a.ok(Math.abs(height - exhibit.y * 100 + 6.45) < 0.00001);
+      a.ok(Math.abs(distance - 23.752) < 0.00001);
+      a.ok(Math.abs(height - exhibit.y * 100 + 6.536) < 0.00001);
       if (brush.tick < board.alarmTick) {
         a.equal(hand.grip, 0);
         a.deepEqual(view.ruby.positionCm, [exhibit.x, exhibit.y, exhibit.z].map(value => value * 100));
@@ -256,8 +258,10 @@ test("arm pivots and palm contact match every shipped GLB", () => {
   }
 });
 test("native cached rig adapter reaches every actual action and held gem", () => {
+  // The fixed mirror calibration deliberately places its actor inside the exhibit.
+  // Physical clearance uses the shipped moving cases; logical calibration tests above stay unchanged.
   const fixtures = [
-    mirror,
+    compiled(C.createMuseumTheft(true)),
     compiled(C.createMuseumTheft(false)),
     packing,
     compiled(C.createPackingCase({ recipient: "C" })),
@@ -270,6 +274,7 @@ test("native cached rig adapter reaches every actual action and held gem", () =>
   for (const result of fixtures) {
     const b = result.sealed.board,
       histories = [result.vault.actualHistory];
+    const gaitPlans = new Map(b.tracks.map(track => [track.id, P.compilePlantedGait(track)]));
     const alternatives = D.prove(b, result.sealed.clues, [], "Underdetermined");
     const seen = new Set(histories.map((h) => JSON.stringify(h)));
     for (const list of Object.values(alternatives.examplesByField))
@@ -280,7 +285,6 @@ test("native cached rig adapter reaches every actual action and held gem", () =>
           histories.push(h);
         }
       }
-    if (b.caseId === board.caseId) histories.push(...pair);
     for (const h of histories)
       for (let tick = 0; tick <= 24; tick += 0.25) {
         const v = S.renderHistory(b, h, tick);
@@ -288,7 +292,15 @@ test("native cached rig adapter reaches every actual action and held gem", () =>
           const baseActor = v.actors.find(
             (p) => p.role === h.casting[hand.track],
           );
-          const actor = { ...baseActor, yawRad: baseActor.yawRad + Math.PI };
+          const gait = P.samplePlantedGait(gaitPlans.get(hand.track), tick);
+          const yaw = gait.bodyYaw + Math.PI, c = Math.cos(yaw), sn = Math.sin(yaw);
+          const offset = gait.upperBodyOffsetCm;
+          // Use the actual LocomotionBody basis without applying the gait offset twice.
+          const actor = { yawRad: yaw, positionCm: [
+            baseActor.positionCm[0] + c * offset[0] + sn * offset[2],
+            baseActor.positionCm[1] + offset[1],
+            baseActor.positionCm[2] - sn * offset[0] + c * offset[2],
+          ] };
           const transforms = {};
           const node = (name) => ({
             getTransform() {
@@ -313,17 +325,20 @@ test("native cached rig adapter reaches every actual action and held gem", () =>
             { vector: (...p) => p, quaternion: (...q) => q },
           );
           const reads = transformReads;
-          const solved = rig.apply(actor, hand.handCm);
-          rig.apply(actor, hand.handCm);
+          const solved = rig.apply(actor, hand.handCm, hand.articulation);
+          rig.apply(actor, hand.handCm, hand.articulation);
           a.equal(transformReads, reads);
+          const delta = hand.handCm.map((value, index) => value - actor.positionCm[index]);
+          const targetLocal = [(c * delta[0] - sn * delta[2]) * .06, delta[1] * .06, (sn * delta[0] + c * delta[2]) * .06];
+          const contact = S.rotatePoint(S.inverseRotation(solved.grasp.rotation), targetLocal.map((value, index) => value - solved.grasp.wrist[index]));
           const fk = S.forwardArm(
             transforms.shoulder.rotation,
             transforms.elbow.rotation,
             transforms.wrist.rotation,
             transforms.body.position.map((x) => x * 100),
+            contact,
           );
-          const c = Math.cos(actor.yawRad),
-            s = Math.sin(actor.yawRad),
+          const s = Math.sin(actor.yawRad),
             factor = 100 / 6;
           const world = [
             actor.positionCm[0] + (fk[0] * c + fk[2] * s) * factor,
@@ -349,7 +364,7 @@ test("native cached rig adapter reaches every actual action and held gem", () =>
                 hand.track +
                 " residual " +
                 residual +
-                " story cm",
+                " story cm " + JSON.stringify({history:h,actor,hand,gait,solvedResidual:solved.residualCm}),
             );
           if (hand.grip === 1 && v.ruby.visible)
             a.deepEqual(v.ruby.positionCm, hand.handCm);

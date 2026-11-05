@@ -1,5 +1,5 @@
 import { Board, History, Track, TrackId, Vec3, Field, Verdict } from "../Domain/types";
-import { sampleContactPose } from "../Domain/ContactPose";
+import { HandArticulation, sampleContactPose } from "../Domain/ContactPose";
 import { answer } from "../Domain/observe";
 import { ActorPose, WorldView } from "../Scripts/TableKit/TableKit";
 const tuple = (p: Vec3): [number, number, number] => [
@@ -11,6 +11,7 @@ export interface ActionPose {
   track: TrackId;
   handCm: readonly [number, number, number];
   grip: number;
+  articulation: HandArticulation;
 }
 export interface ReconstructionView extends WorldView {
   hands: ActionPose[];
@@ -44,7 +45,7 @@ export function renderHistory(
   h: History,
   tick: number,
 ): ReconstructionView {
-  const { tick: t, positions, hands, ruby, taken, stashed, carrier, cache } = sampleContactPose(board, h, tick);
+  const { tick: t, positions, hands, articulation, ruby, taken, stashed, carrier, cache } = sampleContactPose(board, h, tick);
   const actors: ActorPose[] = board.tracks.map((track) => {
     const p = positions.get(track.id)!;
     const gait = gaitAt(track, t);
@@ -70,6 +71,7 @@ export function renderHistory(
       track: track.id,
       handCm: tuple(hands.get(track.id)!),
       grip: taken && !stashed && track.id === carrier ? 1 : 0,
+      articulation: articulation.get(track.id)!,
     })),
     cache,
     nestEmpty: taken,

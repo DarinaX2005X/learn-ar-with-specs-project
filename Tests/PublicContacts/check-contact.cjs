@@ -1,14 +1,17 @@
-const fs=require('fs'),path=require('path'),assert=require('node:assert/strict');const {D,root,load}=require('./load.cjs')();
+const path=require('path'),assert=require('node:assert/strict');const {D,root,load}=require('./load.cjs')();
 const compile=d=>{const r=D.compileCase(d);assert(r.ok,JSON.stringify(r.errors));return r;};
 const result=compile(D.createPackingCase({rearCamera:true})),{board,clues:tape}=result.sealed,h=result.vault.actualHistory;
 const sample=D.sampleContactPose(board,h,15),contact=sample.contacts.find(e=>e.kind==='Pass').position,w=board.witnesses.find(w=>w.id==='passage');
-assert.deepEqual(contact,{x:4.1,y:.75,z:3.635});
+const giver=sample.positions.get(h.pass.from),receiver=sample.positions.get(h.pass.to);
+assert.equal(contact.x,(giver.x+receiver.x)/2);assert.equal(contact.z,(giver.z+receiver.z)/2);
+assert.equal(contact.y,Math.min(giver.y,receiver.y)-.25);
 const original=D.frameAt(tape,'passage',15),pass=original.payload.actions.find(a=>a.kind==='Pass');assert(pass);assert.deepEqual(pass.contacts,[contact]);
 const passView=D.getObservations(tape,'passage',15).find(v=>v.observation.kind==='action'&&v.payload.actions[0].kind==='Pass'),legacyPass=JSON.parse(JSON.stringify(passView));
 for(const action of legacyPass.payload.actions){delete action.contacts;delete action.via;delete action.projection;delete action.surfaceRight;}
 assert(D.matchesObservation(legacyPass,original),'legacy positive action may match a newly verified visible contact');
 assert.equal(original.payload.palms.filter(p=>D.distance(p.position,contact)<.06).length,0,'coincident donor/receiver palms do not invent ownership/full-vs-empty');
-const draft=D.createPackingCase({rearCamera:true});draft.room.walls.push({id:'wrist-screen',a:{x:5.35,y:0,z:3.4},b:{x:5.35,y:0,z:3.9},bottom:.8,top:.9});
+const draft=D.createPackingCase({rearCamera:true});const screenX=(w.position.x+contact.x)/2,screenZ=(w.position.z+contact.z)/2;
+draft.room.walls.push({id:'wrist-screen',a:{x:screenX,y:0,z:screenZ-.25},b:{x:screenX,y:0,z:screenZ+.25},bottom:.8,top:.9});
 const blocked=compile(draft),blockedFrame=D.frameAt(blocked.sealed.clues,'passage',15);
 assert(blockedFrame.payload.fragments.some(f=>f.role==='Courier'),'marker remains visible');
 assert(!D.sight(blocked.sealed.board,w,contact,'direct'),'actual shared wrist/contact is occluded');
@@ -36,15 +39,33 @@ const mixedTape=JSON.parse(JSON.stringify(tape));delete mixedTape.clues.find(c=>
 const legacyVerdict=D.prove(board,mixedTape,mixedTape.clues.map(c=>c.id),'Conservator',{minimizeReasons:false});
 assert.equal(legacyVerdict.status,'incomplete');assert(legacyVerdict.message.includes('mixes incompatible'));assert.equal(legacyVerdict.historyCount,0,'mixed recorder rejected before inference, never false conflict');
 for(const malformed of [null,{fragments:[],hands:[],actions:[],palms:null}]){const bad=JSON.parse(JSON.stringify(tape));bad.clues.find(c=>c.kind==='Frame').payload=malformed;assert.equal(D.prove(board,bad,[],'Underdetermined',{minimizeReasons:false}).status,'incomplete');}
-// Preserve the approved fractional choreography exactly, using its original
-// staged implementation as independent comparison before MAIN switches Spatial.
-const bin=process.env.PATH.split(path.delimiter).find(p=>fs.existsSync(path.resolve(p,'../typescript/lib/typescript.js')));const ts=require(path.resolve(bin,'../typescript/lib/typescript.js'));
-const moduleOriginal={exports:{}},source=ts.transpileModule(fs.readFileSync(path.resolve(__dirname,'legacy-sampler.ts'),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2021}}).outputText;
-new Function('module','exports','require',source)(moduleOriginal,moduleOriginal.exports,name=>load(path.resolve(root,'Spatial',name)));
-for(const t of [0,5,5.25,5.5,5.75,6,6.25,11.1,11.5,11.9,12,12.2,14.5,15,15.5,21.5,22,22.5,24]){
- const expected=moduleOriginal.exports.renderHistory(board,h,t),actual=D.sampleContactPose(board,h,t);
+// The witness camera and both 3D reconstructions must sample the same
+// carried object and grip over fractional time, including backward seeks.
+const spatial=load(path.join(root,'Spatial/Reconstruction.ts'));
+for(let i=0;i<=240;i++){
+ const t=i/10,expected=spatial.renderHistory(board,h,t),actual=D.sampleContactPose(board,h,t);
  assert.deepEqual(expected.ruby.positionCm,[actual.ruby.x*100,actual.ruby.y*100,actual.ruby.z*100]);
- for(const hand of expected.hands){const p=actual.hands.get(hand.track);assert.deepEqual(hand.handCm,[p.x*100,p.y*100,p.z*100]);}
+ for(const hand of expected.hands){
+  const p=actual.hands.get(hand.track);
+  assert.deepEqual(hand.handCm,[p.x*100,p.y*100,p.z*100]);
+  assert.deepEqual(hand.articulation,actual.articulation.get(hand.track));
+ }
 }
 assert.throws(()=>D.sampleContactPose(board,h,NaN));
 console.log('PASS real contact/palm visibility, hidden wrist gap, no coincident-ownership guess, explicit empty/full, stable IDs, no private participants, legacy slice and fractional Spatial parity');
+
+for(const rearCamera of [false,true])for(const canvas of [false,true])for(const recipient of ['B','C']){
+ const caseResult=compile(D.createPackingCase({rearCamera,canvas,recipient})),b=caseResult.sealed.board,t=caseResult.sealed.clues,actual=caseResult.vault.actualHistory;
+ const at=D.sampleContactPose(b,actual,actual.pass.tick),event=at.contacts.find(c=>c.kind==='Pass'),a=at.positions.get(actual.pass.from),z=at.positions.get(actual.pass.to);
+ assert(D.distance(a,z)>=.64,'authored bodies remain physically separated at transfer');
+ assert(D.distance(at.hands.get(actual.pass.from),at.hands.get(actual.pass.to))<1e-10,'both hands share actual transfer target');
+ assert.equal(event.position.x,(a.x+z.x)/2);assert.equal(event.position.z,(a.z+z.z)/2);
+ const entry=D.frameAt(t,'entrance',actual.pass.tick);assert(!entry.payload.actions.some(a=>a.kind==='Pass'),'partition genuinely hides ordinary transfer');
+ if(rearCamera){const f=D.frameAt(t,'passage',actual.pass.tick);const action=f.payload.actions.find(a=>a.kind==='Pass');assert(action,'rear witness sees literal contact');assert.deepEqual(action.contacts,[event.position]);}
+ for(const frame of t.clues.filter(c=>c.kind==='Frame'))for(const action of frame.payload.actions){
+  const witness=b.witnesses.find(w=>w.id===frame.witness);
+  for(const point of action.contacts??[])assert(D.sight(b,witness,point,action.via),'no through-wall public contact');
+ }
+ for(let i=0;i<=240;i++){const tick=i/10,pose=D.sampleContactPose(b,actual,tick),render=spatial.renderHistory(b,actual,tick);assert.deepEqual(render.ruby.positionCm,[pose.ruby.x*100,pose.ruby.y*100,pose.ruby.z*100]);}
+}
+console.log('PASS all8 authored Packing variants: separated handover, exact physical shared target, ordinary hidden/rear visible, no through-wall contact, fractional Spatial agreement');

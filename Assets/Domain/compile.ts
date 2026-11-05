@@ -11,6 +11,7 @@ import {
 } from "./types";
 import { clear, distance, dot, EPSILON, poseAt } from "./geometry";
 import { observe } from "./observe";
+import { sampleTrackMotion } from "./TrackMotion";
 export function clone<T>(v: T): T {
   return JSON.parse(JSON.stringify(v));
 }
@@ -167,6 +168,7 @@ export function compileCase(input: CaseDraft): CompileResult {
       if (
         !tick(k.tick) ||
         !finite(k.yaw) ||
+        (k.backward !== undefined && typeof k.backward !== "boolean") ||
         !inside({ x: k.x, y: k.y ?? 1, z: k.z }) ||
         (i > 0 && k.tick <= t.keys[i - 1].tick)
       )
@@ -276,6 +278,46 @@ export function compileCase(input: CaseDraft): CompileResult {
     poseAt(d.tracks.find((p) => p.id === id)!, t);
   const reach = (a: Vec3, b: Vec3, radius: number) =>
     distance(a, b) <= radius + EPSILON && clear(a, b, r.walls);
+  const passReach = (from: TrackId, to: TrackId, tick: number): boolean => {
+    const a = at(from, tick),
+      b = at(to, tick);
+    // Preserve the v1 close-meeting grammar for already authored cases.
+    if (reach(a, b, 0.3)) return true;
+    if (distance(a, b) > 0.72 + EPSILON || !clear(a, b, r.walls)) return false;
+    const target = {
+      x: (a.x + b.x) / 2,
+      y: Math.min(a.y, b.y) - 0.25,
+      z: (a.z + b.z) / 2,
+    };
+    for (const id of [from, to]) {
+      const p = sampleTrackMotion(d.tracks.find((t) => t.id === id)!, tick);
+      const forward =
+        (target.x - p.x) * Math.sin(p.yaw) + (target.z - p.z) * Math.cos(p.yaw);
+      if (forward < -0.05 - EPSILON) return false;
+      // Native right shoulder after model-forward correction (+PI), in metres.
+      const shoulder = {
+        x: p.x - (1.225 / 6) * Math.cos(p.yaw),
+        y: p.y - 1 + 6.965 / 6,
+        z: p.z + (1.225 / 6) * Math.sin(p.yaw),
+      };
+      const dx = p.x - target.x,
+        dz = p.z - target.z;
+      const length = Math.hypot(dx, dz) || 1;
+      const wrist = {
+        x: target.x + (0.05 * dx) / length,
+        y: target.y + 0.024,
+        z: target.z + (0.05 * dz) / length,
+      };
+      // Actual upper/lower arm plus bounded 12cm upper-body reach lean.
+      const maxReach = (Math.hypot(0.231, 1.61) + 1.344 + 0.72) / 6;
+      if (
+        distance(shoulder, wrist) > maxReach + EPSILON ||
+        !clear(shoulder, wrist, r.walls)
+      )
+        return false;
+    }
+    return true;
+  };
   const windows: Board["windows"] = {
     take: [],
     brush: { A: [], B: [], C: [] },
@@ -291,7 +333,7 @@ export function compileCase(input: CaseDraft): CompileResult {
       }
       if (d.chain && n > d.alarmTick) {
         for (const other of d.tracks)
-          if (other.id !== t.id && reach(p, at(other.id, n), 0.3))
+          if (other.id !== t.id && passReach(t.id, other.id, n))
             windows.pass.push({ from: t.id, to: other.id, tick: n });
         for (const box of r.boxes ?? [])
           if (reach(p, box.position, 0.32))

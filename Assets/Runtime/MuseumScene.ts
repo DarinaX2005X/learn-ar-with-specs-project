@@ -8,8 +8,9 @@ import {
 } from "../Domain/types";
 import { PlayTableSnapshot } from "./PlayTable";
 import { RecordedGlass } from "./RecordedGlass";
-import { renderHistory, gaitAt } from "../Spatial/Reconstruction";
-import { LensArmAdapter } from "../Spatial/ArmIK";
+import { renderHistory } from "../Spatial/Reconstruction";
+import { ActorRig } from "./MuseumScene/ActorRig";
+import { LensArmAdapter, MountedArm } from "../Spatial/ArmIK";
 import { curtainVisual } from "../Scripts/TableKit/TableKit";
 import { poseAt } from "../Domain/geometry";
 import { ComparisonHall } from "./ComparisonHall";
@@ -27,6 +28,19 @@ import { PublicCradleTransport } from "./MuseumScene/PublicCradle";
 
 /** Native museum binding. Persistent architecture is never recreated on a role change. */
 export class MuseumScene {
+  private rigs = new Map<SceneObject, ActorRig>();
+  private digitBindings = new Map<Role, number>();
+  private anonymousTemplateDigits = 0;
+  private roleTracks = new Map<Role, Board["tracks"][number]>();
+  private rig(actor: SceneObject, anonymous = false): ActorRig {
+    let rig = this.rigs.get(actor);
+    if (!rig) {
+      rig = new ActorRig(actor, anonymous);
+      this.rigs.set(actor, rig);
+    }
+    return rig;
+  }
+  private lastPoseTick: number | undefined;
   private theatre: SceneObject;
   private actors = new Map<Role, SceneObject>();
   private arms = new Map<Role, LensArmAdapter<vec3, quat>>();
@@ -72,17 +86,27 @@ export class MuseumScene {
   private ruby: SceneObject | undefined;
   private anonymousTemplate: SceneObject | undefined;
   private comparisonRoot: SceneObject | undefined;
-  private jointCache = new WeakMap<SceneObject, Map<string, Transform | undefined>>();
+  private jointCache = new WeakMap<
+    SceneObject,
+    Map<string, Transform | undefined>
+  >();
   private transformCache = new WeakMap<SceneObject, Transform>();
   private tx(object: SceneObject): Transform {
     let transform = this.transformCache.get(object);
-    if (!transform) { transform = object.getTransform(); this.transformCache.set(object, transform); }
+    if (!transform) {
+      transform = object.getTransform();
+      this.transformCache.set(object, transform);
+    }
     return transform;
   }
   private joint(actor: SceneObject, name: string): Transform | undefined {
     let joints = this.jointCache.get(actor);
-    if (!joints) { joints = new Map(); this.jointCache.set(actor, joints); }
-    if (!joints.has(name)) joints.set(name, this.find(name, actor)?.getTransform());
+    if (!joints) {
+      joints = new Map();
+      this.jointCache.set(actor, joints);
+    }
+    if (!joints.has(name))
+      joints.set(name, this.find(name, actor)?.getTransform());
     return joints.get(name);
   }
   private cameraCopies = new Map<string, SceneObject>();
@@ -100,6 +124,19 @@ export class MuseumScene {
     this.theatre = theatre;
     this.ruby = this.find("Ruby", theatre);
     this.anonymousTemplate = this.findGlobal("MuseumAnonymousTemplate");
+    if (this.anonymousTemplate)
+      for (const name of [
+        "Thumb_R",
+        "ThumbMiddle_R",
+        "ThumbDistal_R",
+        ...[0, 1, 2, 3].flatMap((i) => [
+          "Finger_R" + i,
+          "FingerMiddle_R" + i,
+          "FingerDistal_R" + i,
+        ]),
+      ])
+        if (this.find(name, this.anonymousTemplate))
+          this.anonymousTemplateDigits++;
     const transform = theatre.getTransform();
     this.museumTransform = {
       position: transform.getLocalPosition(),
@@ -135,7 +172,7 @@ export class MuseumScene {
         this.audio.set(name, audio);
       }
     }
-    const anchor = this.findGlobal("Anchor_PinGlass");
+    const anchor = this.fixedProp("Anchor_PinGlass");
     if (anchor) {
       this.glassRoot
         .getTransform()
@@ -154,7 +191,9 @@ export class MuseumScene {
         (
           anchor?.getTransform().getWorldRotation() ??
           root.getTransform().getWorldRotation()
-        ).multiply(quat.fromEulerAngles(-Math.PI / 2, 0, 0)).multiply(quat.fromEulerAngles(0, 0, Math.PI)),
+        )
+          .multiply(quat.fromEulerAngles(-Math.PI / 2, 0, 0))
+          .multiply(quat.fromEulerAngles(0, 0, Math.PI)),
       );
     this.mountEntryGlass();
     this.lid = this.findGlobal("CaseLidPivot");
@@ -318,7 +357,7 @@ export class MuseumScene {
   }
   private mountEntryGlass(): void {
     if (this.entryGlass) return;
-    const anchor = this.findGlobal("Anchor_EntryRecording");
+    const anchor = this.fixedProp("Anchor_EntryRecording");
     if (!anchor) return;
     const pane = global.scene.createSceneObject("EntryRecordedGlass");
     pane.setParent(this.root);
@@ -352,10 +391,34 @@ export class MuseumScene {
       }
       for (const child of children) child.setParent(upper);
     }
+    const digits: NonNullable<MountedArm<vec3, quat>["digits"]> = {};
+    for (const [digit, suffix] of [
+      ["Index", "0"],
+      ["Middle", "1"],
+      ["Ring", "2"],
+      ["Little", "3"],
+      ["Thumb", ""],
+    ] as const) {
+      const proximal = this.find(
+        digit === "Thumb" ? "Thumb_R" : "Finger_R" + suffix,
+        actor,
+      );
+      const middle = this.find(
+        digit === "Thumb" ? "ThumbMiddle_R" : "FingerMiddle_R" + suffix,
+        actor,
+      );
+      const distal = this.find(
+        digit === "Thumb" ? "ThumbDistal_R" : "FingerDistal_R" + suffix,
+        actor,
+      );
+      if (proximal && middle && distal)
+        digits[digit] = { proximal, middle, distal };
+    }
+    this.digitBindings.set(role, Object.keys(digits).length * 3);
     this.arms.set(
       role,
       new LensArmAdapter(
-        { upperBody: upper, shoulder, elbow, wrist },
+        { upperBody: upper, shoulder, elbow, wrist, digits },
         {
           vector: (x, y, z) => new vec3(x, y, z),
           quaternion: (x, y, z, w) => new quat(w, x, y, z),
@@ -416,9 +479,31 @@ export class MuseumScene {
         new vec3(p[0] * 0.06 - 21, p[1] * 0.06, p[2] * 0.06 - 15),
       );
   }
+  // Only authored objects with the lifetime of the museum belong here. Runtime
+  // walls, witness copies, comparison parts and role objects have shorter lives.
+  private readonly fixedProps = new Map<
+    SceneObject | undefined,
+    Map<string, SceneObject>
+  >();
+  private fixedProp(
+    name: string,
+    parent?: SceneObject,
+  ): SceneObject | undefined {
+    let props = this.fixedProps.get(parent);
+    if (!props) {
+      props = new Map();
+      this.fixedProps.set(parent, props);
+    }
+    const cached = props.get(name);
+    if (cached) return cached;
+    const found = parent ? this.find(name, parent) : this.findGlobal(name);
+    // The importer can attach a template after the museum is mounted.
+    if (found) props.set(name, found);
+    return found;
+  }
   private renderWalls(board: Board) {
-    const longTemplate = this.findGlobal("MuseumPartitionTemplate");
-    const shortTemplate = this.findGlobal("MuseumPartitionShortTemplate");
+    const longTemplate = this.fixedProp("MuseumPartitionTemplate");
+    const shortTemplate = this.fixedProp("MuseumPartitionShortTemplate");
     const key =
       JSON.stringify(board.room.walls) +
       ":" +
@@ -517,6 +602,7 @@ export class MuseumScene {
     board: Board | undefined,
     tick: number,
     enabled: boolean,
+    prepare = false,
   ): void {
     const template = enabled ? this.anonymousTemplate : undefined;
     const active = new Set<string>();
@@ -529,20 +615,17 @@ export class MuseumScene {
           actor.name = "PublicRoute_" + track.id;
           actor.getTransform().setLocalScale(new vec3(100, 100, 100));
           this.anonymous.set(track.id, actor);
+          this.rig(actor, true).prepare(track);
         }
         const pose = poseAt(track, tick);
         this.point(actor, [pose.x * 100, (pose.y - 1) * 100, pose.z * 100]);
-        this.tx(actor)
-          .setLocalRotation(quat.fromEulerAngles(0, pose.yaw + Math.PI, 0));
+        this.tx(actor).setLocalRotation(
+          quat.fromEulerAngles(0, pose.yaw + Math.PI, 0),
+        );
         actor.enabled = true;
-        const gait = gaitAt(track, tick);
-        for (const side of ["L", "R"]) {
-          const hip = this.joint(actor, "Hip_" + side);
-          hip
-            ?.setLocalRotation(
-              quat.fromEulerAngles(side === "L" ? gait : -gait, 0, 0),
-            );
-        }
+        const rig = this.rig(actor, true);
+        if (prepare) rig.prepare(track);
+        rig.sample(tick);
       }
     for (const [track, actor] of this.anonymous)
       if (!active.has(track)) actor.enabled = false;
@@ -554,24 +637,36 @@ export class MuseumScene {
       const actor = this.actors.get(pose.role);
       if (!actor) continue;
       this.point(actor, pose.positionCm);
-      this.tx(actor)
-        .setLocalRotation(quat.fromEulerAngles(0, pose.yawRad + Math.PI, 0));
-      for (const name of Object.keys(pose.joints || {})) {
-        const joint = this.joint(actor, name),
-          angles = pose.joints![name as keyof typeof pose.joints];
-        if (joint && angles)
-          joint
-            .setLocalRotation(
-              quat.fromEulerAngles(angles[0], angles[1], angles[2]),
-            );
-      }
+      this.tx(actor).setLocalRotation(
+        quat.fromEulerAngles(0, pose.yawRad + Math.PI, 0),
+      );
+      const track = this.roleTracks.get(pose.role);
+      const rig = this.rig(actor);
+      const gait = track ? rig.sample(tick) : undefined;
       const hand = view.hands.find(
         (h) => history!.casting[h.track] === pose.role,
       );
       if (hand)
-        this.arms
-          .get(pose.role)
-          ?.apply({ ...pose, yawRad: pose.yawRad + Math.PI }, hand.handCm);
+        this.arms.get(pose.role)?.apply(
+          {
+            ...pose,
+            positionCm: gait
+              ? rig.armBasis(pose.positionCm, gait)
+              : pose.positionCm,
+            yawRad: (gait?.bodyYaw ?? pose.yawRad) + Math.PI,
+          },
+          hand.handCm,
+          (
+            hand as typeof hand & {
+              articulation?: {
+                reach: number;
+                curl: number;
+                carry: number;
+                touch?: number;
+              };
+            }
+          ).articulation,
+        );
     }
     if (ruby) {
       this.point(ruby, view.ruby.positionCm);
@@ -579,7 +674,7 @@ export class MuseumScene {
     }
   }
   private renderCameras(board: Board): void {
-    const original = this.find("Camera", this.theatre);
+    const original = this.fixedProp("Camera", this.theatre);
     if (original) original.enabled = board.witnesses.length > 0;
     const active = new Set<string>();
     board.witnesses.forEach((witness, index) => {
@@ -644,24 +739,21 @@ export class MuseumScene {
           yawRad: p.yaw + Math.PI,
         };
       this.point(actor, pose.positionCm);
-      this.tx(actor)
-        .setLocalRotation(quat.fromEulerAngles(0, pose.yawRad, 0));
-      const gait = gaitAt(track, tick);
-      for (const [name, angle] of [
-        ["Hip_L", gait],
-        ["Hip_R", -gait],
-        ["Knee_L", Math.max(0, -gait)],
-        ["Knee_R", Math.max(0, gait)],
-      ] as const)
-        this.joint(actor, name)
-          ?.setLocalRotation(quat.fromEulerAngles(angle, 0, 0));
-      this.arms
-        .get(role)
-        ?.apply(pose, [
-          (p.x + 0.12 * Math.cos(p.yaw)) * 100,
+      this.tx(actor).setLocalRotation(quat.fromEulerAngles(0, pose.yawRad, 0));
+      const rig = this.rig(actor),
+        gait = rig.sample(tick);
+      this.arms.get(role)?.apply(
+        {
+          ...pose,
+          positionCm: rig.armBasis(pose.positionCm, gait),
+          yawRad: gait.bodyYaw + Math.PI,
+        },
+        [
+          (p.x + 0.12 * Math.cos(gait.bodyYaw)) * 100,
           (p.y - 0.3) * 100,
-          (p.z - 0.12 * Math.sin(p.yaw)) * 100,
-        ]);
+          (p.z - 0.12 * Math.sin(gait.bodyYaw)) * 100,
+        ],
+      );
     }
     const ruby = this.ruby,
       exhibit = board.room.exhibit.position;
@@ -685,12 +777,12 @@ export class MuseumScene {
     if (this.disposed) return;
     if (!Number.isFinite(tick) || !this.poseCache || this.lidClosed) return;
     const sampled = Math.max(0, Math.min(24, tick));
+    if (this.lastPoseTick === sampled) return;
+    this.lastPoseTick = sampled;
     for (const hand of this.clockHands)
-      hand
-        .getTransform()
-        .setLocalRotation(
-          quat.fromEulerAngles(0, 0, (-sampled * Math.PI) / 12),
-        );
+      this.tx(hand).setLocalRotation(
+        quat.fromEulerAngles(0, 0, (-sampled * Math.PI) / 12),
+      );
     if (this.comparisonActive) {
       this.hall.presentPose(sampled);
       this.applyCoverState();
@@ -715,7 +807,8 @@ export class MuseumScene {
     reveal?: VaultEntry,
   ): void {
     if (this.disposed) return;
-    const bench = this.findGlobal("Anchor_ConservationBench");
+    this.lastPoseTick = undefined;
+    const bench = this.fixedProp("Anchor_ConservationBench");
     const benchPoint =
       bench?.getTransform().getWorldPosition() ??
       this.root
@@ -738,7 +831,7 @@ export class MuseumScene {
     );
     this.mountEntryGlass();
     if (this.glassRoot.getParent() === this.root) {
-      const anchor = this.findGlobal("Anchor_PinGlass");
+      const anchor = this.fixedProp("Anchor_PinGlass");
       if (anchor) {
         this.glassRoot
           .getTransform()
@@ -747,7 +840,8 @@ export class MuseumScene {
           anchor
             .getTransform()
             .getWorldRotation()
-            .multiply(quat.fromEulerAngles(-Math.PI / 2, 0, 0)).multiply(quat.fromEulerAngles(0, 0, Math.PI)),
+            .multiply(quat.fromEulerAngles(-Math.PI / 2, 0, 0))
+            .multiply(quat.fromEulerAngles(0, 0, Math.PI)),
         );
       }
     }
@@ -759,15 +853,13 @@ export class MuseumScene {
         snapshot.author?.tick ??
         0;
     for (const hand of this.clockHands)
-      hand
-        .getTransform()
-        .setLocalRotation(
-          quat.fromEulerAngles(
-            0,
-            0,
-            (-Math.max(0, Math.min(24, tick)) * Math.PI) / 12,
-          ),
-        );
+      this.tx(hand).setLocalRotation(
+        quat.fromEulerAngles(
+          0,
+          0,
+          (-Math.max(0, Math.min(24, tick)) * Math.PI) / 12,
+        ),
+      );
     if (snapshot.flow.mode === "author" && snapshot.author) {
       board = this.draftBoard(snapshot.author.draft);
       history = board.tracks.length
@@ -789,8 +881,18 @@ export class MuseumScene {
       !this.lidClosed &&
       (snapshot.flow.mode === "ready" || snapshot.flow.mode === "detective") &&
       snapshot.detective?.mode !== "reconstruction";
-    this.renderPublicRoutes(board, tick, publicRoutes);
+    this.renderPublicRoutes(board, tick, publicRoutes, true);
     const casting = history?.casting ?? authorCasting;
+    this.roleTracks.clear();
+    if (board && casting)
+      for (const track of board.tracks) {
+        const role = casting[track.id],
+          actor = this.actors.get(role);
+        if (actor) {
+          this.roleTracks.set(role, track);
+          this.rig(actor).prepare(track);
+        }
+      }
     for (const [role, actor] of this.actors)
       actor.enabled =
         visible &&
@@ -817,7 +919,7 @@ export class MuseumScene {
       }
       this.aperture = aperture;
       const exhibit = board.room.exhibit.position;
-      const display = this.find("DisplayCase", this.theatre);
+      const display = this.fixedProp("DisplayCase", this.theatre);
       if (display) {
         display.enabled = this.hasExhibit(board);
         if (display.enabled)
@@ -826,13 +928,13 @@ export class MuseumScene {
       this.renderCameras(board);
       const mirror = board.room.mirror;
       for (const name of ["MirrorHousing", "Curtain", "CurtainHandle"]) {
-        const object = this.find(name, this.theatre);
+        const object = this.fixedProp(name, this.theatre);
         if (object) object.enabled = !!mirror;
       }
       if (mirror) {
         const yaw = Math.atan2(-mirror.normal.x, -mirror.normal.z);
         for (const name of ["MirrorHousing", "Curtain"]) {
-          const object = this.find(name, this.theatre);
+          const object = this.fixedProp(name, this.theatre);
           if (!object) continue;
           this.point(object, [
             mirror.origin.x * 100,
@@ -849,12 +951,15 @@ export class MuseumScene {
             );
           object.enabled = true;
         }
-        const curtain = this.find("Curtain", this.theatre),
+        const curtain = this.fixedProp("Curtain", this.theatre),
           visual = curtainVisual(mirror.aperture);
         if (curtain)
           for (let i = 0; i < 12; i++)
             for (const prefix of ["Fold_", "Ring_"]) {
-              const node = this.find(prefix + ("0" + i).slice(-2), curtain);
+              const node = this.fixedProp(
+                prefix + ("0" + i).slice(-2),
+                curtain,
+              );
               if (!node) continue;
               const transform = node.getTransform(),
                 p = transform.getLocalPosition();
@@ -864,13 +969,13 @@ export class MuseumScene {
               if (prefix === "Fold_")
                 transform.setLocalScale(new vec3(visual.foldScaleX, 1, 1));
             }
-        const handle = curtain && this.find("Handle", curtain);
+        const handle = curtain && this.fixedProp("Handle", curtain);
         if (handle) {
           const p = handle.getTransform().getLocalPosition();
           handle
             .getTransform()
             .setLocalPosition(new vec3(visual.handleXCm * 0.01, p.y, p.z));
-          const target = this.find("CurtainHandle", this.theatre);
+          const target = this.fixedProp("CurtainHandle", this.theatre);
           if (target)
             target
               .getTransform()
@@ -936,7 +1041,9 @@ export class MuseumScene {
       this.renderPublicRoutes(board, tick, false);
     }
     this.applyLidPose();
-    this.comparisonRoot = this.comparisonActive ? this.find("ComparisonWorkbench", this.root) : undefined;
+    this.comparisonRoot = this.comparisonActive
+      ? this.find("ComparisonWorkbench", this.root)
+      : undefined;
     this.applyCoverState();
   }
   applyCaseView(presentation: CaseViewPresentation | undefined): void {
@@ -991,7 +1098,6 @@ export class MuseumScene {
       !this.covered &&
       !(this.comparisonActive && this.casePresentation?.comparison);
     if (this.comparisonRoot) this.comparisonRoot.enabled = !this.covered;
-
   }
   readCaseViewViewer(): CaseViewViewer {
     if (!this.viewer) {
@@ -1028,6 +1134,10 @@ export class MuseumScene {
       paper: this.paper.read(),
       publicCradle: this.cradle.read(),
       authorRecording: this.authorGlass.read(),
+      articulationBindings: {
+        named: Object.fromEntries(this.digitBindings),
+        anonymousTemplate: this.anonymousTemplateDigits,
+      },
       recordingPanes: {
         entry: this.entryGlass?.surfaces ?? [],
         workshop: this.glass.surfaces,
@@ -1037,6 +1147,9 @@ export class MuseumScene {
     };
   }
   clear(): void {
+    for (const rig of this.rigs.values()) rig.clearRoute();
+    this.roleTracks.clear();
+    this.lastPoseTick = undefined;
     if (this.disposed) return;
     this.comparisonRoot = undefined;
     this.hall.exit();
@@ -1091,6 +1204,8 @@ export class MuseumScene {
     this.clockHands = [];
     for (const wall of this.walls) wall.destroy();
     this.walls = [];
+    for (const rig of this.rigs.values()) rig.dispose();
+    this.rigs.clear();
     for (const actor of this.anonymous.values()) actor.destroy();
     this.anonymous.clear();
     if (this.lid?.name === "MuseumCaseLid") this.lid.destroy();

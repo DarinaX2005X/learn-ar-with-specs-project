@@ -382,6 +382,34 @@ def profile(m, name, xy, depth, mat, parent=None, z=0):
     return m.mesh(name, v, f, mat, parent)
 
 
+
+def articulated_hand(m, side, sign, fore, material):
+    """Physical common role/neutral hand; original arm lengths and wrist pivot."""
+    hand=m.node("Hand_"+side,fore,(0,-1.92,0))
+    ellip(m,"WristJoint_"+side,(0,.08,-.01),(.23,.16,.18),material,hand,n=12,lat=6)
+    ring_solid(m,"Palm_"+side,[(-.68,.24,.12,0,-.02),(-.50,.32,.15,0,-.02),(-.17,.34,.15,0,-.02),(.06,.25,.12,0,-.02)],material,hand,n=12)
+    # Values are the exact imported-table-cm contract, converted back to model units.
+    digits=[("0",(-.1575,-.441,-.014),(.20,.15,.11),.043),
+            ("1",(-.0525,-.441,-.014),(.215,.16,.115),.044),
+            ("2",(.0525,-.441,-.014),(.20,.15,.105),.042),
+            ("3",(.1575,-.42,-.014),(.18,.135,.10),.039),
+            ("Thumb",(.22,-.15,-.014),(.23,.175,.12),.055)]
+    for digit,base,lengths,radius in digits:
+        thumb=digit=="Thumb"
+        names=["Thumb_"+side,"ThumbMiddle_"+side,"ThumbDistal_"+side] if thumb else ["Finger_"+side+digit,"FingerMiddle_"+side+digit,"FingerDistal_"+side+digit]
+        pos=(base[0]*sign/.7,base[1]/.7,base[2]/.7)
+        parent=hand
+        for i,(name,length) in enumerate(zip(names,lengths)):
+            joint=m.node(name,parent,pos if i==0 else (0,-lengths[i-1]/.7,0))
+            angle=[.12,.20,.13][i]
+            m.nodes[joint]["rotation"]=[math.sin(angle/2),0,0,math.cos(angle/2)]
+            r=radius/.7
+            tube(m,name+"Bone",[(0,0,0),(0,-length/.7,0)],r,material,joint,n=8)
+            ellip(m,name+"Knuckle",(0,0,0),(r,r,r),material,joint,n=8,lat=6)
+            if i==2:ellip(m,name+"Pad",(0,-length/.7,0),(r,r,r),material,joint,n=8,lat=6)
+            parent=joint
+    return hand
+
 def make_figure(role):
     m = Model(role, 0.007)
     root = m.root
@@ -757,46 +785,7 @@ def make_figure(role):
             fore,
             n=12,
         )
-        hand = m.node("Hand_" + side, fore, (0, -1.92, 0))
-        glove = "cream" if role == "Conservator" else "skin"
-        ellip(
-            m,
-            "Palm_" + side,
-            (0, -0.31, -0.02),
-            (0.43, 0.53, 0.24),
-            glove,
-            hand,
-            n=12,
-            lat=6,
-        )
-        for j in range(4):
-            x = -0.29 + j * 0.19
-            tube(
-                m,
-                "Finger_" + side + str(j),
-                [
-                    (x, -0.48, -0.02),
-                    (x, -0.8, -0.1),
-                    (x, -0.95, -0.25),
-                    (x, -0.87, -0.4),
-                ],
-                0.085,
-                glove,
-                hand,
-                n=6,
-            )
-        tube(
-            m,
-            "Thumb_" + side,
-            [
-                (s * 0.3, -0.23, -0.02),
-                (s * 0.57, -0.37, -0.15),
-                (s * 0.55, -0.63, -0.32),
-            ],
-            0.12,
-            glove,
-            hand,
-        )
+        articulated_hand(m,side,s,fore,"cream" if role=="Conservator" else "skin")
     return m
 
 
@@ -822,8 +811,44 @@ def annular_surface(model, name, inner, outer, bottom, top, material, n=32):
     return model.mesh(name, vertices, faces, material)
 
 
+
+def smooth_mesh_normals(model, node_index):
+    """Area-weighted shell normals; retain real glass boundaries and all triangles."""
+    primitive = model.meshes[model.nodes[node_index]['mesh']]['primitives'][0]
+    normal_accessor = model.access[primitive['attributes']['NORMAL']]
+    normal_view = model.views[normal_accessor['bufferView']]
+    position_accessor = model.access[primitive['attributes']['POSITION']]
+    position_view = model.views[position_accessor['bufferView']]
+    count = position_accessor['count']
+    positions = np.frombuffer(model.bin, dtype='<f4', count=count * 3,
+                              offset=position_view['byteOffset']).reshape(-1, 3).copy()
+    normals = np.frombuffer(model.bin, dtype='<f4', count=count * 3,
+                            offset=normal_view['byteOffset']).reshape(-1, 3).copy()
+    face_areas = np.linalg.norm(np.cross(positions[1::3]-positions[::3],
+                                         positions[2::3]-positions[::3]), axis=1)
+    areas = np.repeat(face_areas, 3)
+    groups = {}
+    for index, position in enumerate(positions):
+        groups.setdefault(tuple(np.round(position, 7)), []).append(index)
+    result = normals.copy()
+    for indices in groups.values():
+        for index in indices:
+            neighbours = [other for other in indices if np.dot(normals[index], normals[other]) > .5]
+            average = np.sum(normals[neighbours] * areas[neighbours, None], axis=0)
+            length = np.linalg.norm(average)
+            if length > 1e-12:
+                result[index] = average / length
+    data = result.astype('<f4').tobytes()
+    start = normal_view['byteOffset']
+    model.bin[start:start + len(data)] = data
+
+
 def make_display_case():
     m = Model('DisplayCase')
+    glass_material = next(material for material in m.materials if material['name'] == 'glass')
+    glass_material['pbrMetallicRoughness']['baseColorFactor'][3] = .045
+    glass_material['pbrMetallicRoughness']['roughnessFactor'] = .10
+    glass_material['doubleSided'] = False
     for (name, colour) in [('socketVelvet', '#343032'), ('socketShadow', '#171E1C')]:
         m.materials.append({'name': name, 'pbrMetallicRoughness': {'baseColorFactor': rgb(colour) + [1], 'metallicFactor': 0, 'roughnessFactor': 0.99}})
     box(m, 'Foot', (0, 0.25, 0), (4.7, 0.5, 4.7), 'stoneShade', bevel=0.2)
@@ -900,8 +925,11 @@ def make_display_case():
         a = (len(rings) - 1) * count + j
         b = (len(rings) - 1) * count + k
         f.extend([[a, layer + a, b], [b, layer + a, layer + b]])
-    m.mesh('LiftedClocheGlass', v, f, 'glass')
-    ellip(m, 'ClocheGrip', (0, 8.99, 0), (0.13, 0.1, 0.13), 'glass', n=20, lat=8)
+    shell = m.mesh('LiftedClocheGlass', v, f, 'glass')
+    smooth_mesh_normals(m, shell)
+    grip = ellip(m, 'ClocheGrip', (0, 8.99, 0), (0.13, 0.1, 0.13), 'glass', n=20, lat=8)
+    if grip is not None:
+        smooth_mesh_normals(m, grip)
     ring_points = [(2.0 * math.cos(j * math.tau / 48), 7.8, 2.0 * math.sin(j * math.tau / 48)) for j in range(49)]
     tube(m, 'ClocheLowerBinding', ring_points, 0.025, 'brass', n=8)
     m.contract = {'kind': 'universally accessible exhibition vitrine', 'artVersion': 2, 'nativeModelScale': [65, 98.0392, 65], 'socketContactLocalTableCm': [0, 6.12, 0], 'seatRimTopLocalTableCm': 6.25, 'seatClearOpeningLocalTableCm': [1.12, 0.94], 'clocheUndersideLocalTableCm': 7.8, 'clocheAlwaysRaised': True, 'accessSides': ['-X', '+X', '-Z', '+Z'], 'collisionEnvelopeLocalTableCm': [4.7, 9.09, 4.7]}
@@ -909,12 +937,69 @@ def make_display_case():
 
 
 def make_ruby():
-    m = Model('Ruby')
-    rx = 0.33 / math.cos(math.pi / 8)
-    rz = 0.27 / math.cos(math.pi / 8)
-    ring_solid(m, 'RubyGem', [(0, 0.04, 0.035, 0, 0), (0.13, rx, rz, 0, 0), (0.26, rx * 0.91, rz * 0.91, 0, 0), (0.38, 0.18, 0.15, 0, 0)], 'ruby', n=8, phase=math.pi / 8)
-    m.mesh('RubyLightFacet', [(-0.12, 0.381, -0.05), (0.04, 0.381, -0.13), (0.15, 0.381, 0.03), (-0.04, 0.381, 0.11)], [[0, 2, 1], [0, 3, 2]], 'rubyLight')
-    m.contract = {'kind': 'handheld faceted ruby', 'artVersion': 2, 'bottomPivotUnchanged': True, 'nativeImportScale': 100, 'fullSizeStoryCm': [11, 6.35, 9], 'lightEmission': False}
+    """A red cut stone: existing facet topology with restrained optical face variation."""
+    m = Model("Ruby")
+    finishes = [
+        ("rubyCutBody", "#DA2638", .12),
+        ("rubyCutDeep", "#9C1328", .15),
+        ("rubyCutFire", "#F0443F", .10),
+        ("rubyCutLit", "#FA7965", .09),
+    ]
+    material_indices = []
+    for name, colour, roughness in finishes:
+        material_indices.append(len(m.materials))
+        m.materials.append({
+            "name": name,
+            "pbrMetallicRoughness": {
+                "baseColorFactor": rgb(colour) + [1],
+                "metallicFactor": .08,
+                "roughnessFactor": roughness,
+            },
+        })
+    light = next(material for material in m.materials if material["name"] == "rubyLight")
+    light["pbrMetallicRoughness"].update(
+        baseColorFactor=rgb("#FFB79C") + [1], metallicFactor=.08, roughnessFactor=.085)
+    rx = .33 / math.cos(math.pi / 8)
+    rz = .27 / math.cos(math.pi / 8)
+    gem = ring_solid(m, "RubyGem", [
+        (0, .04, .035, 0, 0),
+        (.13, rx, rz, 0, 0),
+        (.26, rx * .91, rz * .91, 0, 0),
+        (.38, .18, .15, 0, 0),
+    ], "ruby", n=8, phase=math.pi / 8)
+    # Reuse every existing triangle, normal and vertex. Four material groups keep
+    # the real planar cut legible even under a flat additive display light.
+    # Adjacent crown faces vary as transmitted crimson, not alternating white paint.
+    crown = [2, 0, 1, 2, 0, 3, 1, 0]
+    girdle = [0, 1, 0, 0, 1, 2, 0, 1]
+    pavilion = [1, 0, 1, 2, 1, 0, 1, 0]
+    indices = [[], [], [], []]
+    triangle_count = len(m.raw[-1][2])
+    for triangle in range(triangle_count):
+        if triangle < 48:
+            band, side = triangle // 16, (triangle % 16) // 2
+            group = [pavilion, girdle, crown][band][side]
+        else:
+            side = (triangle - 48) // 2
+            group = 1 if triangle % 2 == 0 else [0, 2, 0, 2, 0, 2, 0, 2][side]
+        indices[group].extend([triangle * 3, triangle * 3 + 1, triangle * 3 + 2])
+    mesh = m.meshes[m.nodes[gem]["mesh"]]
+    original = mesh["primitives"][0]
+    mesh["primitives"] = [
+        {"attributes": dict(original["attributes"]),
+         "indices": m.accessor(np.array(group, dtype="<u4"), "SCALAR", 5125),
+         "material": material_indices[index]}
+        for index, group in enumerate(indices) if group
+    ]
+    m.mesh("RubyLightFacet", [(-.12, .381, -.05), (.04, .381, -.13),
+                             (.15, .381, .03), (-.04, .381, .11)],
+           [[0, 2, 1], [0, 3, 2]], "rubyLight")
+    m.contract = {
+        "kind": "handheld red faceted ruby", "artVersion": 3,
+        "bottomPivotUnchanged": True, "nativeImportScale": 100,
+        "fullSizeStoryCm": [11, 6.35, 9], "lightEmission": False,
+        "cutMaterialGroups": 4, "totalPrimitives": 5,
+    }
     return m
 
 
@@ -1423,59 +1508,7 @@ def anonymous_puppet():
             fore,
             n=6,
         )
-        hand = m.node("Hand_" + side, fore, (0, -1.92, 0))
-        ellip(
-            m,
-            "WristJoint_" + side,
-            (0, 0.08, -0.01),
-            (0.23, 0.16, 0.18),
-            "museumJoint",
-            hand,
-            n=12,
-            lat=6,
-        )
-        ring_solid(
-            m,
-            "Palm_" + side,
-            [
-                (-0.70, 0.25, 0.16, 0, -0.02),
-                (-0.50, 0.32, 0.19, 0, -0.02),
-                (-0.17, 0.34, 0.21, 0, -0.02),
-                (0.06, 0.25, 0.18, 0, -0.02),
-            ],
-            "museumTimber",
-            hand,
-            n=12,
-        )
-        for digit in range(4):
-            x = -0.225 + digit * 0.15
-            tube(
-                m,
-                "Finger_" + side + str(digit),
-                [
-                    (x, -0.58, -0.03),
-                    (x, -0.80, -0.10),
-                    (x, -0.96, -0.22),
-                    (x, -0.91, -0.30),
-                ],
-                0.063,
-                "museumTimber",
-                hand,
-                n=7,
-            )
-        tube(
-            m,
-            "Thumb_" + side,
-            [
-                (sign * 0.25, -0.23, -0.03),
-                (sign * 0.36, -0.40, -0.12),
-                (sign * 0.34, -0.63, -0.25),
-            ],
-            0.075,
-            "museumTimber",
-            hand,
-            n=8,
-        )
+        articulated_hand(m,side,sign,fore,"museumTimber")
     # Sculpted working coat: shoulders, waist, skirt and an overlapping plain vest.
     ring_solid(
         m,

@@ -1,21 +1,33 @@
 - !<AssetImportMetadata/77b63d61-3586-47ef-9590-28eb692cdae8>
   ImportedAssetIds:
-    .hidden/ruby: !<reference> 98621467-30ca-4768-b696-612a39747f3d
+    .hidden/rubyCutBody: !<reference> 56ff1bce-0633-4ff0-a50b-7478d3092ffb
     22273adc623aab9f: !<reference> ae738688-6dc6-4cb8-a5c5-baf07cdc4617
     26ba073d67b9d0dd: !<reference> 40694365-f048-429e-81cd-bf6d4a330234
     289ab61bdd567575: !<reference> 333d8a6d-095b-4c29-8505-a9d9f934c5b2
     32609244eddcaed1: !<reference> ad67bd0f-12fa-45af-a114-d6798c008ec6
+    4013d156dce3dc17: !<reference> 62ba9c18-ff1e-4b51-9256-b4338471d796
     88ab437fd121cc69: !<reference> ff250d3b-43ea-4742-962d-59f0f91a82b0
     8c2c6f3cf8d060fd: !<reference> 0467bf4c-273f-4e87-bd7a-1754c3dca09f
     9175bf50289691bd: !<reference> c0ff9450-5feb-4980-9723-ff20cd86bac1
     98daabd8550a18da: !<reference> 7a268a98-db4e-419a-8cbe-edcde72d6672
-    Materials/ruby: !<reference> ec778e7c-2216-4c3e-b391-ed5497281056
+    9e0afba843e1739d: !<reference> 98ab0b76-3040-4280-ae41-50976e291323
+    Materials/rubyCutBody: !<reference> 332182bd-58f1-476f-8b9f-2ab042d80a01
+    Materials/rubyCutBody|rubyCutBody|GraphPassInfo: !<reference> 2155a3cb-e51b-477d-97a9-c7ad682bbb5c
+    Materials/rubyCutDeep: !<reference> 19548e95-22ed-41f4-883d-4c262fe0ba4c
+    Materials/rubyCutDeep|rubyCutDeep|GraphPassInfo: !<reference> 895e8c60-d85a-4593-8b35-b61a99f7636c
+    Materials/rubyCutFire: !<reference> 5de5da48-fb28-49a0-ac7b-b097c4ee11b9
+    Materials/rubyCutFire|rubyCutFire|GraphPassInfo: !<reference> bd8c022e-806e-48cf-99e7-b4df0cc3bdfd
+    Materials/rubyCutLit: !<reference> 5d143e9f-1eec-42a0-8c09-72d74cc72e97
+    Materials/rubyCutLit|rubyCutLit|GraphPassInfo: !<reference> 78180353-68fa-42e6-be01-56a68b3a86ed
     Materials/rubyLight: !<reference> 596f9f24-2d60-4a3c-89e2-3714c29a6f14
     Materials/rubyLight|rubyLight|GraphPassInfo: !<reference> c626c18a-2a95-4318-9997-8f63a1320497
-    Materials/ruby|ruby|GraphPassInfo: !<reference> 96c014bc-e8d5-4e9f-8060-77b61cabdf59
     Meshes/RubyGem: !<reference> c1730980-6a36-4499-b1c7-7c674c82aa42
+    Meshes/RubyGem1: !<reference> 2a52ca68-5fcd-4cf7-a747-fbb84427f393
+    Meshes/RubyGem2: !<reference> ad0997cd-afb9-43b9-aa6e-e58e4663459a
+    Meshes/RubyGem3: !<reference> 285647ce-3281-45e5-9805-f72ae4dcc22e
     Meshes/RubyLightFacet: !<reference> c9cdda5f-098f-4e5e-907a-f1a60b25daef
     Scene: !<reference> dab4560a-99fc-4bc2-a992-7743cf6d6b40
+    c840b19ba02e2dc0: !<reference> 481f3681-56f2-4112-a10e-bdb01201e5c5
   ImporterName: GltfImporter
   PrimaryAsset: !<reference> dab4560a-99fc-4bc2-a992-7743cf6d6b40
   PackageType: LegacyPackage

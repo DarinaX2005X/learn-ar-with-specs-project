@@ -101,6 +101,7 @@ export class CountercaseRuntime extends BaseScriptComponent {
       message: detective?.message ?? "",
       verdictScope: detective?.verdict?.scope,
       comparison: display.comparison,
+      articulationBindings: display.articulationBindings,
       view: state?.view,
     };
   }

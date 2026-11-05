@@ -1,0 +1,126 @@
+[
+  {
+    "name": "missing-open",
+    "ms": 15.4,
+    "status": "proved",
+    "histories": 1,
+    "culprits": [
+      "Conservator"
+    ],
+    "fields": {
+      "taker": [
+        "Conservator"
+      ],
+      "recipient": [
+        "None"
+      ],
+      "cache": [
+        "None"
+      ],
+      "takeTick": [
+        12
+      ],
+      "passTick": [
+        "None"
+      ],
+      "stashTick": [
+        "None"
+      ]
+    }
+  },
+  {
+    "name": "missing-closed",
+    "ms": 10.9,
+    "status": "needClue",
+    "histories": 2,
+    "culprits": [
+      "Conservator",
+      "Guard"
+    ],
+    "fields": {
+      "taker": [
+        "Guard",
+        "Conservator"
+      ],
+      "recipient": [
+        "None"
+      ],
+      "cache": [
+        "None"
+      ],
+      "takeTick": [
+        12
+      ],
+      "passTick": [
+        "None"
+      ],
+      "stashTick": [
+        "None"
+      ]
+    }
+  },
+  {
+    "name": "packing-default",
+    "ms": 80.8,
+    "status": "needClue",
+    "histories": 8,
+    "culprits": [
+      "Conservator"
+    ],
+    "fields": {
+      "taker": [
+        "Conservator"
+      ],
+      "recipient": [
+        "Courier",
+        "Guard"
+      ],
+      "cache": [
+        "brass case"
+      ],
+      "takeTick": [
+        12
+      ],
+      "passTick": [
+        15,
+        16,
+        17,
+        18
+      ],
+      "stashTick": [
+        22,
+        23
+      ]
+    }
+  },
+  {
+    "name": "packing-rear",
+    "ms": 80.9,
+    "status": "proved",
+    "histories": 2,
+    "culprits": [
+      "Conservator"
+    ],
+    "fields": {
+      "taker": [
+        "Conservator"
+      ],
+      "recipient": [
+        "Courier"
+      ],
+      "cache": [
+        "brass case"
+      ],
+      "takeTick": [
+        12
+      ],
+      "passTick": [
+        15
+      ],
+      "stashTick": [
+        22,
+        23
+      ]
+    }
+  }
+]

@@ -703,9 +703,9 @@ export class PlayTable {
         const playing =
           this.state.author?.playing ?? this.state.detective?.playing;
         const tick = this.state.author?.tick ?? this.state.detective?.tick;
-        return playing && tick !== undefined
-          ? "Pause " + (tick / 2).toFixed(1) + " s"
-          : "Replay the alarm";
+        if (tick === undefined || (!playing && this.state.detective?.tick === 24))
+          return "Replay from alarm";
+        return (playing ? "Pause " : "Play ") + (tick / 2).toFixed(1) + " s";
       },
       () => {
         if (this.state.flow.mode === "ready") this.flow("replayAlarm");
@@ -715,7 +715,9 @@ export class PlayTable {
           this.author({ kind: this.state.author.playing ? "pause" : "play" });
         else if (this.state.detective)
           this.detective({
-            type: this.state.detective.playing ? "freeze" : "replay",
+            type: this.state.detective.playing
+              ? "freeze"
+              : this.state.detective.tick === 24 ? "replay" : "play",
           });
       },
       () =>
@@ -759,9 +761,11 @@ export class PlayTable {
       id + "Reset",
       this.offset(position, 0, -17, 0),
       [12, 6, 8],
-      () => "Replay the theft",
-      () => this.reveal({ type: "replay" }),
-      () => !!this.state.reveal,
+      () => this.state.reveal ? "Replay the theft" : "Replay from alarm",
+      () => this.state.reveal
+        ? this.reveal({ type: "replay" })
+        : this.detective({ type: "replay" }),
+      () => !!this.state.reveal || (!!this.state.detective && clock.active()),
     );
     this.bindObject(
       id + "Previous",
@@ -1439,11 +1443,13 @@ export class PlayTable {
         capturedGeneration !== this.inputGeneration
       )
         return;
-      aperture = clamp(
-        aperture + this.storyDelta(event.dragVector).x / 100,
-        0,
-        1,
-      );
+      const rail = this.state.author?.draft.room.mirror;
+      if (!rail || !(rail.width > 0)) return;
+      const delta = this.storyDelta(event.dragVector);
+      const alongCm = delta.x * rail.right.x + delta.y * rail.right.y + delta.z * rail.right.z;
+      const next = clamp(aperture + alongCm / (rail.width * 100), 0, 1);
+      if (next === aperture) return;
+      aperture = next;
       this.author({ kind: "preview", edit: { kind: "setAperture", aperture } });
     });
     this.finishDrag(

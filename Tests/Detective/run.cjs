@@ -16,10 +16,11 @@ function sealed(draft) {
 }
 function mount(input, limit) {
   let reveal = 0;
+  let renders = 0;
   const session = new DetectiveSession(
     input,
     {
-      render() {},
+      render() { renders++; },
       clear() {},
       revealTheft() {
         reveal++;
@@ -27,7 +28,7 @@ function mount(input, limit) {
     },
     limit,
   );
-  return { session, reveals: () => reveal };
+  return { session, reveals: () => reveal, renders: () => renders };
 }
 function drain(session) {
   let n = 0;
@@ -371,6 +372,18 @@ assert.equal(smoothPlayback.presentationTick(), 13);
 assert.equal(smoothPlayback.isCompleted(), false);
 smoothPlayback.dispatch({ type: "seek", tick: 24 });
 assert.equal(smoothPlayback.presentationTick(), 24);
+
+const cadence = mount(opened);
+const initialRenders = cadence.renders();
+for (let i = 0; i < 128; i++) cadence.session.update(1 / 64);
+assert.equal(cadence.renders(), initialRenders, "paused scene stays on displayed evidence");
+cadence.session.dispatch({ type: "play" });
+const startedRenders = cadence.renders();
+for (let i = 1; i <= 128; i++) {
+  cadence.session.update(1 / 64);
+  assert.equal(cadence.session.presentationTick(), 12 + i / 32);
+}
+assert.equal(cadence.renders() - startedRenders, 4, "128 fractional poses require four recording refreshes");
 
 // A full-tape unknown finding must not spend render frames minimising an
 // unrelated excluded suspect. Its counterexamples still fit every observation.

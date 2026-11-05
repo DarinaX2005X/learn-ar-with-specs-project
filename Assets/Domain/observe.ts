@@ -148,7 +148,7 @@ export function observe(
         };
       };
       for (const track of board.tracks) {
-        const pose = sample.positions.get(track.id)!,
+        const pose = legacyRecorder ? poseAt(track, tick) : sample.positions.get(track.id)!,
           p = { x: pose.x, y: pose.y, z: pose.z };
         const right = { x: Math.cos(pose.yaw), y: 0, z: -Math.sin(pose.yaw) };
         for (const via of ["direct", "mirror"] as const) {
