@@ -237,7 +237,11 @@ export class AuthorSession {
     this.confirmedRev = null; this.sealed = null;
   }
   private commit(candidate: CaseDraft): boolean {
-    if (same(candidate, this.draft)) { this.emit(); return true; }
+    if (same(candidate, this.draft)) {
+      // Accepted no-ops replace rejected-candidate feedback without invalidating this version.
+      this.errors = this.validate(this.draft);
+      this.emit(); return true;
+    }
     this.undoStack.push(clone(this.draft));
     if (this.undoStack.length > 32) this.undoStack.shift();
     candidate.rev = this.draft.rev + 1; this.draft = clone(candidate);

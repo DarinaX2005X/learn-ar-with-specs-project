@@ -72,6 +72,10 @@ export interface RecordedSurface {
   heightCm: number;
 }
 const panes = new Map<string, RecordedGlass>();
+/** Existing source-clipped mesh objects for one public observation, never an actor. */
+export function recordedFragmentMeshes(rootName: string, observationId: string): readonly SceneObject[] {
+  return panes.get(rootName)?.fragmentMeshes(observationId) ?? [];
+}
 export function getRecordingSurfaces(rootName: string): RecordedSurface[] {
   return panes.get(rootName)?.surfaces ?? [];
 }
@@ -98,6 +102,7 @@ export class RecordedGlass {
   private roles: string[] = [];
   private bounds: RecordedSurface[] = [];
   private inks: {
+    object: SceneObject;
     observationId?: string;
     segment: string;
     via: "direct" | "mirror";
@@ -631,6 +636,7 @@ export class RecordedGlass {
     visual.mainMaterial = material;
     this.objects.push(object);
     this.inks.push({
+      object,
       observationId:
         observationId ??
         this.bounds.find(
@@ -645,6 +651,10 @@ export class RecordedGlass {
       normal: color,
       selected: selectedColor,
     });
+  }
+  fragmentMeshes(observationId: string): readonly SceneObject[] {
+    return this.inks.filter(ink => ink.observationId === observationId)
+      .map(ink => ink.object);
   }
   get renderedRoles(): string[] {
     return this.roles.slice();

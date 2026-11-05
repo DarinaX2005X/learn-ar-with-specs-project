@@ -149,6 +149,7 @@ function load(file) {
     {
       module,
       exports: module.exports,
+      getDeltaTime: () => 1 / 60,
       vec3: Vector,
       vec4: class {
         constructor(x, y, z, w) { Object.assign(this, { x, y, z, w }); }

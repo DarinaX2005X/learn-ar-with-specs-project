@@ -6,9 +6,7 @@ const bin = process.env.PATH.split(path.delimiter).find((p) =>
 );
 assert(bin);
 const ts = require(path.resolve(bin, "../typescript/lib/typescript.js"));
-const {
-  AuthorSession,
-} = require("./build/Author/AuthorSession");
+const { AuthorSession } = require("./build/Author/AuthorSession");
 const A = require("./build/Author/AuthorViewSession");
 const D = require("./build/Domain");
 const propsModule = { exports: {} };
@@ -193,7 +191,7 @@ class Obj {
   }
   createComponent(type) {
     if (type === "Interactable") return new Input(this);
-    if (type === "Component.Text") return {textFill:{}};
+    if (type === "Component.Text") return { textFill: {} };
     if (type === "Component.ScriptComponent")
       return {
         createEvent() {
@@ -215,7 +213,11 @@ class Obj {
   }
 }
 global.vec3 = V;
-global.vec4 = class { constructor(x,y,z,w) { Object.assign(this,{x,y,z,w}); } };
+global.vec4 = class {
+  constructor(x, y, z, w) {
+    Object.assign(this, { x, y, z, w });
+  }
+};
 global.quat = { fromEulerAngles: (x, y, z) => new Q(x, y, z) };
 global.Shape = { createBoxShape: () => ({}) };
 global.Rect = { create: () => ({}) };
@@ -255,20 +257,43 @@ new Function(
   ).outputText,
 )(contactModule.exports, contactModule);
 const fontModule = { exports: {} };
-new Function("exports", "module", ts.transpileModule(
-  fs.readFileSync("Assets/Runtime/MuseumFonts.ts", "utf8"),
-  { compilerOptions: { target: ts.ScriptTarget.ES2021, module: ts.ModuleKind.CommonJS } }
-).outputText)(fontModule.exports, fontModule);
+new Function(
+  "exports",
+  "module",
+  ts.transpileModule(fs.readFileSync("Assets/Runtime/MuseumFonts.ts", "utf8"), {
+    compilerOptions: {
+      target: ts.ScriptTarget.ES2021,
+      module: ts.ModuleKind.CommonJS,
+    },
+  }).outputText,
+)(fontModule.exports, fontModule);
 new Function("require", "module", "exports", js)(
   (id) => {
     if (id === "./MuseumFonts") return fontModule.exports;
-    if (id === "SpectaclesInteractionKit.lspkg/Providers/CameraProvider/WorldCameraFinderProvider") {
+    if (id === "./EvidenceLift")
+      return {
+        EvidenceLift: class {
+          constructor() {
+            throw new Error(
+              "Author controls must not create detective evidence lift",
+            );
+          }
+        },
+      };
+    if (
+      id ===
+      "SpectaclesInteractionKit.lspkg/Providers/CameraProvider/WorldCameraFinderProvider"
+    ) {
       return { default: { getInstance: () => undefined } };
     }
     if (id.includes("Interactable")) return { Interactable: Input };
-    if(id.endsWith("/Domain/types"))return require("./build/Domain/types");
-    if(id.endsWith("/Shelf/CaseTitles"))return require("./build/Shelf/CaseTitles");
-    if (id.endsWith("/RimEvidence")) return require("./build/Runtime/RimEvidence");
+    if (id.endsWith("/Domain/types")) return require("./build/Domain/types");
+    if (id.endsWith("/Domain/TrackMotion"))
+      return require("./build/Domain/TrackMotion");
+    if (id.endsWith("/Shelf/CaseTitles"))
+      return require("./build/Shelf/CaseTitles");
+    if (id.endsWith("/RimEvidence"))
+      return require("./build/Runtime/RimEvidence");
     if (id.includes("ObservationContacts")) return contactModule.exports;
     if (id.includes("AuthorPropsHandles"))
       return { AuthorPropsHandles: UnrelatedPropsStub };
@@ -410,9 +435,10 @@ assert.equal(
 const handle = at("CurtainHandle").input;
 const rail = active.getDraft().room.mirror;
 const widthCm = rail.width * 100;
-const motion = (axis, cm) => handle.onDragUpdate.emit({
-  dragVector: new V(axis.x * cm, axis.y * cm, axis.z * cm),
-});
+const motion = (axis, cm) =>
+  handle.onDragUpdate.emit({
+    dragVector: new V(axis.x * cm, axis.y * cm, axis.z * cm),
+  });
 handle.onTriggerStart.emit();
 handle.onDragStart.emit();
 motion(rail.normal, widthCm);
@@ -518,3 +544,14 @@ if (process.env.AUTHOR_VIEW_PLAYTABLE)
 console.log(
   "Actual PlayTable camera/bench trial inputs, actual answer comparison, stale camera/body/curtain/keep guards and pass gate passed",
 );
+
+require("./author-pose-continuity.cjs")({
+  PlayTable: m.exports.PlayTable,
+  SessionShelf: require("./build/Shelf/SessionShelf").SessionShelf,
+  AuthorSession,
+  createMuseumTheft: D.createMuseumTheft,
+  sampleTrackMotion: require("./build/Domain/TrackMotion").sampleTrackMotion,
+  Obj,
+  V,
+  ts,
+});

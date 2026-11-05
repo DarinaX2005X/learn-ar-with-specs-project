@@ -178,9 +178,11 @@ for (const count of [0, 1, 2, 3]) {
     epoch: 1,
     covered: false,
     result: { text: { text: "" }, object: {} },
+    detail: { text: { text: "" }, object: {} },
     evidence: [0, 1, 2].map(() => ({
-      text: { text: "", textFill: {} },
-      object: {},
+      finding: { text: { text: "", textFill: {} }, object: {} },
+      source: { text: { text: "", textFill: {} }, object: {} },
+      inscription: "",
     })),
     layer: {},
   });
@@ -191,20 +193,33 @@ for (const count of [0, 1, 2, 3]) {
     revision: detectiveState.rev,
   };
   paper.render({ flow, detective: detectiveState });
-  assert.equal(paper.evidence[0].text.text, finding);
+  assert.equal(paper.read().evidence[0], finding);
+  assert.equal(paper.evidence[0].source.text.text, "Rim marks");
+  for (const role of rim.shapes) {
+    assert(paper.evidence[0].finding.text.text.includes(role));
+  }
   session.dispatch({ type: "remove" });
   paper.render({ flow, detective: session.snapshot() });
-  assert.equal(paper.evidence[0].text.text, "");
+  assert.equal(paper.evidence[0].finding.text.text, "");
+  assert.equal(paper.evidence[0].source.text.text, "");
   session.dispatch({ type: "undo" });
   paper.render({ flow, detective: session.snapshot() });
-  assert.equal(paper.evidence[0].text.text, finding);
+  assert.equal(paper.read().evidence[0], finding);
+  assert.equal(paper.evidence[0].source.text.text, "Rim marks");
+  for (const role of rim.shapes) {
+    assert(paper.evidence[0].finding.text.text.includes(role));
+  }
   // Epoch/handoff must erase stale evidence, and a new session starts with inspect action.
   paper.render({
     flow: { ...flow, inputEpoch: 2, mode: "handoff" },
     detective: undefined,
   });
   assert.equal(paper.layer.enabled, false);
-  assert(paper.evidence.every((x) => x.text.text === ""));
+  assert(
+    paper.evidence.every(
+      (pane) => pane.finding.text.text === "" && pane.source.text.text === "",
+    ),
+  );
   session.dispose();
   assert(cleared);
   const fresh = new DetectiveSession(sealed, { render() {}, clear() {} });

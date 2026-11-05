@@ -684,3 +684,5 @@ for (const existing of shelf
 console.log(
   "PASS incomplete Watch explains missing figure with no camera payload, repair yields honest seal, built-in and saved originals remain compatible",
 );
+
+require("./recovery.cjs")({assert, harness, AuthorSession, shelf, compileCase, createMuseumTheft: load(path.join(base, "Domain/cases.ts")).createMuseumTheft});

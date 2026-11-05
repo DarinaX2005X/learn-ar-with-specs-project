@@ -1,6 +1,6 @@
 import { rimFinding } from "./RimEvidence";
 import { MuseumFonts, applyMuseumFont } from "./MuseumFonts";
-import { Clue, Field, AnswerValue } from "../Domain/types";
+import { Clue, FrameClue, Role, Field, AnswerValue } from "../Domain/types";
 import { DetectiveState } from "../Detective/DetectiveSession";
 import { PlayTableSnapshot } from "./PlayTable";
 
@@ -33,6 +33,79 @@ export function evidenceInscription(clue: Clue): string {
     finding = clue.payload.exhibit ? "Ruby in case" : "Empty case";
   const source = clue.witness === "entrance" ? "Entrance" : clue.witness;
   return finding + "\n" + source + " " + time(clue.tick);
+}
+
+
+/** Separate type sizes on a pinned pane. These strings describe public evidence only. */
+export interface EvidenceGlassText {
+  finding: string;
+  source: string;
+}
+
+function sourceName(witness: string): string {
+  if (witness === "entrance") return "Entrance";
+  if (witness === "passage") return "Passage";
+  const authorCamera = /^author-camera-([1-9][0-9]*)$/.exec(witness);
+  return authorCamera ? "Camera " + authorCamera[1] : witness;
+}
+
+function boxName(box: string): string {
+  if (box === "canvas trunk") return "Canvas trunk";
+  if (box === "brass case") return "Brass case";
+  return box;
+}
+
+function roleRows(roles: readonly Role[]): string {
+  const lines: string[] = [];
+  let line = "";
+  for (const role of roles) {
+    const next = line ? line + ", " + role : role;
+    if (line && next.length > 14) {
+      lines.push(line);
+      line = role;
+    } else line = next;
+  }
+  if (line) lines.push(line);
+  return lines.join("\n");
+}
+
+function recordedText(frame: FrameClue, inlineMirror: boolean): EvidenceGlassText {
+  const { observation, payload } = frame;
+  const recording = sourceName(frame.witness) + " " + (frame.tick * 0.5).toFixed(1) + " s";
+  let finding = "Recorded view";
+  let via: "mirror" | "direct" | undefined;
+  if (observation?.kind === "fragment") {
+    const fragment = payload.fragments.find(item => item.segment === observation.segment);
+    if (fragment) {
+      finding = fragment.role ?? "Unidentified figure";
+      via = fragment.via;
+    }
+  } else if (observation?.kind === "hand") {
+    finding = observation.present ? "Ruby in hand" : "No ruby in hand";
+    via = observation.via;
+  } else if (observation?.kind === "action") {
+    // getObservations retains the root index in the descriptor but stores
+    // exactly the selected action in this crop, including legacy slices.
+    const action = payload.actions[0];
+    if (action && payload.actions.length === 1) {
+      finding = {Take: "Ruby taken", BrushRim: "Rim touched", Pass: "Ruby passed", Stash: "Ruby stashed"}[action.kind];
+      if (action.kind === "Stash" && action.box) finding += "\n" + boxName(action.box);
+      via = action.via;
+    }
+  } else if (observation?.kind === "exhibit" && payload.exhibit !== undefined) {
+    finding = payload.exhibit ? "Ruby in case" : "Empty case";
+    via = payload.exhibitSurface?.via;
+  }
+  if (via === "mirror" && inlineMirror) return { finding: finding + " in mirror", source: recording };
+  return { finding, source: via === "mirror" ? "In mirror\n" + recording : recording };
+}
+
+export function evidenceGlassText(clue: Clue, inlineMirror = false): EvidenceGlassText {
+  if (clue.kind === "Frame") return recordedText(clue, inlineMirror);
+  if (clue.kind === "Box") {
+    return { finding: clue.present ? "Ruby found" : "No ruby", source: boxName(clue.box) };
+  }
+  return { finding: clue.shapes.length ? roleRows(clue.shapes) : "No marks", source: "Rim marks" };
 }
 
 function fieldFinding(field: Field, values: readonly AnswerValue[]): string {
@@ -82,7 +155,8 @@ interface InkSurface { object: SceneObject; text: Text; }
 export class CasePaper {
   private layer: SceneObject;
   private result: InkSurface;
-  private evidence: InkSurface[] = [];
+  private detail: InkSurface;
+  private evidence: { finding: InkSurface; source: InkSurface; inscription: string }[] = [];
   private covered = false;
   private disposed = false;
   private epoch: number | undefined;
@@ -92,13 +166,22 @@ export class CasePaper {
     this.layer = global.scene.createSceneObject("CasePaperInk");
     this.layer.setParent(root);
     this.result = this.surface("CheckedFinding", [0, 9.35, -15], 37, 24, 128, true);
-    // Ink occupies the far 5 cm of each existing evidence pane. At the normal
-    // bench eye the loupe rim hides the middle of its pane, not this rear band.
-    // Keep the complete label inside the original 20 x 18 cm Evidence target;
-    // the physical pane, recorded image and interaction anchor stay in place.
-    for (let index = 0; index < 3; index++)
-      this.evidence.push(this.surface("PinnedEvidenceInk" + index,
-        [-24 + 24 * index, 6.85, -37], 17, 5, 60, false));
+    // Keep focused ink on the rear of the existing leaf, clear of its brass clip.
+    this.detail = this.surface("SelectedEvidenceDetail", [0, 9.35, -12.45], 36, 17.8 / 1.15, 162, true);
+    this.detail.object.getTransform().setLocalScale(new vec3(1, 1.15, 1));
+    // A 16.8 cm writing face fits inside each original 18 cm glass. The loupe
+    // covers the front of the middle pane. Its two lines use the clear rear band.
+    for (let index = 0; index < 3; index++) {
+      const x = -24 + 24 * index;
+      const middle = index === 1;
+      const finding = this.glassLine("PinnedEvidenceInk" + index, x,
+        middle ? -36.04 : -40, middle ? 3.12 : 7.5, middle ? 136 : 172,
+        middle ? 1.10 : 1.30, "bold");
+      const source = this.glassLine("EvidenceSourceInk" + index, x,
+        middle ? -38.59 : -46, middle ? 1.99 : 5.7, middle ? 83 : 98,
+        middle ? 1.04 : 1.20, "regular");
+      this.evidence.push({ finding, source, inscription: "" });
+    }
     this.clear();
   }
   private find(name: string, from: SceneObject): SceneObject | undefined {
@@ -142,6 +225,16 @@ export class CasePaper {
       : new vec4(0.949, 0.969, 0.937, 1);
     return { object, text };
   }
+  private glassLine(name: string, x: number, z: number, height: number,
+    size: number, depthScale: number, weight: "regular" | "bold"): InkSurface {
+    const surface = this.surface(name, [x, 6.85, z], 16.8, height / depthScale, size, false);
+    applyMuseumFont(surface.text, this.fonts, weight);
+    // Optical compensation stays in the physical plane. Its final printed
+    // height is limited by the same measured rectangle after scaling.
+    surface.object.getTransform().setLocalScale(new vec3(1, depthScale, 1));
+    surface.text.horizontalOverflow = HorizontalOverflow.Shrink;
+    return surface;
+  }
   render(snapshot: PlayTableSnapshot): void {
     if (this.disposed) return;
     if (this.epoch !== snapshot.flow.inputEpoch) {
@@ -154,17 +247,50 @@ export class CasePaper {
       this.clear(); return;
     }
     this.result.text.text = casePaperInscription(state);
+    let detail = "";
+    const focused = state.focusedObservation ?? state.frame;
+    const leafFree = snapshot.flow.mode === "detective" && state.mode !== "reconstruction" &&
+      !state.verdict && !state.checking;
     for (let index = 0; index < this.evidence.length; index++) {
       const item = state.visibleGlass[index];
-      this.evidence[index].text.text = item ? evidenceInscription(item.clue) : "";
-      this.evidence[index].text.textFill.color = item?.selected
+      const pane = this.evidence[index];
+      pane.inscription = item ? evidenceInscription(item.clue) : "";
+      let finding = "", source = "";
+      if (item) {
+        const label = evidenceGlassText(item.clue, index === 1);
+        finding = label.finding;
+        source = label.source;
+        // The middle glass has one clear line per field behind the loupe.
+        // Long custom names also need more width on the outer two glasses.
+        if (leafFree && item.selected && item.id === focused?.id &&
+            (source.split("\n").some(line => line.length > 18) ||
+             finding.split("\n").some(line => line.length > 19) ||
+             (index === 1 && (finding.includes("\n") || finding.length > 16)))) {
+          const full = evidenceGlassText(item.clue, true);
+          const text = item.clue.kind === "Rim"
+            ? full.source + "\n" + item.clue.shapes.join(", ")
+            : full.finding + "\n" + (item.clue.kind === "Frame"
+              ? full.source.replace(/ s$/, "\u00a0s") : full.source);
+          // Preserve long author IDs; zero-width spaces give Wrap a break
+          // within uninterrupted ASCII runs. The stored clue stays verbatim.
+          detail = text.replace(/([A-Za-z0-9_]{16})(?=[A-Za-z0-9_])/g, "$1\u200b");
+        }
+      }
+      pane.finding.text.text = finding;
+      pane.source.text.text = source;
+      const color = item?.selected
         ? new vec4(1, 0.867, 0.569, 1)
         : new vec4(0.949, 0.969, 0.937, 1);
-      this.evidence[index].object.enabled = !!item;
+      pane.finding.text.textFill.color = color;
+      pane.source.text.textFill.color = color;
+      pane.finding.object.enabled = !!item;
+      pane.source.object.enabled = !!item;
     }
     this.live = true;
     this.layer.enabled = !this.covered;
     this.result.object.enabled = !!this.result.text.text;
+    this.detail.text.text = detail;
+    this.detail.object.enabled = !!detail;
     this.signature = state.caseId + ":" + state.rev;
   }
   setCovered(covered: boolean): void {
@@ -175,12 +301,18 @@ export class CasePaper {
     this.live = false;
     this.signature = "";
     this.result.text.text = "";
-    for (const surface of this.evidence) surface.text.text = "";
+    this.detail.text.text = "";
+    this.detail.object.enabled = false;
+    for (const pane of this.evidence) {
+      pane.finding.text.text = "";
+      pane.source.text.text = "";
+      pane.inscription = "";
+    }
     this.layer.enabled = false;
   }
   read(): { visible: boolean; case: string; result: string; evidence: string[] } {
     return { visible: this.live && !this.covered, case: this.signature,
-      result: this.result.text.text, evidence: this.evidence.map(surface => surface.text.text) };
+      result: this.result.text.text, evidence: this.evidence.map(pane => pane.inscription) };
   }
   dispose(): void {
     if (this.disposed) return;

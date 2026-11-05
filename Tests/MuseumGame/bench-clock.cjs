@@ -166,7 +166,9 @@ function loadModule(file) {
       Shape: { createBoxShape: () => ({}) },
       HorizontalAlignment: { Center: 0 },
       VerticalAlignment: { Center: 0 },
-      HorizontalOverflow: { Wrap: 0 },
+      HorizontalOverflow: { Wrap: 0, Shrink: 3 },
+      VerticalOverflow: { Shrink: 2 },
+      isNull: (value) => !value || !!value.isBeingDestroyed,
       Rect: { create: () => ({}) },
       global: {
         scene: {
@@ -176,7 +178,8 @@ function loadModule(file) {
         },
       },
       require: (name) => {
-        if (name.endsWith("MuseumFonts")) return { applyMuseumFont() {} };
+        if (name.endsWith("MuseumFonts"))
+          return loadModule(path.join(assets, "Runtime/MuseumFonts.ts"));
         if (name.startsWith("SpectaclesInteractionKit"))
           return { Interactable: MockInteractable };
         if (name.endsWith("/AuthorPropsHandles"))
@@ -213,6 +216,15 @@ const { RevealTransport } = loadModule(
   path.join(assets, "Runtime/MuseumGame/RevealTransport.ts"),
 );
 const { PlayTable } = loadModule(path.join(assets, "Runtime/PlayTable.ts"));
+const { AuthorSession } = loadModule(
+  path.join(assets, "Author/AuthorSession.ts"),
+);
+const deskBody = new MockSceneObject("WorkshopDeskClock");
+const fonts = {
+  regular: { name: "Atkinson regular" },
+  bold: { name: "Atkinson bold" },
+};
+let author;
 const compiled = Domain.compileCase(
   Domain.createPackingCase({ rearCamera: true }),
 );
@@ -240,6 +252,7 @@ function render(detective, board) {
     board,
     detective,
     ...(reveal ? { reveal: reveal.snapshot() } : {}),
+    ...(author ? { author: author.snapshot() } : {}),
   };
   table?.render(state);
 }
@@ -250,10 +263,18 @@ function refresh() {
 }
 table = new PlayTable(new MockSceneObject("ClockRegressionRoom"), {
   propMaterial: {},
+  fonts,
   dispatch(action, payload) {
     commands.push({ action, payload });
     if (action === "detective") session.dispatch(payload);
-    else if (action === "reveal") {
+    else if (action === "author") {
+      if (payload.kind === "stepTick") author.stepTick(payload.delta);
+      else if (payload.kind === "setTick") author.setTick(payload.tick);
+      else if (payload.kind === "play") author.play();
+      else if (payload.kind === "pause") author.pause();
+      else throw Error("Unexpected author command");
+      refresh();
+    } else if (action === "reveal") {
       assert(reveal, "Reveal must have its own active transport");
       assert(reveal.dispatch(payload));
       refresh();
@@ -294,6 +315,59 @@ function seekByClock(tick) {
       session.snapshot().tick > tick ? "EntryClockPrevious" : "EntryClockNext",
     );
 }
+const timeNode = objectsByName.get("WorkshopClockTimeInk"),
+  replayInk = objectsByName.get("WorkshopClockReplayInk");
+const readTime = () => timeNode.getComponent("Component.Text").text;
+assert.equal(readTime(), "6.0 s");
+assert.equal(timeNode.parent, deskBody);
+assert.equal(replayInk.parent, deskBody);
+assert.equal(timeNode.getComponent("Component.Text").font, fonts.regular);
+assert.equal(replayInk.getComponent("Component.Text").font, fonts.bold);
+assert.equal(replayInk.getComponent("Component.Text").text, "Replay");
+assert.deepEqual(
+  [timeNode.position.x, timeNode.position.y, timeNode.position.z],
+  [93.2, 9, -51],
+);
+assert.deepEqual(
+  [replayInk.position.x, replayInk.position.y, replayInk.position.z],
+  [82, 9, -51.5],
+);
+assert(
+  timeNode.components.every((control) => control.type === "Component.Text"),
+  "no new input/geometry on time readout",
+);
+for (const tick of [0, 12, 13, 24]) {
+  seekByClock(tick);
+  assert.equal(readTime(), (tick / 2).toFixed(1) + " s");
+}
+seekByClock(12);
+for (const [id, position, size] of [
+  ["WorkshopClock", [-268, 115.4, 333], [18, 18, 8]],
+  ["WorkshopClockReset", [-268, 103, 333], [12, 6, 8]],
+  ["WorkshopClockPrevious", [-255, 115.4, 333], [7, 12, 8]],
+  ["WorkshopClockNext", [-281, 115.4, 333], [7, 12, 8]],
+]) {
+  const action = table.actions.get(id);
+  assert.deepEqual(
+    [
+      action.object.position.x,
+      action.object.position.y,
+      action.object.position.z,
+    ],
+    position,
+  );
+  assert.deepEqual(
+    [action.shape.size.x, action.shape.size.y, action.shape.size.z],
+    size,
+  );
+}
+const resetHover = target("WorkshopClockReset").getComponent("Interactable");
+resetHover.onHoverEnter.fire();
+assert.equal(replayInk.enabled, false);
+assert.equal(readTime(), "6.0 s");
+resetHover.onHoverExit.fire();
+assert.equal(replayInk.enabled, true);
+
 // Every route below starts with real object trigger callbacks; no direct session seek/play setters.
 seekByClock(3);
 assert.equal(session.snapshot().playing, false);
@@ -391,8 +465,7 @@ assert.equal(last().payload.type, "replay");
 assert.equal(reveal.snapshot().tick, 0);
 assert.equal(reveal.snapshot().playing, true);
 console.log(
-  "PASS ready emits real replayAlarm flow command; reveal play/pause " +
-    "preserves3 and Reset replays theft0",
+  "PASS ready emits real replayAlarm flow command; reveal play/pause preserves3 and Reset replays theft0",
 );
 // All clocks share the same normal callback contract and their Reset targets stay available.
 mode = "detective";
@@ -453,9 +526,60 @@ assert.deepEqual(
   ids,
 );
 assert.equal(session.snapshot().frame.witness, "entrance");
+// The readout remains visible for the public selected time even when transport is inactive.
+mode = "finished";
+reveal = undefined;
+epoch++;
+refresh();
+assert.equal(objectsByName.get("Use_WorkshopClock").enabled, false);
+assert.equal(timeNode.enabled, true);
+assert.equal(readTime(), (session.snapshot().tick / 2).toFixed(1) + " s");
+mode = "handoff";
+epoch++;
+refresh();
+assert.equal(timeNode.enabled, false);
+assert.equal(readTime(), "");
+assert.equal(replayInk.enabled, false);
+mode = "finished";
+reveal = new RevealTransport(3);
+epoch++;
+refresh();
+assert.equal(readTime(), "1.5 s");
+click("WorkshopClockNext");
+assert.equal(readTime(), "2.0 s");
+click("WorkshopClockReset");
+assert.equal(readTime(), "0.0 s");
+reveal = undefined;
+mode = "author";
+author = new AuthorSession(Domain.createMuseumTheft());
+author.setTick(12);
+epoch++;
+refresh();
+assert.equal(readTime(), "6.0 s");
+assert.equal(replayInk.enabled, false, "author Reset stays unavailable");
+click("WorkshopClockNext");
+assert.equal(readTime(), "6.5 s");
+click("WorkshopClock");
+assert.equal(readTime(), "6.5 s");
+author.dispose();
+author = undefined;
+mode = "ready";
+epoch++;
+refresh();
+assert.equal(timeNode.enabled, false);
+assert.equal(readTime(), "");
 table.dispose();
+assert.equal(objectsByName.has("WorkshopClockTimeInk"), false);
+assert.equal(objectsByName.has("WorkshopClockReplayInk"), false);
+assert.equal(
+  objectsByName.has("WorkshopDeskClock"),
+  true,
+  "ink lifetime never destroys the accepted instrument",
+);
 session.dispose();
 console.log(
-  "PASS actual PlayTable + actual DetectiveSession/RevealTransport; " +
-    "only scene/output ports doubled",
+  "PASS owner-driven fixed time, hover-independent6.0/6.5, replay semantics, reveal/author/finished/handoff, native font refs, no new targets and cleanup",
+);
+console.log(
+  "PASS actual PlayTable + actual DetectiveSession/RevealTransport; only scene/output ports doubled",
 );

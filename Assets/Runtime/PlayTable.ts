@@ -1,3 +1,5 @@
+import { sampleTrackMotion } from "../Domain/TrackMotion";
+import { EvidenceLift } from "./EvidenceLift";
 import { rimFinding } from "./RimEvidence";
 import WorldCameraFinderProvider from "SpectaclesInteractionKit.lspkg/Providers/CameraProvider/WorldCameraFinderProvider";
 import { MuseumFonts, applyMuseumFont } from "./MuseumFonts";
@@ -153,7 +155,12 @@ export class PlayTable {
   private focus: string | undefined;
   private lastUsed: string | undefined;
   private rackPage = 0;
+  private workshopInk: {
+    time: { object: SceneObject; text: Text };
+    replay: { object: SceneObject; text: Text };
+  } | undefined;
   private observationSlots = new Map<string, ObservationContact>();
+  private evidenceLift: EvidenceLift | undefined;
 
   constructor(
     private parent: SceneObject,
@@ -173,7 +180,10 @@ export class PlayTable {
       "Component.ScriptComponent",
     ) as ScriptComponent;
     this.lifecycleUpdate = this.lifecycle.createEvent("UpdateEvent");
-    this.lifecycleUpdate.bind(() => this.flushRoleRebuild());
+    this.lifecycleUpdate.bind(() => {
+      this.flushRoleRebuild();
+      this.evidenceLift?.update(getDeltaTime());
+    });
   }
 
   render(snapshot: PlayTableSnapshot): void {
@@ -231,6 +241,7 @@ export class PlayTable {
     this.updateCaseLidTarget();
     this.updateMovingTargets();
     this.updateObservationTargets();
+    this.evidenceLift?.sync();
     this.updateViewHandles();
     for (const [id, action] of this.actions) {
       action.object.enabled = action.active();
@@ -238,6 +249,13 @@ export class PlayTable {
       action.inscription.enabled = this.focus === id && action.object.enabled;
     }
     this.updateError();
+    if (this.workshopInk) {
+      const tick = this.state.reveal?.tick ?? this.state.author?.tick ?? this.state.detective?.tick;
+      this.workshopInk.time.object.enabled = tick !== undefined;
+      this.workshopInk.time.text.text = tick === undefined ? "" : (tick / 2).toFixed(1) + " s";
+      this.workshopInk.replay.object.enabled =
+        !!this.actions.get("WorkshopClockReset")?.object.enabled && this.focus !== "WorkshopClockReset";
+    }
   }
 
   /** Finalize at the already authoritative tick, then ignore the held old input.
@@ -247,6 +265,7 @@ export class PlayTable {
     this.finishingInput = true;
     try {
       this.props?.cancel();
+      this.evidenceLift?.cancel(false);
       this.inputGeneration++;
       this.dragging = false;
     } finally { this.finishingInput = false; }
@@ -389,6 +408,54 @@ export class PlayTable {
         : undefined;
       capturedEpoch = this.epoch;
     });
+    if (id.startsWith("Observation_PublicRecordedGlass_")) {
+      this.evidenceLift ??= new EvidenceLift({
+        parent: this.root,
+        material: this.ports.propMaterial ?? this.propMaterial(
+          recordedPaneViews().find(view => view.root.name === "PublicRecordedGlass")?.root),
+        context: () => {
+          const state = this.state.detective;
+          return state ? {
+            scope: [this.epoch, this.inputGeneration, this.viewIdentity,
+              state.glass.map(glass => glass.id).join(","),state.glassPage].join("/"),
+            caseId: state.caseId, rev: state.rev, source: state.source,
+            tick: state.tick, selected: state.selected,
+            available: !this.disposed && this.state.flow.mode === "detective" &&
+              state.mode !== "reconstruction" && !state.checking &&
+              state.caseId === this.state.flow.caseId && state.rev === this.state.flow.revision,
+            observations: state.observations,
+          } : undefined;
+        },
+        select: observationId => this.detective({type:"selectObservation",id:observationId}),
+        slot: observationId => {
+          const glass = this.state.detective?.glass ?? [];
+          const existing = glass.findIndex(item => item.id === observationId);
+          if (existing >= 0 && !this.state.detective?.visibleGlass.some(item => item.id === observationId))
+            return undefined; // Ordinary Pin brings an archived page into view.
+          const target = existing >= 0 ? existing : glass.length;
+          if (Math.floor(target / 3) !== this.state.detective?.glassPage)
+            return undefined; // Do not draw over another page's physical record.
+          const index = target % 3;
+          return this.actions.get("Evidence" + index)?.object;
+        },
+        pin: (observationId, caseId, rev) => {
+          this.detective({type:"pinClue",id:observationId,caseId,rev});
+          const state = this.state.detective;
+          return state?.caseId === caseId && state.rev === rev &&
+            state.glass.some(glass => glass.id === observationId);
+        },
+      });
+      this.evidenceLift.bind(action.input, () => {
+        const pane = recordedPaneViews().find(view => view.root.name === "PublicRecordedGlass");
+        const contact = this.observationSlots.get(id);
+        const clue = contact?.observations.find(view => view.id === capturedId);
+        const surface = pane?.surfaces.find(view => view.observationId === clue?.id && view.kind === "fragment");
+        return capturedEpoch === this.epoch && pane && clue && surface
+          ? {pane:pane.root,clue,centerCm:surface.centerCm,
+            widthCm:surface.widthCm,heightCm:surface.heightCm}
+          : undefined;
+      });
+    }
   }
 
   private pinLabel(): string {
@@ -822,6 +889,40 @@ export class PlayTable {
     );
     if (desk) for (const part of [reset, previous, next])
       part.inscription.getTransform().setLocalPosition(new vec3(0, 0, -5.5));
+    const body = desk && typeof global !== "undefined" &&
+      typeof global.scene?.getRootObjectsCount === "function"
+      ? this.find("WorkshopDeskClock") : undefined;
+    if (body) {
+      // Ink is attached to existing wood/key surfaces, never a new time-selection target.
+      const ink = (name: string, point: Point, width: number, size: number,
+        color: vec4, weight: "regular" | "bold") => {
+        const object = global.scene.createSceneObject(name);
+        object.setParent(body);
+        object.getTransform().setLocalPosition(new vec3(...point));
+        object.getTransform().setLocalRotation(quat.fromEulerAngles(0, Math.PI, 0));
+        const text = object.createComponent("Component.Text");
+        applyMuseumFont(text, this.ports.fonts, weight);
+        text.text = ""; text.size = size; text.depthTest = true;
+        text.horizontalAlignment = HorizontalAlignment.Center;
+        text.verticalAlignment = VerticalAlignment.Center;
+        text.horizontalOverflow = HorizontalOverflow.Shrink;
+        text.verticalOverflow = VerticalOverflow.Shrink;
+        text.layoutRect = Rect.create(-width / 2, width / 2, -2, 2);
+        text.textFill.color = color;
+        return { object, text };
+      };
+      // Visitor-left timber: clear of the dial, +/- keys and the brass Replay key.
+      const time = ink("WorkshopClockTimeInk", [93.2, 9, -51], 8.8, 100,
+        new vec4(0.91, 0.85, 0.69, 1), "regular");
+      const replay = ink("WorkshopClockReplayInk", [82, 9, -51.5], 11, 80,
+        new vec4(0.035, 0.09, 0.075, 1), "bold");
+      replay.text.text = "Replay";
+      this.workshopInk = { time, replay };
+      reset.input.onHoverEnter.add(() => { if (!this.disposed) replay.object.enabled = false; });
+      reset.input.onHoverExit.add(() => {
+        if (!this.disposed) replay.object.enabled = reset.object.enabled && !reset.inscription.enabled;
+      });
+    }
   }
   private step(delta: -1 | 1): void {
     if (this.state.reveal) this.reveal({ type: "step", delta });
@@ -1002,19 +1103,15 @@ export class PlayTable {
   }
   private pathPose(track: TrackId): Key {
     const author = this.state.author;
-    const keys = author.draft.tracks.find((item) => item.id === track).keys;
+    const path = author.draft.tracks.find((item) => item.id === track);
+    if (!path) throw new Error("Missing author track " + track);
     const tick = author.tick;
-    const before = keys.filter((key) => key.tick <= tick).pop() ?? keys[0];
-    const after = keys.find((key) => key.tick >= tick) ?? keys[keys.length - 1];
-    const amount =
-      after.tick === before.tick
-        ? 0
-        : (tick - before.tick) / (after.tick - before.tick);
+    const pose = sampleTrackMotion(path, tick);
+    // A grab samples the displayed body, while outgoing backward remains authored intent.
+    const outgoing = path.keys.filter((key) => key.tick <= tick).pop() ?? path.keys[0];
     return {
-      tick,
-      x: before.x + (after.x - before.x) * amount,
-      z: before.z + (after.z - before.z) * amount,
-      yaw: before.yaw + (after.yaw - before.yaw) * amount,
+      tick, x: pose.x, y: pose.y, z: pose.z, yaw: pose.yaw,
+      ...(outgoing.backward !== undefined ? { backward: outgoing.backward } : {}),
     };
   }
   private authorObjects(): void {
@@ -1344,10 +1441,14 @@ export class PlayTable {
       captured = -1,
       capturedGeneration = -1;
     base.input.onDragStart.add(() => {
+      if (
+        !this.state.author?.draft.tracks.some(item => item.id === track) ||
+        !base.active()
+      ) return;
+      origin = this.pathPose(track);
       captured = this.epoch;
       capturedGeneration = this.inputGeneration;
       this.dragging = true;
-      origin = this.pathPose(track);
       dx = 0;
       dz = 0;
       if (this.state.author.selected !== track)
@@ -2071,6 +2172,11 @@ export class PlayTable {
     }
   }
   private clear(): void {
+    if (this.workshopInk) {
+      for (const ink of [this.workshopInk.time, this.workshopInk.replay])
+        if (!isNull(ink.object) && !ink.object.isBeingDestroyed) ink.object.destroy();
+      this.workshopInk = undefined;
+    }
     this.dragging = false;
     this.focus = undefined;
     this.lastUsed = undefined;
@@ -2082,6 +2188,7 @@ export class PlayTable {
     if (this.disposed) return;
     this.disposed = true;
     this.props?.dispose();
+    this.evidenceLift?.dispose();
     this.lifecycle.removeEvent(this.lifecycleUpdate);
     this.clear();
     this.root.destroy();

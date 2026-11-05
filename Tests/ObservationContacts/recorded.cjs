@@ -148,6 +148,7 @@ function load(file) {
     {
       module,
       exports: module.exports,
+      getDeltaTime: () => 1 / 60,
       vec3: Vector,
       quat: { fromEulerAngles: () => rotation },
       MeshBuilder: class {
