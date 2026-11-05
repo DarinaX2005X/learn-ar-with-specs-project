@@ -11,6 +11,8 @@ These LEAF scenarios use the clock, curtain, case file and evidence bench in the
 
 The project includes LEAF 2.0 for Spectacles Interaction Kit 2.0. The one-shot client is useful when resetting Preview from the LEAF panel interrupts scenario discovery in Studio 5.23.2. [Snap's LEAF 2.0 sample package](https://github.com/specs-devs/samples/blob/110a145b6572a17fa94d86f18b76047278014729/AI%20Music%20Gen/Packages/Leaf.lspkg)
 
+For the direct curtain reach, watch Logger for `[REACH] PREPOSITION`. Pass the printed `commands` array to the Lens Studio MCP tool `MovePreviewCamera` to place the viewer in front of the mirror. Focus the Preview and press **K** within 15 seconds. Keep the viewer still while the simulated hand closes and reopens the curtain.
+
 ## Scenarios
 
 | ID | What the player does | Observed in Interactive Preview |
@@ -23,8 +25,8 @@ The project includes LEAF 2.0 for Spectacles Interaction Kit 2.0. The one-shot c
 | `countercase-packing-third-case` | Add a rear camera to a copy of The Packing Room. Then stage a different theft in an empty room with a display, a camera and three figures. Test it, pass it and investigate it. | Passed. The added view identified the courier as the recipient in the copy. In the new case, two pinned observations established who took the ruby. |
 | `countercase-original-view` | Edit a copy, reopen the original and move between tabletop and full-size views. | Passed. The original recording, clues, time and viewer pose survived the changes. |
 | `countercase-room-pair-switch` | Cover the mirror, earn two possible thefts, enter a full-size reconstruction and use its version tab. Return to the tabletop pair. | Passed. Both switches preserved the time, evidence and position of the case. The camera started behind the courier, so this run checked switching and return. |
-| `countercase-curtain-reach` | Trigger the curtain from within arm's reach using the simulated hand, then reach for the reverse control. | An earlier direct-reach attempt reached its 60 s limit. Position the viewer at the mirror before running this scenario. |
-| `countercase-curtain-cancel` | Interrupt a SIK drag and take the handle again. | Native cancellation check pending. |
+| `countercase-curtain-reach` | Position the viewer at the mirror, then use the direct right-hand pinch to close and reopen the curtain. | Passed in 13.781 s. The right hand reached both controls and each action committed one revision. |
+| `countercase-curtain-cancel` | Lose SIK input during a curtain drag, recover, then close and reopen the curtain. | Passed in 16.387 s. Losing input restored the tested draft and its proof. Each subsequent drag committed one revision. |
 
 These runs used simulated input during development. Physical hand tracking and comfort still need testing on SPECS.
 
