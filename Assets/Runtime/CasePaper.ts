@@ -1,3 +1,4 @@
+import { rimFinding } from "./RimEvidence";
 import { MuseumFonts, applyMuseumFont } from "./MuseumFonts";
 import { Clue, Field, AnswerValue } from "../Domain/types";
 import { DetectiveState } from "../Detective/DetectiveSession";
@@ -13,7 +14,7 @@ const joined = (values: readonly AnswerValue[]): string => {
 
 /** Only the observed public payload is named. Timeless object clues get no time. */
 export function evidenceInscription(clue: Clue): string {
-  if (clue.kind === "Rim") return "Rim contact\nTime not recorded";
+  if (clue.kind === "Rim") return rimFinding(clue);
   if (clue.kind === "Box")
     return (clue.present ? "Ruby in " : "No ruby in ") + clue.box;
   const fragment = clue.payload.fragments.length === 1

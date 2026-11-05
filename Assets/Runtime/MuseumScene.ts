@@ -69,6 +69,7 @@ export class MuseumScene {
   private soundAt = -10;
   private initializedLid = false;
   private clockHands: SceneObject[] = [];
+  private benchClock: SceneObject | undefined;
   private anonymous = new Map<string, SceneObject>();
   private hall: ComparisonHall;
   private comparisonActive = false;
@@ -193,6 +194,7 @@ export class MuseumScene {
     this.authorGlass = new AuthorGlass(root, material, fonts);
     this.mountClock("Anchor_EntryClock", false);
     this.mountClock("Anchor_HallClock", true);
+    this.mountBenchClock();
     for (const role of ["Courier", "Guard", "Conservator"] as Role[]) {
       const actor = this.find(role, theatre);
       if (actor) {
@@ -290,8 +292,8 @@ export class MuseumScene {
   }
   /** Native dial planes are XY. Entry faces the foyer (-Z), hall faces into +Z.
    * The entry overlay sits in front of the two baked, stationary GLB hands. */
-  private mountClock(anchorName: string, faceHall: boolean): void {
-    const anchor = this.findGlobal(anchorName);
+  private mountClock(anchorName: string, faceHall: boolean, source?: SceneObject, scale = 1): void {
+    const anchor = source ?? this.findGlobal(anchorName);
     if (!anchor) return;
     const dial = global.scene.createSceneObject(anchorName + "_LiveDial");
     dial.setParent(this.root);
@@ -301,6 +303,7 @@ export class MuseumScene {
     dial
       .getTransform()
       .setWorldRotation(anchor.getTransform().getWorldRotation());
+    dial.getTransform().setLocalScale(new vec3(scale, scale, scale));
     if (faceHall)
       dial.getTransform().setLocalRotation(quat.fromEulerAngles(0, Math.PI, 0));
     const ring = Array.from({ length: 48 }, (_, i) => {
@@ -348,6 +351,40 @@ export class MuseumScene {
       new vec4(0.05, 0.13, 0.12, 1),
     );
     this.clockHands.push(hand);
+  }
+  /** A public desk timepiece on the existing felt. It carries no case/private data. */
+  private mountBenchClock(): void {
+    const bench = this.findGlobal("Anchor_ConservationBench");
+    if (!bench) return;
+    const body = global.scene.createSceneObject("WorkshopDeskClock");
+    body.setParent(this.root);
+    body.getTransform().setWorldPosition(bench.getTransform().getWorldPosition());
+    body.getTransform().setWorldRotation(bench.getTransform().getWorldRotation());
+    body.getTransform().setWorldScale(new vec3(1, 1, 1));
+    this.benchClock = body;
+    const wood = new vec4(0.17, 0.085, 0.045, 1);
+    const brass = new vec4(0.52, 0.32, 0.12, 1);
+    const ink = new vec4(0.035, 0.09, 0.075, 1);
+    // x82,z-47 stays clear of the paper/roster and within the baked mat edges.
+    this.extrusion(body, "DeskClockFoot", [[64.5,3.4],[99.5,3.4],[99.5,5.4],[64.5,5.4]], -52, 10, wood);
+    this.extrusion(body, "DeskClockCase", [[65.5,5.4],[98.5,5.4],[98.5,27.4],[96.5,30.4],[67.5,30.4],[65.5,27.4]], -50.8, 7.6, wood);
+    this.extrusion(body, "DeskClockResetKey", [[76,6],[88,6],[88,12],[76,12]], -51.3, 1, brass);
+    for (const side of [-1, 1]) {
+      const x = 82 + side * 13;
+      this.extrusion(body, "DeskClockStepKey", [[x-3.5,15.4],[x+3.5,15.4],[x+3.5,27.4],[x-3.5,27.4]], -51.3, 1, brass);
+      this.extrusion(body, "DeskClockMinus", [[x-2,20.9],[x+2,20.9],[x+2,21.9],[x-2,21.9]], -51.45, 0.1, ink);
+      if (side < 0) this.extrusion(body, "DeskClockPlus", [[x-.5,19.4],[x+.5,19.4],[x+.5,23.4],[x-.5,23.4]], -51.45, .1, ink);
+    }
+    const bezel = Array.from({length:48}, (_,i) => {
+      const angle = i * Math.PI / 24;
+      return [82 + Math.cos(angle)*8.6, 21.4 + Math.sin(angle)*8.6] as const;
+    });
+    this.extrusion(body, "DeskClockBezel", bezel, -51.1, 1.1, brass);
+    const face = global.scene.createSceneObject("WorkshopClockDialAnchor");
+    face.setParent(body);
+    // The existing live dial's front is z=-12.8*0.42 from its anchor.
+    face.getTransform().setLocalPosition(new vec3(82,21.4,-45.824));
+    this.mountClock("WorkshopClock", false, face, 0.42);
   }
   private extrusion(
     parent: SceneObject,
@@ -1248,6 +1285,8 @@ export class MuseumScene {
     this.glassRoot.destroy();
     for (const hand of this.clockHands) hand.getParent().destroy();
     this.clockHands = [];
+    this.benchClock?.destroy();
+    this.benchClock = undefined;
     for (const wall of this.walls) wall.destroy();
     this.walls = [];
     for (const rig of this.rigs.values()) rig.dispose();

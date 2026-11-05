@@ -193,6 +193,7 @@ class Obj {
   }
   createComponent(type) {
     if (type === "Interactable") return new Input(this);
+    if (type === "Component.Text") return {textFill:{}};
     if (type === "Component.ScriptComponent")
       return {
         createEvent() {
@@ -214,6 +215,7 @@ class Obj {
   }
 }
 global.vec3 = V;
+global.vec4 = class { constructor(x,y,z,w) { Object.assign(this,{x,y,z,w}); } };
 global.quat = { fromEulerAngles: (x, y, z) => new Q(x, y, z) };
 global.Shape = { createBoxShape: () => ({}) };
 global.Rect = { create: () => ({}) };
@@ -266,6 +268,7 @@ new Function("require", "module", "exports", js)(
     if (id.includes("Interactable")) return { Interactable: Input };
     if(id.endsWith("/Domain/types"))return require("./build/Domain/types");
     if(id.endsWith("/Shelf/CaseTitles"))return require("./build/Shelf/CaseTitles");
+    if (id.endsWith("/RimEvidence")) return require("./build/Runtime/RimEvidence");
     if (id.includes("ObservationContacts")) return contactModule.exports;
     if (id.includes("AuthorPropsHandles"))
       return { AuthorPropsHandles: UnrelatedPropsStub };

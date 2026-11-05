@@ -1,3 +1,4 @@
+import { rimFinding } from "./RimEvidence";
 import WorldCameraFinderProvider from "SpectaclesInteractionKit.lspkg/Providers/CameraProvider/WorldCameraFinderProvider";
 import { MuseumFonts, applyMuseumFont } from "./MuseumFonts";
 import {
@@ -621,7 +622,7 @@ export class PlayTable {
       this.anchor("Anchor_HallClock", [340, 100, 95]),
     );
     const bench = this.anchor("Anchor_ConservationBench", [-350, 94, 380]);
-    this.bindClock("WorkshopClock", this.offset(bench, 70, 7, -20));
+    this.bindClock("WorkshopClock", this.offset(bench, 82, 21.4, -47));
     this.caseRack();
     this.workbench(bench);
     this.registeringPublicStation = true;
@@ -703,10 +704,11 @@ export class PlayTable {
   }
 
   private bindClock(id: string, position: Point): void {
+    const desk = id === "WorkshopClock";
     const clock = this.bindObject(
       id,
       position,
-      [22, 24, 8],
+      desk ? [18, 18, 8] : [22, 24, 8],
       () => {
         if (this.state.reveal)
           return (
@@ -741,6 +743,10 @@ export class PlayTable {
           this.state.detective?.mode === "reconstruction"),
     );
     applyMuseumFont(clock.text, this.ports.fonts, "regular");
+    if (desk) {
+      clock.text.textFill.color = new vec4(0.035, 0.09, 0.075, 1);
+      clock.inscription.getTransform().setLocalPosition(new vec3(0, 0, -5.5));
+    }
     let startTick = 0,
       distance = 0,
       captured = -1,
@@ -788,9 +794,9 @@ export class PlayTable {
     this.finishDrag(clock.input, () => {
       captured = -1;
     });
-    this.bindObject(
+    const reset = this.bindObject(
       id + "Reset",
-      this.offset(position, 0, -17, 0),
+      this.offset(position, 0, desk ? -12.4 : -17, 0),
       [12, 6, 8],
       () => this.state.reveal ? "Replay the theft" : "Replay from alarm",
       () => this.state.reveal
@@ -798,22 +804,24 @@ export class PlayTable {
         : this.detective({ type: "replay" }),
       () => !!this.state.reveal || (!!this.state.detective && clock.active()),
     );
-    this.bindObject(
+    const previous = this.bindObject(
       id + "Previous",
-      this.offset(position, -15, 0, 0),
+      this.offset(position, desk ? 13 : -15, 0, 0),
       [7, 12, 8],
       () => "Previous frame",
       () => this.step(-1),
       clock.active,
     );
-    this.bindObject(
+    const next = this.bindObject(
       id + "Next",
-      this.offset(position, 15, 0, 0),
+      this.offset(position, desk ? -13 : 15, 0, 0),
       [7, 12, 8],
       () => "Next frame",
       () => this.step(1),
       clock.active,
     );
+    if (desk) for (const part of [reset, previous, next])
+      part.inscription.getTransform().setLocalPosition(new vec3(0, 0, -5.5));
   }
   private step(delta: -1 | 1): void {
     if (this.state.reveal) this.reveal({ type: "step", delta });
@@ -1546,7 +1554,9 @@ export class PlayTable {
           "Inspect" + clue.id,
           [exhibit.x * 100, 88, exhibit.z * 100],
           [32, 15, 32],
-          () => "Inspect rim",
+          () => this.state.detective?.selected === clue.id
+            ? rimFinding(clue) + "\nInspect again"
+            : "Inspect rim",
           () => this.detective({ type: "inspectObject", id: clue.id }),
           () => this.state.detective.mode !== "reconstruction",
         );
@@ -1952,7 +1962,7 @@ export class PlayTable {
         mark + "\n" + clue.witness + " " + (clue.tick / 2).toFixed(1) + " s"
       );
     }
-    if (clue.kind === "Rim") return "Rim mark";
+    if (clue.kind === "Rim") return ""; // CasePaper owns the rim finding on this pane.
     return clue.box;
   }
 

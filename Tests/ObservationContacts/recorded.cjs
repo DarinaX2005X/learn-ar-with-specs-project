@@ -108,6 +108,7 @@ class ObjectNode {
   createComponent(type) {
     let component;
     if (type === "Interactable") component = new Input();
+    else if (type === "Component.Text") component = { textFill: {} };
     else if (type === "Component.ScriptComponent")
       component = {
         createEvent: () => ({ bind: (fn) => updates.push(fn) }),

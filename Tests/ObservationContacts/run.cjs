@@ -108,6 +108,7 @@ class ObjectNode {
   createComponent(type) {
     let component;
     if (type === "Interactable") component = new Input();
+    else if (type === "Component.Text") component = { textFill: {} };
     else if (type === "Component.ScriptComponent")
       component = {
         createEvent: () => ({ bind: (fn) => updates.push(fn) }),
@@ -149,6 +150,9 @@ function load(file) {
       module,
       exports: module.exports,
       vec3: Vector,
+      vec4: class {
+        constructor(x, y, z, w) { Object.assign(this, { x, y, z, w }); }
+      },
       quat: { fromEulerAngles: () => rotation },
       Shape: { createBoxShape: () => ({}) },
       HorizontalAlignment: { Center: 0 },

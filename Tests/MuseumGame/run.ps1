@@ -1,8 +1,8 @@
 $ErrorActionPreference = 'Stop'
 Push-Location $PSScriptRoot
 try {
-    npx --yes --package=typescript@6.0.2 --call 'node run.cjs'
-    if ($LASTEXITCODE -ne 0) { throw 'MuseumGame route checks failed' }
-} finally {
-    Pop-Location
-}
+ foreach ($name in @('run','bench-clock','bench-clock-direction','bench-clock-geometry')) {
+  npx --yes --package=typescript@6.0.2 --call "node $name.cjs"
+  if ($LASTEXITCODE -ne 0) { throw "MuseumGame $name regression failed" }
+ }
+} finally { Pop-Location }
