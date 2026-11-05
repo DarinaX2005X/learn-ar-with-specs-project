@@ -1,5 +1,5 @@
 const assert = require("node:assert/strict");
-const D = require("./build/index.js");
+const D = require(process.env.DOMAIN_BUILD || "./build/index.js");
 let checks = 0;
 function test(name, fn) {
   fn();
@@ -586,5 +586,167 @@ test("alternative histories have identical public projected geometry", () => {
     },
   );
   assert.deepEqual(meshes[0], meshes[1]);
+});
+test("separate public fragment pins obey either-order proof and removal", () => {
+  for (const create of [D.createMirrorCase, D.createMuseumTheft]) {
+    const result = compile(create(true));
+    const observations = D.getObservations(
+      result.sealed.clues,
+      "entrance",
+      12,
+    ).filter((view) => view.observation.kind === "fragment");
+    assert.equal(observations.length, 2);
+    const courier = observations.find(
+      (view) => view.payload.fragments[0].role === "Courier",
+    );
+    const guard = observations.find(
+      (view) => view.payload.fragments[0].role === "Guard",
+    );
+    for (const view of observations) {
+      assert.equal(view.payload.fragments.length, 1);
+      assert.equal(view.payload.hands.length, 0);
+      assert.equal(view.payload.actions.length, 0);
+      assert.equal(view.payload.exhibit, undefined);
+      assert.equal(
+        D.resolveObservation(result.sealed.clues, view.id).id,
+        view.id,
+      );
+      assert.equal(solve(result, "Conservator", [view.id]).status, "needClue");
+    }
+    assert.deepEqual(
+      solve(result, "Conservator", [courier.id]).possibleCulprits,
+      ["Conservator", "Guard"],
+    );
+    assert.deepEqual(
+      solve(result, "Conservator", [guard.id]).possibleCulprits,
+      ["Conservator", "Courier"],
+    );
+    assert.equal(
+      solve(result, "Conservator", [courier.id, guard.id]).status,
+      "proved",
+    );
+    assert.equal(
+      solve(result, "Conservator", [guard.id, courier.id]).status,
+      "proved",
+    );
+    assert.equal(
+      solve(result, "Conservator", [guard.id, courier.id, courier.id]).status,
+      "proved",
+    );
+    assert.equal(solve(result, "Conservator", [guard.id]).status, "needClue");
+    assert.equal(solve(result, "Conservator", [courier.id]).status, "needClue");
+    assert.equal(solve(result, "Conservator", []).status, "needClue");
+    assert.deepEqual(
+      D.getObservations(compile(create(true)).sealed.clues, "entrance", 12),
+      D.getObservations(result.sealed.clues, "entrance", 12),
+    );
+  }
+});
+test("fragment selection does not assert other camera fragments were absent", () => {
+  const result = compile(D.createMirrorCase());
+  const courier = D.getObservations(result.sealed.clues, "entrance", 12).find(
+    (view) =>
+      view.observation.kind === "fragment" &&
+      view.payload.fragments[0].role === "Courier",
+  );
+  const verdict = solve(result, "Conservator", [courier.id]);
+  const wrongForOtherMark = verdict.examplesByCulprit.Guard;
+  assert(wrongForOtherMark);
+  const hypothetical = D.observe(result.sealed.board, wrongForOtherMark);
+  assert.deepEqual(
+    D.compareObservations(result.sealed.clues, hypothetical, [courier.id]),
+    [],
+  );
+  assert.deepEqual(
+    D.compareObservations(result.sealed.clues, hypothetical, [
+      "frame:entrance:12",
+    ]),
+    ["frame:entrance:12"],
+  );
+  const viewOnly = D.resolveObservation(hypothetical, courier.id);
+  assert.equal(viewOnly.payload.fragments.length, 1);
+  assert.equal(viewOnly.payload.fragments[0].role, "Courier");
+});
+test("observation IDs bind revision/source/tick and never encode hidden identity", () => {
+  const result = compile(D.createMirrorCase());
+  const view = D.getObservations(result.sealed.clues, "entrance", 12).find(
+    (view) => view.observation.kind === "fragment",
+  );
+  assert.equal(/Courier|Guard|Conservator/.test(view.id), false);
+  const changed = D.createMirrorCase();
+  changed.rev++;
+  assert.equal(
+    D.resolveObservation(compile(changed).sealed.clues, view.id),
+    undefined,
+  );
+  assert.equal(
+    solve(compile(changed), "Conservator", [view.id]).status,
+    "conflict",
+  );
+  const next = D.getObservations(result.sealed.clues, "entrance", 13).find(
+    (view) => view.observation.kind === "fragment",
+  );
+  assert.notEqual(next.id, view.id);
+  assert.deepEqual(
+    D.getObservations(closed.sealed.clues, "entrance", 12)
+      .filter((view) => view.observation.kind === "fragment")
+      .map((view) => view.payload.fragments[0].role),
+    ["Courier"],
+  );
+});
+test("swapped identities recompute per-fragment evidence without a named-case shortcut", () => {
+  const draft = D.createMuseumTheft();
+  draft.casting.B = "Guard";
+  draft.casting.C = "Conservator";
+  const result = compile(draft),
+    ids = D.getObservations(result.sealed.clues, "entrance", 12)
+      .filter((view) => view.observation.kind === "fragment")
+      .map((view) => view.id);
+  assert.equal(solve(result, "Guard", ids).status, "proved");
+  assert.equal(solve(result, "Guard", [ids[0]]).status, "needClue");
+});
+test("independent action and hand subobservations retain chain evidence", () => {
+  const result = compile(D.createPackingCase({ rearCamera: true }));
+  const views = D.getObservations(result.sealed.clues, "passage", 15);
+  const pass = views.find(
+    (view) =>
+      view.observation.kind === "action" &&
+      view.payload.actions[0].kind === "Pass",
+  );
+  assert(pass);
+  assert.equal(pass.payload.fragments.length, 0);
+  assert.equal(pass.payload.hands.length, 0);
+  const take = D.getObservations(result.sealed.clues, "entrance", 12).find(
+    (view) =>
+      view.observation.kind === "action" &&
+      view.payload.actions[0].kind === "Take",
+  );
+  const taker = D.getObservations(result.sealed.clues, "entrance", 12).find(
+    (view) =>
+      view.observation.kind === "fragment" &&
+      view.payload.fragments[0].role === "Conservator",
+  );
+  const recipient = views.find(
+    (view) =>
+      view.observation.kind === "fragment" &&
+      view.payload.fragments[0].role === "Courier",
+  );
+  const proof = solve(
+    result,
+    { taker: "Conservator", recipient: "Courier", cache: "brass case" },
+    [take.id, taker.id, pass.id, recipient.id, "box:brass case"],
+  );
+  assert.equal(proof.status, "proved");
+  const brush = D.getObservations(packing.sealed.clues, "entrance", 6).find(
+    (view) =>
+      view.observation.kind === "action" &&
+      view.payload.actions[0].kind === "BrushRim",
+  );
+  assert(brush);
+  const matches = bruteForce(packing.sealed.board, packing.sealed.clues, [
+    brush.id,
+  ]);
+  const factored = solve(packing, "Guard", [brush.id]);
+  assert.equal(factored.historyCount, matches.length);
 });
 console.log(`${checks} domain checks passed`);

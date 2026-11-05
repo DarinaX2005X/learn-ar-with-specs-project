@@ -26,6 +26,23 @@ the finite mirror is visible.
 alternative history. `frameAt(tape, witnessId, integerTick)` returns only the
 requested discrete frame; it never joins separate visibility segments.
 
+`getObservations(tape, witnessId, tick)` derives separately selectable public
+views. `observation.kind === "fragment"` contains exactly one observed surface
+and its visible mark; it says nothing about other figures, hands or actions in
+that frame. Separate `hand`, `action` and `exhibit` views expose only their own
+channel. Empty-hand evidence refers to one visible position, while an empty
+exhibit is a visible recorded state. Source frame IDs keep their original exact
+whole-frame meaning. Derived IDs include case, revision, source, tick and channel;
+they never encode the hidden actor. Repeated compilation produces the same IDs.
+
+`resolveObservation(tape, id)` resolves both these views and existing root/object
+clues. `compareObservations(originalTape, candidateTape, selectedIds)` preserves
+the same masks when comparing reconstructions. Full-tape comparisons still use
+every complete root frame and object state; derived views are never appended as
+duplicate facts. Pin the direct courier and reflected guard separately to prove
+the first case. Either one alone leaves two possible culprits; removing either
+reopens the question.
+
 For public paper-glass rendering, pass a frame fragment and the public TableKit
 `roleSilhouette(fragment.role)` outline to
 `projectVisibleSurface(board, witnessId, fragment, outline)`. It returns angular

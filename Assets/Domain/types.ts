@@ -134,6 +134,23 @@ export interface FrameClue {
   tick: number;
   kind: "Frame";
   payload: FramePayload;
+  /** A selected crop is a positive constraint on one visible surface, not a new
+   * camera recording and not evidence that the rest of the frame was empty. */
+  observation?: {
+    caseId: string;
+    rev: number;
+    frameId: string;
+  } & (
+    | { kind: "fragment"; segment: string }
+    | {
+        kind: "hand";
+        position: Vec3;
+        via: "direct" | "mirror";
+        present: boolean;
+      }
+    | { kind: "action"; index: number }
+    | { kind: "exhibit" }
+  );
 }
 export interface RimClue {
   id: string;

@@ -11,7 +11,12 @@ import {
   Verdict,
   WitnessTape,
 } from "./types";
-import { answer, observe } from "./observe";
+import {
+  answer,
+  observe,
+  resolveObservation,
+  matchesObservation,
+} from "./observe";
 import { clone } from "./compile";
 
 const same = (a: unknown, b: unknown) =>
@@ -99,7 +104,9 @@ function* searchSteps(
         )
           continue;
         // Compare just this track's contact channel, including explicit absence.
-        const relevant = clues.filter((c) => c.kind === "Frame");
+        const relevant = clues.filter(
+          (c) => c.kind === "Frame" && !c.observation,
+        );
         const tape = relevant.length ? recorded(board, fake) : undefined;
         let fits = true;
         for (const c of relevant)
@@ -166,27 +173,17 @@ function* searchSteps(
           const indexes = new Map(publicTape.clues.map((c) => [c.id, c]));
           let fits = true;
           for (const c of clues) {
-            const actual = indexes.get(c.id);
+            const rootId =
+              c.kind === "Frame" && c.observation
+                ? c.observation.frameId
+                : c.id;
+            const actual = indexes.get(rootId);
             if (!actual) {
               fits = false;
               break;
             }
             if (c.kind === "Rim") continue;
-            if (c.kind === "Frame" && actual.kind === "Frame") {
-              const clean = (x: typeof c) => ({
-                ...x,
-                payload: {
-                  ...x.payload,
-                  actions: x.payload.actions.filter(
-                    (a) => a.kind !== "BrushRim",
-                  ),
-                },
-              });
-              if (!same(clean(c), clean(actual))) {
-                fits = false;
-                break;
-              }
-            } else if (!same(c, actual)) {
+            if (!matchesObservation(c, actual, true)) {
               fits = false;
               break;
             }
@@ -216,7 +213,18 @@ function* searchSteps(
                   };
                   const actual = recorded(board, h),
                     byId = new Map(actual.clues.map((c) => [c.id, c]));
-                  if (clues.every((c) => same(c, byId.get(c.id)))) {
+                  if (
+                    clues.every((c) =>
+                      matchesObservation(
+                        c,
+                        byId.get(
+                          c.kind === "Frame" && c.observation
+                            ? c.observation.frameId
+                            : c.id,
+                        ),
+                      ),
+                    )
+                  ) {
                     count++;
                     examples.push(h);
                   }
@@ -259,14 +267,16 @@ export function* proveSteps(
     };
   if (
     new Set(tape.clues.map((c) => c.id)).size !== tape.clues.length ||
-    selectedIds.some((id) => !tape.clues.some((c) => c.id === id))
+    selectedIds.some((id) => !resolveObservation(tape, id))
   )
     return {
       ...out,
       status: "conflict",
       message: "Duplicate or unknown evidence ID.",
     };
-  const clues = tape.clues.filter((c) => all || selectedIds.includes(c.id));
+  const clues = all
+    ? tape.clues
+    : [...new Set(selectedIds)].map((id) => resolveObservation(tape, id)!);
   const malformedRim = clues.some(
     (c) =>
       c.kind === "Rim" &&

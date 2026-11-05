@@ -155,14 +155,194 @@ export function frameAt(
       c.kind === "Frame" && c.witness === witness && c.tick === tick,
   );
 }
+/** Public crops are derived views, not duplicate facts inserted into the tape.
+ * IDs include case/revision/source/tick/segment and never include an actor role. */
+export function getObservations(
+  tape: WitnessTape,
+  witness: string,
+  tick: number,
+): FrameClue[] {
+  const frame = frameAt(tape, witness, tick);
+  if (!frame) return [];
+  const prefix = `observation:${encodeURIComponent(tape.caseId)}:${tape.rev}:${frame.id}`;
+  const base = { caseId: tape.caseId, rev: tape.rev, frameId: frame.id };
+  const view = (
+    suffix: string,
+    payload: FramePayload,
+    observation: NonNullable<FrameClue["observation"]>,
+  ): FrameClue => ({
+    id: prefix + "/" + suffix,
+    kind: "Frame",
+    witness: frame.witness,
+    tick: frame.tick,
+    payload,
+    observation,
+  });
+  const result: FrameClue[] = [];
+  for (const fragment of frame.payload.fragments) {
+    result.push(
+      view(
+        "fragment:" + encodeURIComponent(fragment.segment),
+        {
+          fragments: [JSON.parse(JSON.stringify(fragment))],
+          hands: [],
+          actions: [],
+        },
+        { ...base, kind: "fragment", segment: fragment.segment },
+      ),
+    );
+    const hand = frame.payload.hands.find(
+      (hand) =>
+        hand.via === fragment.via &&
+        JSON.stringify(hand.position) === JSON.stringify(fragment.position),
+    );
+    result.push(
+      view(
+        "hand:" + encodeURIComponent(fragment.segment),
+        {
+          fragments: [],
+          hands: hand ? [JSON.parse(JSON.stringify(hand))] : [],
+          actions: [],
+        },
+        {
+          ...base,
+          kind: "hand",
+          position: JSON.parse(JSON.stringify(fragment.position)),
+          via: fragment.via,
+          present: !!hand,
+        },
+      ),
+    );
+  }
+  frame.payload.actions.forEach((action, index) =>
+    result.push(
+      view(
+        "action:" + index,
+        {
+          fragments: [],
+          hands: [],
+          actions: [JSON.parse(JSON.stringify(action))],
+        },
+        { ...base, kind: "action", index },
+      ),
+    ),
+  );
+  if (frame.payload.exhibit !== undefined)
+    result.push(
+      view(
+        "exhibit",
+        {
+          fragments: [],
+          hands: [],
+          actions: [],
+          exhibit: frame.payload.exhibit,
+        },
+        { ...base, kind: "exhibit" },
+      ),
+    );
+  return result;
+}
+/** Resolve roots, timeless object evidence and derived crops through one boundary. */
+export function resolveObservation(
+  tape: WitnessTape,
+  id: string,
+): Clue | undefined {
+  const root = tape.clues.find((clue) => clue.id === id);
+  if (root) return root;
+  for (const frame of tape.clues)
+    if (frame.kind === "Frame") {
+      const found = getObservations(tape, frame.witness, frame.tick).find(
+        (view) => view.id === id,
+      );
+      if (found) return found;
+    }
+  return undefined;
+}
+/** Compare a crop against its complete candidate source. Other visible surfaces,
+ * hands, contacts and empty regions are unconstrained by a fragment-only pin. */
+export function matchesObservation(
+  expected: Clue,
+  actualRoot: Clue | undefined,
+  ignoreBrush = false,
+): boolean {
+  if (!actualRoot) return false;
+  if (expected.kind === "Frame" && expected.observation) {
+    if (
+      actualRoot.kind !== "Frame" ||
+      actualRoot.id !== expected.observation.frameId ||
+      actualRoot.witness !== expected.witness ||
+      actualRoot.tick !== expected.tick
+    )
+      return false;
+    const selected = expected.observation;
+    if (selected.kind === "fragment")
+      return (
+        expected.payload.fragments.length === 1 &&
+        actualRoot.payload.fragments.some(
+          (candidate) =>
+            JSON.stringify(candidate) ===
+            JSON.stringify(expected.payload.fragments[0]),
+        )
+      );
+    if (selected.kind === "hand") {
+      const atPosition = (candidate: {
+        position: Vec3;
+        via: "direct" | "mirror";
+      }) =>
+        candidate.via === selected.via &&
+        JSON.stringify(candidate.position) ===
+          JSON.stringify(selected.position);
+      return (
+        actualRoot.payload.fragments.some(atPosition) &&
+        actualRoot.payload.hands.some(atPosition) === selected.present
+      );
+    }
+    if (selected.kind === "action") {
+      if (ignoreBrush && expected.payload.actions[0]?.kind === "BrushRim")
+        return true;
+      return (
+        expected.payload.actions.length === 1 &&
+        actualRoot.payload.actions.some(
+          (action) =>
+            JSON.stringify(action) ===
+            JSON.stringify(expected.payload.actions[0]),
+        )
+      );
+    }
+    return actualRoot.payload.exhibit === expected.payload.exhibit;
+  }
+  const cleaned = (clue: Clue) =>
+    clue.kind === "Frame" && ignoreBrush
+      ? {
+          ...clue,
+          payload: {
+            ...clue.payload,
+            actions: clue.payload.actions.filter(
+              (action) => action.kind !== "BrushRim",
+            ),
+          },
+        }
+      : clue;
+  return (
+    JSON.stringify(cleaned(expected)) === JSON.stringify(cleaned(actualRoot))
+  );
+}
 export function compareObservations(
   expected: WitnessTape,
   actual: WitnessTape,
   ids?: readonly string[],
 ): string[] {
-  const index = new Map(actual.clues.map((c) => [c.id, JSON.stringify(c)]));
-  return expected.clues
-    .filter((c) => !ids || ids.includes(c.id))
-    .filter((c) => index.get(c.id) !== JSON.stringify(c))
-    .map((c) => c.id);
+  const selected = ids ?? expected.clues.map((clue) => clue.id);
+  if (expected.caseId !== actual.caseId || expected.rev !== actual.rev)
+    return [...selected];
+  const index = new Map(actual.clues.map((clue) => [clue.id, clue]));
+  return selected.filter((id) => {
+    const view = resolveObservation(expected, id);
+    if (!view) return true;
+    const rootId =
+      view.kind === "Frame" && view.observation
+        ? view.observation.frameId
+        : view.id;
+    return !matchesObservation(view, index.get(rootId));
+  });
 }

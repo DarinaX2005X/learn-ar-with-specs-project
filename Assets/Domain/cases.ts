@@ -67,6 +67,8 @@ export function createMirrorCase(open = true): CaseDraft {
 export function createMuseumTheft(open = true): CaseDraft {
   const draft = createMirrorCase(open);
   draft.id = "museum-theft";
+  // The actor reaches from beside the vitrine rather than standing inside it.
+  draft.room.exhibit.position = { x: 2.7, y: 1, z: 4 };
   draft.tracks = [
     track("A", [
       [0, 1.8, 0.9],
