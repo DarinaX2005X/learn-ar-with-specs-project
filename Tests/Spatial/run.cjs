@@ -57,6 +57,37 @@ test("arbitrary seeking restores ruby and exact pose", () => {
 const packing = compiled(C.createPackingCase());
 const pb = packing.sealed.board,
   ph = packing.vault.actualHistory;
+test("take clears the case and a rim contact touches brass without picking up the gem", () => {
+  for (const result of [compiled(C.createMuseumTheft(true)), packing]) {
+    const { board } = result.sealed;
+    const history = result.vault.actualHistory;
+    const exhibit = board.room.exhibit.position;
+    for (let i = -100; i <= 100; i++) {
+      const time = board.alarmTick + i / 100;
+      const view = S.renderHistory(board, history, time);
+      const hand = view.hands.find(({ track }) => track === history.take);
+      const [x, height, z] = hand.handCm;
+      const distance = Math.max(Math.abs(x - exhibit.x * 100), Math.abs(z - exhibit.z * 100));
+      if (distance <= 26) a.ok(height >= exhibit.y * 100 - 0.00001, "palm inside pedestal");
+      if (distance > 5 && distance <= 26) a.ok(height >= exhibit.y * 100 + 8.5, "palm below rim clearance");
+      if (i === 0) a.deepEqual(hand.handCm, [exhibit.x, exhibit.y, exhibit.z].map(value => value * 100));
+      if (i >= 0) a.deepEqual(view.ruby.positionCm, hand.handCm);
+    }
+    for (const brush of history.brushes) {
+      const view = S.renderHistory(board, history, brush.tick);
+      const hand = view.hands.find(({ track }) => track === brush.track);
+      const [x, height, z] = hand.handCm;
+      const distance = Math.max(Math.abs(x - exhibit.x * 100), Math.abs(z - exhibit.z * 100));
+      a.ok(Math.abs(distance - 23) < 0.00001);
+      a.ok(Math.abs(height - exhibit.y * 100 + 6.45) < 0.00001);
+      if (brush.tick < board.alarmTick) {
+        a.equal(hand.grip, 0);
+        a.deepEqual(view.ruby.positionCm, [exhibit.x, exhibit.y, exhibit.z].map(value => value * 100));
+      }
+    }
+  }
+});
+
 test("packing contact uses one shared hand point and reverse restores ownership", () => {
   a.ok(ph.pass);
   const v = S.renderHistory(pb, ph, ph.pass.tick);

@@ -2,13 +2,14 @@
 
 Original carved puppet geometry and PBR materials. No external meshes, character
 likenesses or reference-room images are embedded. MuseumBuilding embeds the four
-original Collection artwork/surface JPEGs; puppet models use geometric materials.
+original Collection artwork/surface JPEGs. The neutral reconstruction figure uses
+the original timber grain; named role puppets use geometric materials.
 
 MuseumBuilding is a full-size connected four-room museum, not a miniature.
 It mounts at identity with metre geometry and Lens import scale 100. Story +Z
 points into the building. Ruby Hall is X=[0,7], Z=[0,5] m; foyer X=[0,7],
 Z=[−5,0]; workshop X=[−5,0], Z=[0,5]; archive X=[−5,0], Z=[−5,0].
-The entrance viewer is (3.5,1.65,−3.4), looking +Z. Five genuine arched openings
+The spatial entry stop supplies the viewer pose. Five genuine arched openings
 connect the outside and rooms; the roof, pilasters and floors form one building.
 The central hall contains no new interior sight-line obstacles. Game-case walls,
 actors, mirror and ruby display remain mounted by the authoritative runtime.
@@ -38,9 +39,14 @@ port; apply rotations to these joint nodes without modifying mesh geometry.
 Faces include individual eyes, brows, projecting nose, ears, jaw and mouth.
 Guard has a broad peaked cap, moustache and shield; Courier has a projecting
 satchel, strap and soft cap; Conservator has round spectacles, bun and apron.
-AnonymousTrack is a blank stone articulated mannequin with no face, hat, role
-mark or accessory. It is for public unnamed paths, never an unknown actor's
-hidden silhouette. RoleMarkGuard/Courier/Conservator are standalone exports of
+AnonymousTrack is one role-neutral carved museum reconstruction figure, shared
+identically by every public track. Its generic face, working coat/vest, collar,
+folds, hands and boots carry no role-specific hat, badge, satchel or mark. All
+skeletal bind transforms and the original outer envelope are preserved. Its
+original timber grain is embedded; geometry batches remain separate per rigid
+joint/material. It represents an unnamed reconstruction, never a recovered
+hidden identity. Regenerate it alone with
+`python Tools/TableKit/generate_tablekit.py --only AnonymousTrack`. RoleMarkGuard/Courier/Conservator are standalone exports of
 the exact chest mark geometry, centred at their origins. RoleMarkAnonymous is
 a neutral solid tile. The known marks are 0.42–0.55 cm; scale their outer
 recording-glass wrapper to the intended label size. `WitnessPlacement.ts` maps
@@ -96,3 +102,9 @@ fill/key 0.38. GLB materials use the common limestone/teal/ruby/cream/brass fami
 No emission is used to imply hidden ruby ownership. Physical additive-display
 legibility, Stereo Preview, live aperture clipping, SIK cancellation and audio
 timing require review in the assembled Lens.
+
+The handoff folio uses a genuine CaseLidPivot at the left base edge, rotating
+around +Z from 0 degrees closed to 75 degrees open. CaseLidSurface has its origin
+at the actual cover centre; bind interaction geometry to that node. The fixed
+CasePaper and its ink stay beneath the exact 45 by 32 cm cover. No scaled
+fallback panel or moving paper is needed.

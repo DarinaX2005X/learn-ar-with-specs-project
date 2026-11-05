@@ -1,7 +1,7 @@
 {
   "name": "MuseumBuilding",
   "path": "MuseumBuilding.glb",
-  "bytes": 12710380,
+  "bytes": 12728752,
   "aabb_cm": [
     1308.0,
     422.0,
@@ -19,6 +19,9 @@
   ],
   "nodeNames": [
     "shadowInner",
+    "CaseLidPivot",
+    "CaseLidSurface",
+    "CaseLidInnerLining",
     "ArrivalRiverCanvas",
     "ConservatorToolsCanvas",
     "Anchor_Entrance",
@@ -100,6 +103,7 @@
     "WorkshopFurniture__clothTeal",
     "WorkshopFurniture__leather",
     "WorkshopFurniture__paper",
+    "WorkshopCaseHinge__brass",
     "WorkshopFurniture__brass",
     "WorkshopFurniture__glass",
     "WorkshopFurniture__ruby",
@@ -129,7 +133,7 @@
     "FoyerSculpture__paintOchre",
     "FoyerSculpture__parquetChestnut"
   ],
-  "triangles": 107650,
+  "triangles": 107812,
   "storyBoundsMetres": {
     "x": [
       -5,
@@ -142,6 +146,28 @@
   },
   "heightMetres": 3.94,
   "roomCount": 4,
+  "caseLid": {
+    "pivotNode": "CaseLidPivot",
+    "surfaceNode": "CaseLidSurface",
+    "hingeMetres": [
+      -3.725,
+      1.035,
+      3.65
+    ],
+    "axis": "+Z",
+    "closedRadians": 0,
+    "openRadians": 1.3089969389957472,
+    "surfaceLocalCentreMetres": [
+      0.225,
+      0.0125,
+      0
+    ],
+    "surfaceSizeMetres": [
+      0.45,
+      0.025,
+      0.32
+    ]
+  },
   "anchorsMetres": {
     "Entrance": [
       3.5,
@@ -204,9 +230,9 @@
       -1.738743
     ],
     "CaseLid": [
-      -3.9,
-      1.02,
-      3.8
+      -3.725,
+      1.035,
+      3.65
     ],
     "ArchiveRecorder": [
       -3.6,

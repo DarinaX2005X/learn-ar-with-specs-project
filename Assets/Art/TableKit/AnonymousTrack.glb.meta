@@ -1,85 +1,161 @@
 - !<AssetImportMetadata/3c6e31f6-1ad3-41cd-9319-51f9a336efab>
   ImportedAssetIds:
-    .hidden/brass: !<reference> 1f34571c-9663-41ce-b192-e46675f670da
-    0be14eee76dd2fa9: !<reference> 397e9cdb-3f46-4567-9203-dbb4e2a94d5b
-    0bfd00cfb3ff18b0: !<reference> bafb72fc-7248-4f42-8280-f652f50c653c
-    0c118698acf68f5b: !<reference> 9d6d1230-c946-4596-afda-36b141ea6237
+    .hidden/museumBoot: !<reference> aa430980-5838-4b15-b70b-6827cce34ce8
+    04d920c40de068db: !<reference> 7e70605c-aaa7-41b6-b865-ce3ce5d19aae
+    064096404e5ff061: !<reference> e58b8ed8-25a5-463f-b5a4-bd80da318d9b
+    091fa3557e30d4dc: !<reference> ca7e5eba-565a-48ea-bdd4-ad13ca2e7c39
+    0a0cc75a832f0687: !<reference> 0f307eb3-f585-446c-ade2-5d61af4ac506
     0c21f31c86002390: !<reference> f70fae64-8444-4ae3-baf6-5c4eb81e7a12
-    109656a03aa5d1df: !<reference> 3faa27ff-f58c-4196-98e3-b49cee0ec865
-    1291db092b48c54f: !<reference> 28392e63-dd12-4d42-9965-e7e2b93a68e9
-    19cd0a810494b6f9: !<reference> f32d30a2-9a64-4dd2-9942-5b73e04b9ee4
-    1f12183e83672bab: !<reference> c1317671-f1f3-4634-90f9-ae9cbef3851a
+    10d18827c382161e: !<reference> 682af50b-7c21-4ae6-9ac9-d9f82224cbe0
+    161da48c1c47d9ee: !<reference> 7972b3e8-3c49-4982-888d-81e918d37a6a
+    1d99c750b542cb58: !<reference> f3f76f8d-2d50-448e-adea-e49f5997e7e9
+    1e35d23f876a286a: !<reference> 66d032a6-f523-4251-8e03-1e9d43e93685
     22db15f5503934ac: !<reference> b149b005-38df-43b3-9f74-284a6b4d4016
+    26840ed4a8085ac5: !<reference> 0d22ea98-9ef1-41f0-ab48-01344cfc8c1f
     26ba073d67b9d0dd: !<reference> d3a58640-fde8-401d-93fc-7640e2fb4120
-    31a9bee14fed6a69: !<reference> f115b5f0-c9b7-4072-899c-82d0cd375a39
-    335ef0e7a72548c6: !<reference> 6fbea9f8-c832-4193-9dd9-03ce7e0c6c46
-    36c55e4c2a035c9d: !<reference> 2430d386-a8b9-4b5d-9fd1-36d5e3ef23e2
+    297cee9757104e17: !<reference> ac7748ed-d469-4bb9-af84-60f4b8fad1d2
+    2cb431fc5cae4f16: !<reference> b8a99a8f-1113-490b-ae48-c9ea330a271d
+    2d07846f36179995: !<reference> a0507e54-87e2-4f81-9e5f-268a5beb374e
+    33dd30d752cbd9af: !<reference> b296de2b-47f4-4f64-8f39-618352cf64f7
     38d7043ddedd5b72: !<reference> 3d71c015-c233-4784-80ea-1d80c1137e37
-    43465bf25285768e: !<reference> f061f997-a887-4294-87c8-5be927a3cd1d
+    3971cf50dcde205e: !<reference> 56a1ce8a-ec9e-4897-95bc-6f422bade063
+    3b004e0c5f5f3a54: !<reference> 225bf3fb-28c1-4ce2-b7e1-1b731fff0652
+    3e4e13ff20a59489: !<reference> a22d68b0-f450-48cc-8acc-2cce84dbc4e3
+    41131080a710d227: !<reference> b2b0904b-8d83-4eff-9269-f7d962b1b618
+    42c5b0d7eefff914: !<reference> e70b2cbb-107d-4539-9fc6-46b825003c01
     43e97f2cda07a03a: !<reference> 5b45067d-95e4-4639-aed9-a714768b6d61
+    4634a4030a51c209: !<reference> 22e4e8dd-520a-41b4-bd46-2e4729535dc4
     4b432b6927eab225: !<reference> 750cd4ee-6ffe-4287-9d54-3bd1919b3c7c
+    4b8211ed986e82e3: !<reference> b1317924-3324-4373-a285-9ea627cd3ec7
     52688c0039eb4090: !<reference> da3fbaa0-eef2-4c6d-8f87-79e911aeae71
     5adced2f86526ad8: !<reference> 8f4108ea-0c59-4c3b-93c5-118171db0ef7
-    6121ac0732024896: !<reference> 7c26263f-5af7-4c60-b884-1e13a39c473c
+    5bb7315bea821935: !<reference> 7ca52f01-cf22-442a-b130-e9929808d1bf
+    5be692a9163b40d6: !<reference> 7a63a09f-8b7b-4d0a-b9c1-048df89a03d0
+    6357b593c7adb6d3: !<reference> 3e995b66-94af-4b6a-9e06-6735defc7a42
     6417f8fa5df798cc: !<reference> 05fa65c2-c17e-4394-8dd7-dfe513f7becb
-    66e2faf16366b02a: !<reference> 726623d7-dfbb-4a02-acc6-91e688588422
-    6c769964f7a3b795: !<reference> 0cdc965f-0d43-45dc-83dc-fd6d3ab38c9a
-    6f3cd0132ab4bcbc: !<reference> 9ae97298-4e9c-400f-a34f-68b9764f3b3f
+    6ae6a37cfa3d318a: !<reference> 29b06c3b-71bd-4c93-b50d-63d8846fc53d
+    6fd66711ab1df214: !<reference> 0d0b3e80-d401-4a0e-bc61-3a3a1b171019
+    753303976781c90c: !<reference> b744c7da-9de9-475b-8108-2010eb1b2e6d
+    754c0323e43437ed: !<reference> 9faa18f4-47b3-481b-a8f5-c5055d269ddc
     7737a95132725d84: !<reference> c7342432-9cb0-45c4-ba45-896ea4c89065
-    7bdd25f5a39a0108: !<reference> f4c49887-067a-4639-9972-f185fd9cc80e
+    77f488034823c771: !<reference> 11fab400-613f-4a68-9d25-08f0e135c33d
+    7a1323573ce7bfa5: !<reference> 18715ef7-f713-44be-9a42-34f9f5620894
+    7c28a0aba6caff64: !<reference> 8f072e4a-375b-4c99-a8b8-43945aacc12c
+    7cd97d85a78ba5f4: !<reference> 356fe088-41ee-47b7-916e-afe73f3e3c1f
+    81415e8cdbbaf9c3: !<reference> 30b5cd9b-f543-4dee-9909-046891953f5c
+    830286a2437a1f4d: !<reference> 917babb3-d197-4a5d-9785-0657127d57f6
+    83a516aa35397ae1: !<reference> 412fa36e-efb4-483b-8fa4-9db7c0fef3b0
     869ea98e53f3432a: !<reference> 33f5fb7e-4a07-41f8-a70d-d0cae5db0740
+    86f0aa5d9badf9ad: !<reference> fb4abd8f-dd7c-4476-9434-58e77c55e7ab
     88ab437fd121cc69: !<reference> 577c61a6-f4e5-4833-923b-0bb2a7f4a439
     88eeed040374d6f6: !<reference> 484f2c28-f164-4955-ab5e-f3f3efdf0d17
+    8a8f5fdd5a9d2c16: !<reference> 7c738d6f-735d-465e-9d12-8450f1d0e5fc
+    8bf8df114bc3816e: !<reference> 213aa45f-1b14-4939-9595-918700ca2dff
     8c2c6f3cf8d060fd: !<reference> 17206cb5-3313-4e6d-ab34-9ad2cb2ebf82
     8e9876247bebccf0: !<reference> d1999b02-9c58-405a-829b-03927f3a6061
+    91561f8b32c63122: !<reference> 83cb5f32-9183-4ce9-9a30-df5c3715fbe6
+    934c620b3d9e60ca: !<reference> f20af0eb-d0da-40fe-9bbb-d5cb1fcd54d1
     93bb6c78613fee5d: !<reference> 6112077d-3fa2-4461-b256-4d298fa86db0
-    981b0a21fb0b44b0: !<reference> a2aff896-b571-4e23-b2f4-b40d76627faa
+    96a22e1b46c41766: !<reference> 37c2d712-50ff-4d67-92bf-7971adc0440e
     98daabd8550a18da: !<reference> bf506cbe-a08a-474f-99dc-048c3093b8d9
+    9914be7fce99e609: !<reference> 2381ad52-a789-48c9-9743-203a3c1e8282
     99d649f2ff334b3d: !<reference> 1d6907af-17aa-403f-bef9-a25dcdc684cc
-    Materials/brass: !<reference> 65a426fe-ad31-4c7b-a349-a4c7d59fde7a
-    Materials/brass|brass|GraphPassInfo: !<reference> 30b3d47a-5941-4cf7-a3e6-76da1c131f27
-    Materials/limestone: !<reference> 1d0868c5-aa40-4c6b-b36e-59c85a7fd283
-    Materials/limestone|limestone|GraphPassInfo: !<reference> 4fcac3ca-1b16-400c-b1e2-7dbe941e5af1
-    Materials/stoneShade: !<reference> 7d0af3eb-e264-4b1e-be42-9f8ae71b5027
-    Materials/stoneShade|stoneShade|GraphPassInfo: !<reference> b0faa133-3a34-4293-bbd4-2b38e24b897e
-    Meshes/BlankHead: !<reference> 2687c169-a8fa-4366-ac62-57da53ca7f76
+    Materials/museumBoot: !<reference> 726915e8-f9ff-4f76-ae49-d920e9959804
+    Materials/museumBoot|museumBoot|GraphPassInfo: !<reference> b8e7c0ef-8f9e-46f6-8bd0-650622832fb7
+    Materials/museumCoat: !<reference> 5c8eed97-47f8-4f60-9fcc-598b20e342b2
+    Materials/museumCoat|museumCoat|GraphPassInfo: !<reference> b093987b-67a9-4a47-bcd2-f07ae4106225
+    Materials/museumJoint: !<reference> 230441c4-2c52-4fc8-ab36-57e74d302eb5
+    Materials/museumJoint|museumJoint|GraphPassInfo: !<reference> 965528fb-d3c0-424c-8598-a9d9b3a25915
+    Materials/museumLinen: !<reference> 002ea1db-87f1-453e-a820-267f90470fa7
+    Materials/museumLinen|museumLinen|GraphPassInfo: !<reference> 99224511-4e37-4b2e-aff1-b8cafc848f48
+    Materials/museumOrbit: !<reference> 3d8bbdbc-84f3-487d-8bd6-8cd455b9703d
+    Materials/museumOrbit|museumOrbit|GraphPassInfo: !<reference> 8a5409a1-a761-4d2e-975a-e04d6256174b
+    Materials/museumSeam: !<reference> cbf175a7-cca4-4695-9855-2ec81bba5806
+    Materials/museumSeam|museumSeam|GraphPassInfo: !<reference> 53670919-b043-4d04-8bb2-fb316416bda2
+    Materials/museumTimber: !<reference> 08431d18-a73a-4223-9b22-41acfefaecd2
+    Materials/museumTimber|museumTimber|GraphPassInfo: !<reference> d2b6c89d-4824-4ab2-a6af-f3031862eece
+    Materials/museumVest: !<reference> 06d0cefc-537e-477b-8c05-e618646dd528
+    Materials/museumVest|museumVest|GraphPassInfo: !<reference> 765cfc6c-06c8-440d-96f4-1abd6a42e4e7
+    Materials/museumWear: !<reference> 502c4252-4156-4c85-97d4-20e36a5a3dab
+    Materials/museumWear|museumWear|GraphPassInfo: !<reference> 38977cae-27e2-493f-a1ef-613ca169f629
+    Meshes/BootWelt_L: !<reference> 940939ae-913f-4b19-9d86-acbf1684f6f0
+    Meshes/BootWelt_R: !<reference> a120c109-81ca-4bf9-8f4c-fc92d9b97a7c
+    Meshes/CoatBody: !<reference> 7d871ae4-4bc5-404d-8983-88feee048c3d
+    Meshes/CoatFrontSeam_-1: !<reference> b5b16967-e9f3-47a4-9824-6347f3eef32a
+    Meshes/CollarPoint_-1: !<reference> aa807d20-0b76-448c-9168-5eba3e5cda06
+    Meshes/Cuff_L: !<reference> e44e2b43-41cd-408b-981a-9f70a3a5285a
+    Meshes/Cuff_R: !<reference> 2704b943-5031-4e2b-bbcb-ca82d1ba55d9
+    Meshes/ElbowClothFold_L: !<reference> 4fcca62e-a025-40a7-aed6-3898bd283217
+    Meshes/ElbowClothFold_R: !<reference> 2a48bce8-0fe1-464b-8841-f60ec02d4881
     Meshes/Elbow_L: !<reference> f9ea49f0-6fb5-4766-8158-afcd36468e78
     Meshes/Elbow_R: !<reference> 1eebf5f5-b38c-4ed0-ad3e-9a73da21ce0b
+    Meshes/EyeOrbit_-1: !<reference> 9464e80e-ab8d-49c6-9c5e-5f800219a5ff
+    Meshes/Eye_-1: !<reference> a217d521-32aa-4f69-8689-32bc4b2ce5fe
     Meshes/Foot_L: !<reference> b8f47577-0d02-4938-b580-c39a7be074e6
     Meshes/Foot_R: !<reference> 018daf3a-1eb5-4f3b-a28e-b1435cd6f63e
     Meshes/ForeArm_L: !<reference> ec1b2905-988f-455a-a535-2b289146f9d3
     Meshes/ForeArm_R: !<reference> f318c675-e6bc-4804-9114-d6172747b6e7
     Meshes/KneeJoint_L: !<reference> 572ee105-4528-4e16-9445-cce3a2875b5e
     Meshes/KneeJoint_R: !<reference> 0c42aef6-3ba3-441e-b617-76c541327bf3
+    Meshes/LapelTurn_-1: !<reference> d31ce1f6-a6c6-431e-9365-10987feb8736
     Meshes/Neck: !<reference> ce485960-3ba2-49d9-a15b-25357e3bbd35
-    Meshes/NeutralTorso: !<reference> 81e4682f-b073-48e4-afe2-c5a15af5f81d
     Meshes/Palm_L: !<reference> 3f684b8b-cf68-4e8b-ba18-e41943b08182
     Meshes/Palm_R: !<reference> 51dd4ea2-4319-46fd-ae92-032be133d18f
+    Meshes/PlainVest: !<reference> 571528bc-5d21-49a2-8a33-e0aaa06b7a30
+    Meshes/SculptedHead: !<reference> 2606f8a4-5787-4a9a-acf6-f02c4142273d
     Meshes/Shin_L: !<reference> 0f3a8949-8f7b-402b-ab82-875ee05ac1b2
     Meshes/Shin_R: !<reference> 150df918-aa5f-4316-923f-6607efe4d7af
+    Meshes/ShoulderStitch_L: !<reference> e6b43287-e2c6-4eb4-9d6b-15754f471a5f
+    Meshes/ShoulderStitch_R: !<reference> 3d62a569-1934-4ee7-a40e-98a86721c427
+    Meshes/Sole_L: !<reference> 49480c96-0995-4abc-a4f1-ec51cafdcbb7
+    Meshes/Sole_R: !<reference> c13cde04-5635-4d2d-a4ac-6a197d376a00
     Meshes/Thigh_L: !<reference> 97b038bf-6e83-4898-b473-0e60edd2d912
     Meshes/Thigh_R: !<reference> c6558f91-bc55-4b57-8092-2b09d04b3908
+    Meshes/TrouserSeam_L: !<reference> c031aaa2-06ba-4306-8e14-a8086fde83f3
+    Meshes/TrouserSeam_R: !<reference> ad111e7f-a491-4686-a378-186cef2f5b1c
     Meshes/UpperArm_L: !<reference> 4ea12b6c-9608-4a92-9dc3-79f39383386f
     Meshes/UpperArm_R: !<reference> 64b56c17-6866-43bf-a5e9-eb5c0ae70d62
+    Meshes/VestFastener_7.15: !<reference> ac45cb31-9de5-43e1-bba5-e6c448201b72
+    Meshes/WristJoint_L: !<reference> 326cd2b4-17fb-4d51-89e8-50bb6e4b155b
+    Meshes/WristJoint_R: !<reference> 5170a7a5-baaa-4402-a9df-d2e46a3d0683
     Scene: !<reference> 38a278e1-8b36-4ab6-8c89-b265e1267f2b
-    a66621bdd7681fe9: !<reference> d06f3170-9e36-43fd-8ab2-1f71946dbd83
-    af5e9e3b685159b5: !<reference> fa19289d-605e-47bc-a0e6-8e0da6ad49a2
+    Textures/CarvedTimberGrain: !<reference> 359c0036-ce3d-47d6-a9ce-907dddb45edf
+    a169307cdf97a121: !<reference> 59aaa18f-4b81-4633-a6f2-139b576d37d4
+    a27df7636ebf480c: !<reference> 0e04e5c0-d1e6-465a-8ff8-35876f498ac4
+    a541ca74ff675e74: !<reference> d378ac14-c1ca-4230-bce5-32a7df2f5493
+    a8cd2eef3fa14828: !<reference> 2d8791dd-0452-4c6c-a578-45c48e3cf764
+    ab40923f64ebb506: !<reference> 4583f849-d6c3-428f-a332-fdacbea0692c
+    ab9c701aa974c364: !<reference> 041981b7-078b-4b88-a847-448b77c37929
+    ac926b084637a1c8: !<reference> 18871c7e-d828-4de8-94af-d46a88ccf800
+    acce5f0c81a70794: !<reference> 8699374b-c40e-44fd-8b8b-191290311570
+    ad86a0c6e0a6e770: !<reference> 0e0fb714-217e-43c7-aa3c-8107c0d4f92e
+    b076aa8da366368d: !<reference> 7350e8bd-0b6b-41f1-bbed-e4b43b5b2aa1
     b0d6b7fb43eeabc1: !<reference> 5d4c9b2f-b38f-462f-a93a-c5c47fcb5e67
-    b1fd30e1e8294726: !<reference> 3eb87be3-426d-4d34-8031-6950037d4ace
+    b349b81c0b1b3a40: !<reference> 1f852a2d-588d-4a21-a278-da20147abf87
     b51cc7e3a11cdf9b: !<reference> cbc39f0c-1a32-4089-acae-b529eb7e2a8b
-    b60a1122b812223f: !<reference> 81a88ef8-c20b-4caa-8c0b-655bf588ffc7
-    b899fcde97b01149: !<reference> 3c02f869-d528-4356-85f9-eb3da84554cd
     bde849acc36c1956: !<reference> bac9d386-4573-4517-92b8-58b251e25442
-    cb993423885568a3: !<reference> 95cb761b-e7fa-4ab1-b6e9-493b878e2aab
+    bfdb08538d6d0a9a: !<reference> cdf7a7b7-ccbe-438c-b081-a338e65fa13a
+    c2d3ea2e6e2fb3e4: !<reference> afaf8c8e-840d-4e0e-9ec9-4a9863420a9b
+    c3a8ef64b63e2646: !<reference> 8ea81991-c063-4807-a06d-b574fa687bbf
+    c5487d9ff87d92d4: !<reference> 8e320f01-f723-4398-89f2-143bac79ed95
+    c59678bafc588771: !<reference> 393892e3-0321-407d-98b6-b4256a51eefc
+    c9ecc1eed8c86996: !<reference> 59ca63fd-a1ce-416c-a0ac-8f9e3d5e7005
+    cd87eb8c0a1b6521: !<reference> 4b32474f-035b-4ca5-af33-974297b4f32a
+    ce4708c3dd6917ce: !<reference> 6a846a9b-8e6a-4e27-9c43-532182dc3ca1
+    ce4d0e00db13db4f: !<reference> 564a54e4-b8b5-4fa3-85e3-4d10a655bd88
     d0dc28a133ffcc47: !<reference> 6381f20e-d6ad-482b-9dd5-a590a5125590
     d30af60cac6ba3d2: !<reference> c2637ccb-f2ff-4ea8-8a45-f9fa8fa49487
+    d65622599ce412ef: !<reference> 0f8072fc-301d-4a93-b413-f3281e96b7b2
+    ddd66f1a67c3dd1b: !<reference> b7beb2a9-3c34-4e18-ad7a-b9714440bd12
+    deb1993ae735cd0d: !<reference> 6302328c-a19e-4a3d-9a04-457cdc4ac0d7
     e585d6357d83fa9f: !<reference> 2094876d-5b3e-4310-b231-ffbbab7b17d9
-    e72f7d7e6689fbdc: !<reference> 26741f73-3b83-46ff-be33-ccf072ed2d53
-    ec4b2ee819f86087: !<reference> 0887e647-be35-4533-9529-6455156b5e0f
-    edb35dec8a719df9: !<reference> f9c2de90-ebe1-4a3f-9869-b167a5188d1d
-    eec7618397a5afb8: !<reference> c24e9c89-cc4f-4e5e-9256-843ea0fcdfd8
-    f863a0177e15035c: !<reference> 24673d5c-8f8a-4b16-bff4-c997c14738ff
-    f936a6e2229dcd86: !<reference> 703bb689-0a98-4447-a8ae-47e143ce94f2
+    e5ae7ea018cdcc47: !<reference> 966ac858-5768-4ad7-a90d-48762244c06d
+    e828830d1bc15453: !<reference> 26aa00d3-c136-4397-b028-31fa44d7fa42
+    ea163ac1162142ab: !<reference> a045c852-7337-4667-9381-a6a6fa836c5d
+    ecd3f5c1d8828a14: !<reference> 91b497ef-5950-49cb-b459-67c8709d021c
+    f2573a51e738c0e7: !<reference> b1a53b82-00d1-4af6-8083-e10359c4a338
+    f4ebf3e0a4cb686f: !<reference> 32c8964c-5835-42da-ba3a-74d0d0af3bc4
+    fd887734c2fe561c: !<reference> 51c18a9a-f5c3-460e-919d-21b7016b2d4b
   ImporterName: GltfImporter
   PrimaryAsset: !<reference> 38a278e1-8b36-4ab6-8c89-b265e1267f2b
   PackageType: LegacyPackage

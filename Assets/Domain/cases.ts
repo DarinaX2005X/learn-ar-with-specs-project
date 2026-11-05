@@ -69,6 +69,11 @@ export function createMuseumTheft(open = true): CaseDraft {
   draft.id = "museum-theft";
   // The actor reaches from beside the vitrine rather than standing inside it.
   draft.room.exhibit.position = { x: 2.7, y: 1, z: 4 };
+  const entryScreen = draft.room.walls.find(wall => wall.id === "entry-screen")!;
+  const eastScreen = draft.room.walls.find(wall => wall.id === "east-screen")!;
+  entryScreen.b.x = 2.05;
+  eastScreen.a.x = 3.2;
+  eastScreen.b.x = 3.2;
   draft.tracks = [
     track("A", [
       [0, 1.8, 0.9],

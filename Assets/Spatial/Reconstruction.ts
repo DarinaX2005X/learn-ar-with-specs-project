@@ -1,18 +1,12 @@
 import { Board, History, Track, TrackId, Vec3, Field, Verdict } from "../Domain/types";
-import { poseAt, add, sub, mul } from "../Domain/geometry";
+import { sampleContactPose } from "../Domain/ContactPose";
 import { answer } from "../Domain/observe";
 import { ActorPose, WorldView } from "../Scripts/TableKit/TableKit";
-const mix = (a: Vec3, b: Vec3, f: number) =>
-  add(a, mul(sub(b, a), Math.max(0, Math.min(1, f))));
 const tuple = (p: Vec3): [number, number, number] => [
   p.x * 100,
   p.y * 100,
   p.z * 100,
 ];
-const smooth = (f: number) => {
-  f = Math.max(0, Math.min(1, f));
-  return f * f * (3 - 2 * f);
-};
 export interface ActionPose {
   track: TrackId;
   handCm: readonly [number, number, number];
@@ -50,47 +44,7 @@ export function renderHistory(
   h: History,
   tick: number,
 ): ReconstructionView {
-  if (!Number.isFinite(tick)) throw new Error("Choose a finite time");
-  const t = Math.max(0, Math.min(24, tick));
-  const positions = new Map(
-    board.tracks.map((track) => [track.id, poseAt(track, t)]),
-  );
-  const rest = (id: TrackId): Vec3 => {
-    const p = positions.get(id)!;
-    return {
-      x: p.x + 0.12 * Math.cos(p.yaw),
-      y: p.y - 0.3,
-      z: p.z - 0.12 * Math.sin(p.yaw),
-    };
-  };
-  const hands = new Map<TrackId, Vec3>(
-    board.tracks.map((track) => [track.id, rest(track.id)]),
-  );
-  const reach = (id: TrackId, target: Vec3, event: number) => {
-    const strength = t <= event ? smooth(t - event + 1) : 1 - smooth(t - event);
-    if (strength > 0) hands.set(id, mix(hands.get(id)!, target, strength));
-  };
-  const exhibit = board.room.exhibit.position;
-  reach(h.take, exhibit, board.alarmTick);
-  for (const brush of h.brushes) reach(brush.track, exhibit, brush.tick);
-  if (h.pass) {
-    const a = positions.get(h.pass.from)!,
-      b = positions.get(h.pass.to)!;
-    const contact = mix(a, b, 0.5);
-    contact.y = Math.min(a.y, b.y) - 0.25;
-    reach(h.pass.from, contact, h.pass.tick);
-    reach(h.pass.to, contact, h.pass.tick);
-  }
-  const box = h.stash && board.room.boxes?.find((b) => b.id === h.stash!.box);
-  if (h.stash && box) reach(h.stash.carrier, box.position, h.stash.tick);
-  const taken = t >= board.alarmTick,
-    stashed = !!h.stash && t >= h.stash.tick;
-  const carrier = h.pass && t >= h.pass.tick ? h.pass.to : h.take;
-  const ruby = taken
-    ? stashed && box
-      ? box.position
-      : hands.get(carrier)!
-    : exhibit;
+  const { tick: t, positions, hands, ruby, taken, stashed, carrier, cache } = sampleContactPose(board, h, tick);
   const actors: ActorPose[] = board.tracks.map((track) => {
     const p = positions.get(track.id)!;
     const gait = gaitAt(track, t);
@@ -117,7 +71,7 @@ export function renderHistory(
       handCm: tuple(hands.get(track.id)!),
       grip: taken && !stashed && track.id === carrier ? 1 : 0,
     })),
-    cache: stashed ? h.stash!.box : undefined,
+    cache,
     nestEmpty: taken,
   };
 }

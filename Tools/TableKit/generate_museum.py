@@ -462,7 +462,7 @@ def anchors(model):
         "PinHandle": (-3.28, 1.025, 3.11),
         "EntryRecording": (5.55, 1.155, -2.945),
         "EntryPinClip": (5.325, 1.085096, -2.988743),
-        "CaseLid": (-3.9, 1.02, 3.8),
+        "CaseLid": (-3.725, 1.035, 3.65),
         "ArchiveRecorder": (-3.6, 1.15, -3.7),
         "EvidenceShelf": (-4.65, 1.25, -1.8),
         "ReceptionLamp_Desk": (5.72, 1.425, -2.56),
@@ -943,6 +943,65 @@ def entry_recording(model):
     )
 
 
+def articulated_case_lid(model):
+    """A proper box lid: local Rz0 closed, Rz+75deg open, hinge along +Z."""
+    hinge = (-3.725, 1.035, 3.65)
+    pivot = model.node("CaseLidPivot", model.root, hinge)
+    model.nodes[pivot]["rotation"] = [
+        0,
+        0,
+        math.sin(math.radians(75) / 2),
+        math.cos(math.radians(75) / 2),
+    ]
+
+    class LidPart:
+        def mesh(self, name, vertices, faces, material, parent=None, pos=(0, 0, 0)):
+            return Model.mesh(
+                model,
+                name,
+                vertices,
+                faces,
+                material,
+                parent=pivot,
+                pos=(0.225, 0.0125, 0),
+            )
+
+    block(LidPart(), "CaseLidSurface", (0, 0, 0), (0.45, 0.025, 0.32), "leather", 0.005)
+    Model.mesh(
+        model,
+        "CaseLidInnerLining",
+        [
+            (0.02, -0.0001, -0.14),
+            (0.43, -0.0001, -0.14),
+            (0.43, -0.0001, 0.14),
+            (0.02, -0.0001, 0.14),
+        ],
+        [[0, 1, 2], [0, 2, 3]],
+        "clothTeal",
+        parent=pivot,
+    )
+    previous_section = getattr(model, "section", "WorkshopFurniture")
+    model.section = "WorkshopCaseHinge"
+    tube(
+        model,
+        "CaseLidHingeBar",
+        [(-3.725, 1.035, 3.51), (-3.725, 1.035, 3.79)],
+        0.008,
+        "brass",
+        n=16,
+    )
+    for z in [3.55, 3.75]:
+        block(
+            model,
+            "CaseHingeMount",
+            (-3.722, 1.024, z),
+            (0.018, 0.008, 0.07),
+            "brass",
+            0.002,
+        )
+    model.section = previous_section
+
+
 def main():
     model = Building()
     floor(model, "Foyer", 0, 7, -5, 0, "stone")
@@ -1008,7 +1067,7 @@ def main():
     block(model, "BenchMat", (-3.5, 0.967, 3.8), (2.1, 0.014, 1.25), "clothTeal")
     block(model, "OpenCaseBase", (-3.5, 0.98, 3.65), (0.45, 0.08, 0.32), "leather")
     block(model, "CasePaper", (-3.5, 1.025, 3.65), (0.40, 0.014, 0.27), "paper", 0.008)
-    block(model, "CaseLid", (-3.5, 1.15, 3.82), (0.45, 0.28, 0.035), "leather")
+    articulated_case_lid(model)
     # Three physical evidence panes and cameo cards are empty until observations exist.
     for i in range(3):
         x = -3.74 + 0.24 * i
@@ -1231,6 +1290,16 @@ def main():
         storyBoundsMetres={"x": [-5, 7], "z": [-5, 5]},
         heightMetres=3.94,
         roomCount=4,
+        caseLid={
+            "pivotNode": "CaseLidPivot",
+            "surfaceNode": "CaseLidSurface",
+            "hingeMetres": [-3.725, 1.035, 3.65],
+            "axis": "+Z",
+            "closedRadians": 0,
+            "openRadians": math.radians(75),
+            "surfaceLocalCentreMetres": [0.225, 0.0125, 0],
+            "surfaceSizeMetres": [0.45, 0.025, 0.32],
+        },
         anchorsMetres=anchor_positions,
         importScale=100,
         forwardStory="+Z",

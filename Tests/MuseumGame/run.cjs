@@ -82,11 +82,24 @@ function node() {
 const { MuseumGame } = load(path.join(assets, "Runtime/MuseumGame.ts"));
 const renders = [];
 let renderedReveal;
+let renderedTrueView;
+let renderedBoard;
+const renderHistory = load(
+  path.join(assets, "Spatial/Reconstruction.ts"),
+).renderHistory;
 const poseSamples = [];
 let viewPresentation;
 let closed = false;
 const game = new MuseumGame(node(), {
-  presentPose: (tick) => poseSamples.push(tick),
+  presentPose: (tick) => {
+    poseSamples.push(tick);
+    if (renderedReveal)
+      renderedTrueView = renderHistory(
+        renderedBoard,
+        renderedReveal.actualHistory,
+        tick,
+      );
+  },
   caseView: {
     readViewer: () => ({ eyeCm: [350, 165, -340], forward: [0, 0, 1] }),
     finishTimeDrag() {},
@@ -99,6 +112,14 @@ const game = new MuseumGame(node(), {
   },
   renderScene: (s, reveal) => {
     renderedReveal = reveal;
+    renderedBoard = s.board;
+    renderedTrueView = reveal
+      ? renderHistory(
+          s.board,
+          reveal.actualHistory,
+          s.reveal?.tick ?? s.detective.tick,
+        )
+      : undefined;
     renders.push(JSON.parse(JSON.stringify(s)));
   },
   clearScene() {},
@@ -117,6 +138,7 @@ const pump = (predicate, n = 10000) => {
   assert(predicate(), "operation did not finish");
 };
 assert.equal(game.snapshot().flow.mode, "detective");
+assert(!game.dispatch("reveal", { type: "play" }));
 assert.equal(game.snapshot().view.mode, "museum");
 assert.equal(viewPresentation, undefined);
 assert.equal(game.snapshot().detective.tick, 8);
@@ -204,6 +226,8 @@ assert(!flow("passCase"));
 assert(author({ kind: "confirmAmbiguity" }));
 assert(flow("passCase"));
 assert(closed);
+assert(!game.dispatch("reveal", { type: "play" }));
+assert(!game.snapshot().reveal);
 assert(!game.snapshot().author);
 assert(!flow("passCase"));
 assert(flow("openCase"));
@@ -266,13 +290,35 @@ assert(detective({ type: "check" }));
 pump(() => game.snapshot().flow.mode === "finished");
 assert(game.snapshot().detective.completed);
 const revealTick = game.snapshot().detective.tick;
+const archivedProof = game.snapshot().detective;
 assert(detective({ type: "reveal" }));
 assert(renderedReveal);
-assert.equal(game.snapshot().detective.tick, revealTick);
+require("./reveal-runtime.cjs")({
+  game,
+  readNativeView: () => renderedTrueView,
+  poseSamples,
+  publicTape: new (load(
+    path.join(assets, "Shelf/SessionShelf.ts"),
+  ).SessionShelf)().publicCase({
+    id: archivedProof.caseId,
+    rev: archivedProof.rev,
+  }).clues,
+  getObservations: load(path.join(assets, "Domain/observe.ts")).getObservations,
+});
 assert(!detective({ type: "claim", claim: "Guard" }));
 assert(flow("replayEvidence"));
 assert.equal(renderedReveal, undefined);
+assert.equal(renderedTrueView, undefined);
+assert.equal(game.snapshot().reveal, undefined);
+assert(!game.dispatch("reveal", { type: "play" }));
 assert.equal(game.snapshot().flow.mode, "detective");
+assert.equal(game.snapshot().detective.tick, revealTick);
+assert.equal(game.snapshot().detective.source, archivedProof.source);
+assert.deepEqual(
+  game.snapshot().detective.glass.map((glass) => glass.id),
+  archivedProof.glass.map((glass) => glass.id),
+);
+assert.deepEqual(game.snapshot().detective.claim, archivedProof.claim);
 assert(!game.snapshot().author);
 assert(!game.snapshot().detective.completed);
 assert(!JSON.stringify(game.snapshot()).includes("actualHistory"));
@@ -330,8 +376,17 @@ require("./presentation.cjs")({
   sealed: compiled.sealed,
 });
 require("./proof-equivalence.cjs")({
-  prove:load(path.join(assets,"Domain/prove.ts")).prove,
-  compileCase,createMuseumTheft,
+  prove: load(path.join(assets, "Domain/prove.ts")).prove,
+  compileCase,
+  createMuseumTheft,
+});
+require("./reveal.cjs")({
+  RevealTransport: load(
+    path.join(assets, "Runtime/MuseumGame/RevealTransport.ts"),
+  ).RevealTransport,
+  renderHistory,
+  board: compiled.sealed.board,
+  history: compiled.vault.actualHistory,
 });
 const interrupted = new MuseumGame(node(), {
   renderScene() {},

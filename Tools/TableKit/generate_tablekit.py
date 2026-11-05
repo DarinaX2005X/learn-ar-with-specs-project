@@ -125,7 +125,11 @@ class Model:
                     {
                         "attributes": {"POSITION": p, "NORMAL": n},
                         "indices": ind,
-                        "material": list(PALETTE).index(mat),
+                        "material": next(
+                            index
+                            for index, material in enumerate(self.materials)
+                            if material["name"] == mat
+                        ),
                     }
                 ],
             }
@@ -139,7 +143,7 @@ class Model:
         grounded = (
             abs(
                 min(
-                    float((v + self.world(node))[:, 1].min())
+                    float(self.world_points(node, v)[:, 1].min())
                     for node, v, _, _ in self.raw
                 )
             )
@@ -167,6 +171,8 @@ class Model:
             "bufferViews": self.views,
             "buffers": [{"byteLength": len(self.bin)}],
         }
+        if hasattr(self, "contract"):
+            doc["asset"]["extras"]["tableKit"] = self.contract
         for optional in ("images", "textures", "samplers"):
             if hasattr(self, optional):
                 doc[optional] = getattr(self, optional)
@@ -184,11 +190,11 @@ class Model:
         (ROOT / (self.name + ".glb")).write_bytes(blob)
         pts = []
         for node, v, _, _ in self.raw:
-            pts.extend(v + self.world(node))
+            pts.extend(self.world_points(node, v))
         pts = np.array(pts)
         lo = pts.min(axis=0) * 100
         hi = pts.max(axis=0) * 100
-        return {
+        record = {
             "name": self.name,
             "path": self.name + ".glb",
             "bytes": len(blob),
@@ -199,10 +205,33 @@ class Model:
             "triangles": sum(len(f) for _, _, f, _ in self.raw),
         }
 
-    def world(self, i):
-        p = np.array(self.nodes[i]["translation"])
-        parent = next((j for j, n in enumerate(self.nodes) if i in n["children"]), None)
-        return p if parent is None else p + self.world(parent)
+        if hasattr(self, "contract"):
+            record.update(self.contract)
+        return record
+
+    def world_matrix(self, index):
+        node = self.nodes[index]
+        x, y, z, w = node.get("rotation", [0, 0, 0, 1])
+        matrix = np.eye(4)
+        matrix[:3, :3] = np.array(
+            [
+                [1 - 2 * (y * y + z * z), 2 * (x * y - z * w), 2 * (x * z + y * w)],
+                [2 * (x * y + z * w), 1 - 2 * (x * x + z * z), 2 * (y * z - x * w)],
+                [2 * (x * z - y * w), 2 * (y * z + x * w), 1 - 2 * (x * x + y * y)],
+            ]
+        ) @ np.diag(node.get("scale", [1, 1, 1]))
+        matrix[:3, 3] = node.get("translation", [0, 0, 0])
+        parent = next(
+            (i for i, item in enumerate(self.nodes) if index in item["children"]), None
+        )
+        return matrix if parent is None else self.world_matrix(parent) @ matrix
+
+    def world_points(self, index, vertices):
+        matrix = self.world_matrix(index)
+        return vertices @ matrix[:3, :3].T + matrix[:3, 3]
+
+    def world(self, index):
+        return self.world_matrix(index)[:3, 3]
 
 
 def ring_solid(model, name, rings, mat, parent=None, n=16, pos=(0, 0, 0), phase=0):
@@ -771,6 +800,124 @@ def make_figure(role):
     return m
 
 
+def annular_surface(model, name, inner, outer, bottom, top, material, n=32):
+    """A genuine closed annular solid; no cap across its opening."""
+    vertices = []
+    for (y, radii) in [(bottom, inner), (bottom, outer), (top, inner), (top, outer)]:
+        for j in range(n):
+            a = j * math.tau / n
+            if callable(radii):
+                (x, z) = radii(a)
+            else:
+                (x, z) = (radii[0] * math.cos(a), radii[1] * math.sin(a))
+            vertices.append((x, y, z))
+    faces = []
+    for j in range(n):
+        k = (j + 1) % n
+        ib = j
+        ob = n + j
+        it = 2 * n + j
+        ot = 3 * n + j
+        faces.extend([[it, 2 * n + k, ot], [2 * n + k, 3 * n + k, ot], [ib, ob, k], [k, ob, n + k], [ob, ot, n + k], [n + k, ot, 3 * n + k], [ib, k, it], [k, 2 * n + k, it]])
+    return model.mesh(name, vertices, faces, material)
+
+
+def make_display_case():
+    m = Model('DisplayCase')
+    for (name, colour) in [('socketVelvet', '#343032'), ('socketShadow', '#171E1C')]:
+        m.materials.append({'name': name, 'pbrMetallicRoughness': {'baseColorFactor': rgb(colour) + [1], 'metallicFactor': 0, 'roughnessFactor': 0.99}})
+    box(m, 'Foot', (0, 0.25, 0), (4.7, 0.5, 4.7), 'stoneShade', bevel=0.2)
+    box(m, 'BaseStep', (0, 0.65, 0), (4.3, 0.4, 4.3), 'limestone', bevel=0.2)
+    ring_solid(m, 'Pedestal', [(0.8, 2, 2, 0, 0), (1.2, 1.7, 1.7, 0, 0), (5, 1.55, 1.55, 0, 0), (5.4, 1.9, 1.9, 0, 0)], 'limestone', n=4, phase=math.pi / 4)
+    box(m, 'Rim', (0, 5.55, 0), (4.4, 0.35, 4.4), 'stoneShade', bevel=0.15)
+    for x in [-2.17, 2.17]:
+        box(m, 'PlatformMetalEdge', (x, 5.72, 0), (0.045, 0.045, 4.34), 'brass', bevel=0.01)
+    for z in [-2.17, 2.17]:
+        box(m, 'PlatformMetalEdge', (0, 5.72, z), (4.34, 0.045, 0.045), 'brass', bevel=0.01)
+
+    def cushion_boundary(a):
+        (x, z) = (math.cos(a), math.sin(a))
+        radius = min(1.9 / max(abs(x), 1e-09), 1.9 / max(abs(z), 1e-09), 3.6 / (abs(x) + abs(z)))
+        return (radius * x, radius * z)
+    annular_surface(m, 'VelvetCushion', (0.56, 0.47), cushion_boundary, 5.71, 6.01, 'velvet')
+    profile_rings = [(6.12, 0.08, 0.07), (6.18, 0.3, 0.25), (6.25, 0.56, 0.47), (6.25, 0.68, 0.59), (6.01, 0.78, 0.69)]
+    n = 32
+    vertices = []
+    for (y, rx, rz) in profile_rings:
+        for j in range(n):
+            a = j * math.tau / n
+            vertices.append((rx * math.cos(a), y, rz * math.sin(a)))
+    faces = []
+    for ring in range(len(profile_rings) - 1):
+        for j in range(n):
+            a = ring * n + j
+            b = ring * n + (j + 1) % n
+            c = a + n
+            d = b + n
+            faces.extend([[a, b, c], [b, d, c]])
+    vertices.append((0, 6.01, 0))
+    centre = len(vertices) - 1
+    for j in range(n):
+        faces.append([centre, 4 * n + j, 4 * n + (j + 1) % n])
+    m.mesh('RubySocket', vertices, faces, 'socketVelvet')
+    floor = [(0, 6.12, 0)] + [(0.08 * math.cos(j * math.tau / n), 6.12, 0.07 * math.sin(j * math.tau / n)) for j in range(n)]
+    m.mesh('SocketWellFloor', floor, [[0, 1 + (j + 1) % n, 1 + j] for j in range(n)], 'socketShadow')
+    annular_surface(m, 'SocketNarrowRim', (0.655, 0.565), (0.68, 0.59), 6.235, 6.25, 'brass')
+    m.node('SocketContact', m.root, (0, 6.12, 0))
+    for x in [-2, 2]:
+        for z in [-2, 2]:
+            box(m, 'CaseUpright_' + str(x) + str(z), (x, 6.725, z), (0.1, 2.15, 0.1), 'brass', bevel=0.025)
+            ring_solid(m, 'LiftPostSleeve', [(5.63, 0.085, 0.085, x, z), (6.1, 0.085, 0.085, x, z)], 'teal', n=12)
+    for z in [-2, 2]:
+        box(m, 'TopRailZ_' + str(z), (0, 7.8, z), (4.15, 0.1, 0.1), 'brass', bevel=0.025)
+    for x in [-2, 2]:
+        box(m, 'TopRailX_' + str(x), (x, 7.8, 0), (0.1, 0.1, 4.15), 'brass', bevel=0.025)
+    rings = [(7.8, 2.0), (8.1, 1.9), (8.45, 1.57), (8.73, 1.1), (8.89, 0.45), (8.91, 0.02)]
+    count = 40
+    v = []
+    for inward in [False, True]:
+        for (y, r) in rings:
+            radius = max(0.005, r - (0.015 if inward else 0))
+            yy = y - (0.01 if inward and y > 7.8 else 0)
+            for j in range(count):
+                a = j * math.tau / count
+                v.append((radius * math.cos(a), yy, radius * math.sin(a)))
+    f = []
+    layer = len(rings) * count
+    for inside in [False, True]:
+        offset = layer if inside else 0
+        for ring in range(len(rings) - 1):
+            for j in range(count):
+                a = offset + ring * count + j
+                b = offset + ring * count + (j + 1) % count
+                c = a + count
+                d = b + count
+                faces_here = [[a, c, b], [b, c, d]]
+                f.extend([[a, c, b] for (a, b, c) in faces_here] if inside else faces_here)
+    for j in range(count):
+        k = (j + 1) % count
+        f.extend([[j, k, layer + j], [k, layer + k, layer + j]])
+        a = (len(rings) - 1) * count + j
+        b = (len(rings) - 1) * count + k
+        f.extend([[a, layer + a, b], [b, layer + a, layer + b]])
+    m.mesh('LiftedClocheGlass', v, f, 'glass')
+    ellip(m, 'ClocheGrip', (0, 8.99, 0), (0.13, 0.1, 0.13), 'glass', n=20, lat=8)
+    ring_points = [(2.0 * math.cos(j * math.tau / 48), 7.8, 2.0 * math.sin(j * math.tau / 48)) for j in range(49)]
+    tube(m, 'ClocheLowerBinding', ring_points, 0.025, 'brass', n=8)
+    m.contract = {'kind': 'universally accessible exhibition vitrine', 'artVersion': 2, 'nativeModelScale': [65, 98.0392, 65], 'socketContactLocalTableCm': [0, 6.12, 0], 'seatRimTopLocalTableCm': 6.25, 'seatClearOpeningLocalTableCm': [1.12, 0.94], 'clocheUndersideLocalTableCm': 7.8, 'clocheAlwaysRaised': True, 'accessSides': ['-X', '+X', '-Z', '+Z'], 'collisionEnvelopeLocalTableCm': [4.7, 9.09, 4.7]}
+    return m
+
+
+def make_ruby():
+    m = Model('Ruby')
+    rx = 0.33 / math.cos(math.pi / 8)
+    rz = 0.27 / math.cos(math.pi / 8)
+    ring_solid(m, 'RubyGem', [(0, 0.04, 0.035, 0, 0), (0.13, rx, rz, 0, 0), (0.26, rx * 0.91, rz * 0.91, 0, 0), (0.38, 0.18, 0.15, 0, 0)], 'ruby', n=8, phase=math.pi / 8)
+    m.mesh('RubyLightFacet', [(-0.12, 0.381, -0.05), (0.04, 0.381, -0.13), (0.15, 0.381, 0.03), (-0.04, 0.381, 0.11)], [[0, 2, 1], [0, 3, 2]], 'rubyLight')
+    m.contract = {'kind': 'handheld faceted ruby', 'artVersion': 2, 'bottomPivotUnchanged': True, 'nativeImportScale': 100, 'fullSizeStoryCm': [11, 6.35, 9], 'lightEmission': False}
+    return m
+
+
 def props():
     out = []
     m = Model("Plinth")
@@ -821,108 +968,7 @@ def props():
             bevel=0.002,
         )
     out.append(m)
-    m = Model("DisplayCase")
-    box(m, "Foot", (0, 0.25, 0), (4.7, 0.5, 4.7), "stoneShade", bevel=0.2)
-    box(m, "BaseStep", (0, 0.65, 0), (4.3, 0.4, 4.3), "limestone", bevel=0.2)
-    ring_solid(
-        m,
-        "Pedestal",
-        [
-            (0.8, 2.0, 2, 0, 0),
-            (1.2, 1.7, 1.7, 0, 0),
-            (5, 1.55, 1.55, 0, 0),
-            (5.4, 1.9, 1.9, 0, 0),
-        ],
-        "limestone",
-        n=4,
-        phase=math.pi / 4,
-    )
-    box(m, "Rim", (0, 5.55, 0), (4.4, 0.35, 4.4), "brass", bevel=0.15)
-    box(m, "VelvetCushion", (0, 5.86, 0), (3.8, 0.3, 3.8), "velvet", bevel=0.3)
-    # Empty socket is visible after removal, a physical ring rather than painted ruby.
-    ring_solid(
-        m,
-        "RubySocket",
-        [(5.98, 0.82, 0.67, 0, 0), (6.08, 0.92, 0.77, 0, 0), (6.12, 0.67, 0.52, 0, 0)],
-        "ruby",
-        n=12,
-    )
-    for x in [-2, 2]:
-        for z in [-2, 2]:
-            box(
-                m,
-                "CaseUpright_" + str(x) + str(z),
-                (x, 7.35, z),
-                (0.12, 3.4, 0.12),
-                "brass",
-                bevel=0.04,
-            )
-    for z in [-2, 2]:
-        box(
-            m,
-            "TopRailZ_" + str(z),
-            (0, 9.03, z),
-            (4.15, 0.12, 0.12),
-            "brass",
-            bevel=0.04,
-        )
-    for x in [-2, 2]:
-        box(
-            m,
-            "TopRailX_" + str(x),
-            (x, 9.03, 0),
-            (0.12, 0.12, 4.15),
-            "brass",
-            bevel=0.04,
-        )
-    box(m, "GlassTop", (0, 9.0, 0), (3.88, 0.025, 3.88), "glass", bevel=0.005)
-    # Glass sides remain optional; edge geometry survives additive displays.
-    for x in [-1.96, 1.96]:
-        box(
-            m,
-            "GlassSide_" + str(x),
-            (x, 7.4, 0),
-            (0.025, 3.1, 3.88),
-            "glass",
-            bevel=0.005,
-        )
-    for z in [-1.96, 1.96]:
-        box(
-            m,
-            "GlassFront_" + str(z),
-            (0, 7.4, z),
-            (3.88, 3.1, 0.025),
-            "glass",
-            bevel=0.005,
-        )
-    out.append(m)
-    m = Model("Ruby")
-    ring_solid(
-        m,
-        "RubyGem",
-        [
-            (0, 0.58, 0.48, 0, 0),
-            (0.35, 1.05, 0.86, 0, 0),
-            (0.72, 1.02, 0.83, 0, 0),
-            (1.06, 0.57, 0.49, 0, 0),
-        ],
-        "ruby",
-        n=8,
-        phase=math.pi / 8,
-    )
-    # One broad light facet, no emissive light that could leak identity.
-    m.mesh(
-        "RubyLightFacet",
-        [
-            [-0.5, 1.061, -0.2],
-            [0.18, 1.061, -0.46],
-            [0.53, 1.061, 0.1],
-            [-0.15, 1.061, 0.4],
-        ],
-        [[0, 2, 1], [0, 3, 2]],
-        "rubyLight",
-    )
-    out.append(m)
+    out.extend([make_display_case(), make_ruby()])
     m = Model("MirrorHousing")
     # Opening x[-3,3], y[1,11], plane z=0; opaque baffle is depth 1.2 behind opening.
     for x in [-3.4, 3.4]:
@@ -1168,67 +1214,563 @@ def props():
 
 
 def anonymous_puppet():
-    m = Model("AnonymousTrack", 0.007)
-    for s, side in [(-1, "L"), (1, "R")]:
-        hip = m.node("Hip_" + side, m.root, (s * 0.72, 6.3, 0))
-        ellip(m, "Thigh_" + side, (0, -1.25, 0), (0.62, 1.65, 0.61), "stoneShade", hip)
+    """One identical museum reconstruction puppet; no role-bearing accessories."""
+
+    class PuppetModel(Model):
+        def __init__(self):
+            super().__init__("AnonymousTrack", 0.007)
+            self.parts = {}
+
+        def mesh(self, name, vertices, faces, material, parent=None, pos=(0, 0, 0)):
+            parent = self.root if parent is None else parent
+            key = (parent, material)
+            entry = self.parts.setdefault(key, [name, [], []])
+            offset = len(entry[1])
+            entry[1].extend((np.asarray(vertices) + np.asarray(pos)).tolist())
+            entry[2].extend((np.asarray(faces) + offset).tolist())
+
+        def flush(self):
+            for (parent, material), (name, vertices, faces) in self.parts.items():
+                Model.mesh(self, name, vertices, faces, material, parent)
+
+    m = PuppetModel()
+    finishes = {
+        "museumTimber": ("#B88A61", 0.04, 0.68),
+        "museumCoat": ("#93816B", 0, 0.94),
+        "museumVest": ("#62503E", 0, 0.91),
+        "museumLinen": ("#BBA88D", 0, 0.97),
+        "museumJoint": ("#6F5941", 0.12, 0.64),
+        "museumBoot": ("#49392E", 0, 0.62),
+        "museumSeam": ("#6D5E4C", 0, 0.96),
+        "museumWear": ("#AE9576", 0, 0.84),
+        "museumOrbit": ("#5E4835", 0, 0.8),
+    }
+    for name, (colour, metal, rough) in finishes.items():
+        m.materials.append(
+            {
+                "name": name,
+                "pbrMetallicRoughness": {
+                    "baseColorFactor": rgb(colour) + [1],
+                    "metallicFactor": metal,
+                    "roughnessFactor": rough,
+                },
+            }
+        )
+    # Same skeletal node translations as the original public-track puppet.
+    for sign, side in [(-1, "L"), (1, "R")]:
+        hip = m.node("Hip_" + side, m.root, (sign * 0.72, 6.3, 0))
+        ring_solid(
+            m,
+            "Thigh_" + side,
+            [
+                (-2.48, 0.40, 0.44, 0, 0),
+                (-1.45, 0.49, 0.52, 0, 0),
+                (-0.4, 0.56, 0.58, 0, 0),
+                (0.10, 0.54, 0.56, 0, 0),
+            ],
+            "museumVest",
+            hip,
+            n=14,
+        )
         knee = m.node("Knee_" + side, hip, (0, -2.7, 0))
         ellip(
             m,
             "KneeJoint_" + side,
             (0, 0, 0),
-            (0.43, 0.43, 0.43),
-            "brass",
+            (0.34, 0.34, 0.34),
+            "museumJoint",
             knee,
-            n=10,
-            lat=5,
+            n=12,
+            lat=6,
         )
-        ellip(m, "Shin_" + side, (0, -1.35, 0), (0.44, 1.35, 0.48), "stoneShade", knee)
+        ring_solid(
+            m,
+            "Shin_" + side,
+            [
+                (-2.7, 0.36, 0.37, 0, 0),
+                (-1.95, 0.39, 0.41, 0, 0),
+                (-0.55, 0.43, 0.46, 0, 0),
+                (0.10, 0.38, 0.42, 0, 0),
+            ],
+            "museumCoat",
+            knee,
+            n=14,
+        )
+        tube(
+            m,
+            "TrouserSeam_" + side,
+            [
+                (sign * 0.41, -0.45, 0.18),
+                (sign * 0.39, -1.4, 0.17),
+                (sign * 0.35, -2.50, 0.14),
+            ],
+            0.012,
+            "museumSeam",
+            knee,
+            n=5,
+        )
+        # Boots belong to the moving knee hierarchy rather than remaining on the floor.
         box(
             m,
             "Foot_" + side,
-            (s * 0.72, 0.38, -0.45),
-            (1.05, 0.76, 2.15),
-            "stoneShade",
-            bevel=0.2,
+            (0, -3.18, -0.45),
+            (1.05, 0.62, 2.15),
+            "museumBoot",
+            knee,
+            bevel=0.17,
         )
-        shoulder = m.node("Shoulder_" + side, m.root, (s * 1.75, 9.95, 0))
-        ellip(
+        box(
+            m,
+            "Sole_" + side,
+            (0, -3.49, -0.45),
+            (1.05, 0.22, 2.15),
+            "museumOrbit",
+            knee,
+            bevel=0.075,
+        )
+        ring_solid(
+            m,
+            "BootShaft_" + side,
+            [
+                (-3.3, 0.45, 0.48, 0, -0.02),
+                (-2.8, 0.43, 0.45, 0, 0),
+                (-2.58, 0.42, 0.43, 0, 0),
+            ],
+            "museumBoot",
+            knee,
+            n=14,
+        )
+        for y in [-3.0, -2.85]:
+            tube(
+                m,
+                "BootWelt_" + side,
+                [
+                    (sign * -0.31, y, -0.36),
+                    (0, y - 0.025, -0.43),
+                    (sign * 0.31, y, -0.36),
+                ],
+                0.015,
+                "museumWear",
+                knee,
+                n=5,
+            )
+        shoulder = m.node("Shoulder_" + side, m.root, (sign * 1.75, 9.95, 0))
+        ring_solid(
             m,
             "UpperArm_" + side,
-            (s * 0.23, -1.12, 0),
-            (0.55, 1.24, 0.58),
-            "stoneShade",
+            [
+                (-2.10, 0.36, 0.38, sign * 0.33, 0),
+                (-1.45, 0.43, 0.46, sign * 0.23, 0),
+                (-0.35, 0.52, 0.51, sign * 0.12, 0),
+                (0.22, 0.43, 0.43, 0, 0),
+            ],
+            "museumCoat",
             shoulder,
+            n=16,
         )
-        fore = m.node("Forearm_" + side, shoulder, (s * 0.33, -2.3, 0))
+        tube(
+            m,
+            "ShoulderStitch_" + side,
+            [
+                (sign * 0.41, -0.25, -0.12),
+                (sign * 0.47, -0.65, -0.13),
+                (sign * 0.42, -1.05, -0.14),
+            ],
+            0.012,
+            "museumSeam",
+            shoulder,
+            n=5,
+        )
+        fore = m.node("Forearm_" + side, shoulder, (sign * 0.33, -2.3, 0))
         ellip(
             m,
             "Elbow_" + side,
             (0, 0, 0),
-            (0.38, 0.38, 0.38),
-            "brass",
+            (0.33, 0.33, 0.33),
+            "museumJoint",
             fore,
-            n=10,
-            lat=5,
+            n=12,
+            lat=6,
         )
-        ellip(
-            m, "ForeArm_" + side, (0, -0.88, 0), (0.43, 0.93, 0.46), "stoneShade", fore
+        # This tailored fold retains the original exact outer X envelope.
+        ring_solid(
+            m,
+            "ForeArm_" + side,
+            [
+                (-1.72, 0.30, 0.32, 0, 0),
+                (-1.30, 0.33, 0.37, 0, 0),
+                (-0.45, 0.441644264156714, 0.43, 0, 0),
+                (0.12, 0.36, 0.39, 0, 0),
+            ],
+            "museumCoat",
+            fore,
+            n=16,
+        )
+        ring_solid(
+            m,
+            "Cuff_" + side,
+            [(-1.78, 0.32, 0.34, 0, 0), (-1.55, 0.34, 0.36, 0, 0)],
+            "museumLinen",
+            fore,
+            n=14,
+        )
+        tube(
+            m,
+            "ElbowClothFold_" + side,
+            [(-0.25, -0.40, -0.34), (0, -0.47, -0.43), (0.25, -0.41, -0.34)],
+            0.018,
+            "museumSeam",
+            fore,
+            n=6,
         )
         hand = m.node("Hand_" + side, fore, (0, -1.92, 0))
         ellip(
-            m, "Palm_" + side, (0, -0.31, -0.02), (0.41, 0.53, 0.24), "limestone", hand
+            m,
+            "WristJoint_" + side,
+            (0, 0.08, -0.01),
+            (0.23, 0.16, 0.18),
+            "museumJoint",
+            hand,
+            n=12,
+            lat=6,
         )
+        ring_solid(
+            m,
+            "Palm_" + side,
+            [
+                (-0.70, 0.25, 0.16, 0, -0.02),
+                (-0.50, 0.32, 0.19, 0, -0.02),
+                (-0.17, 0.34, 0.21, 0, -0.02),
+                (0.06, 0.25, 0.18, 0, -0.02),
+            ],
+            "museumTimber",
+            hand,
+            n=12,
+        )
+        for digit in range(4):
+            x = -0.225 + digit * 0.15
+            tube(
+                m,
+                "Finger_" + side + str(digit),
+                [
+                    (x, -0.58, -0.03),
+                    (x, -0.80, -0.10),
+                    (x, -0.96, -0.22),
+                    (x, -0.91, -0.30),
+                ],
+                0.063,
+                "museumTimber",
+                hand,
+                n=7,
+            )
+        tube(
+            m,
+            "Thumb_" + side,
+            [
+                (sign * 0.25, -0.23, -0.03),
+                (sign * 0.36, -0.40, -0.12),
+                (sign * 0.34, -0.63, -0.25),
+            ],
+            0.075,
+            "museumTimber",
+            hand,
+            n=8,
+        )
+    # Sculpted working coat: shoulders, waist, skirt and an overlapping plain vest.
     ring_solid(
         m,
-        "NeutralTorso",
-        [(6, 1.5, 0.85, 0, 0), (7.2, 1.45, 0.85, 0, 0), (10.5, 1.6, 0.8, 0, 0)],
-        "stoneShade",
-        n=12,
+        "CoatBody",
+        [
+            (5.60, 1.47, 0.76, 0, 0.03),
+            (5.86, 1.53, 0.78, 0, 0.03),
+            (6.70, 1.30, 0.74, 0, 0.04),
+            (8.10, 1.34, 0.80, 0, 0.05),
+            (9.75, 1.51, 0.74, 0, 0.03),
+            (10.40, 1.63, 0.69, 0, 0.03),
+            (10.65, 1.22, 0.53, 0, 0.03),
+        ],
+        "museumCoat",
+        n=16,
     )
-    ellip(m, "Neck", (0, 11.2, 0), (0.5, 0.6, 0.5), "limestone")
+    profile(
+        m,
+        "PlainVest",
+        [
+            (-0.62, 6.35),
+            (0.62, 6.35),
+            (0.68, 9.7),
+            (0.35, 10.55),
+            (-0.35, 10.55),
+            (-0.68, 9.7),
+        ],
+        0.075,
+        "museumVest",
+        z=-0.78,
+    )
+    for sign in [-1, 1]:
+        outline = [
+            (sign * 0.25, 10.65),
+            (sign * 1.15, 10.32),
+            (sign * 0.74, 9.42),
+            (sign * 0.22, 9.04),
+            (sign * 0.48, 10.03),
+        ]
+        profile(m, "CoatLapel_" + str(sign), outline, 0.095, "museumCoat", z=-0.835)
+        tube(
+            m,
+            "LapelTurn_" + str(sign),
+            [
+                (sign * 1.08, 10.28, -0.89),
+                (sign * 0.72, 9.45, -0.90),
+                (sign * 0.23, 9.10, -0.90),
+            ],
+            0.018,
+            "museumWear",
+            n=6,
+        )
+        tube(
+            m,
+            "CoatFrontSeam_" + str(sign),
+            [
+                (sign * 0.74, 8.95, -0.79),
+                (sign * 0.76, 7.40, -0.78),
+                (sign * 0.85, 5.78, -0.72),
+            ],
+            0.014,
+            "museumSeam",
+            n=6,
+        )
+        tube(
+            m,
+            "HemFold_" + str(sign),
+            [
+                (sign * 0.92, 6.48, -0.63),
+                (sign * 1.12, 6.02, -0.59),
+                (sign * 1.30, 5.72, -0.48),
+            ],
+            0.025,
+            "museumWear",
+            n=6,
+        )
+        profile(
+            m,
+            "CollarPoint_" + str(sign),
+            [
+                (sign * 0.15, 10.50),
+                (sign * 0.67, 10.50),
+                (sign * 0.58, 11.35),
+                (sign * 0.20, 11.05),
+            ],
+            0.055,
+            "museumLinen",
+            z=-0.49,
+        )
+    for y in [7.15, 8.0, 8.85]:
+        ellip(
+            m,
+            "VestFastener_" + str(y),
+            (0.06, y, -0.852),
+            (0.075, 0.075, 0.035),
+            "museumJoint",
+            n=9,
+            lat=5,
+        )
+    tube(
+        m,
+        "CoatBackSeam",
+        [(0, 6.05, 0.80), (0, 7.7, 0.842), (0, 9.4, 0.758)],
+        0.008,
+        "museumSeam",
+        n=6,
+    )
+    ring_solid(
+        m,
+        "Neck",
+        [
+            (10.8, 0.38, 0.36, 0, 0),
+            (11.1, 0.41, 0.39, 0, 0),
+            (11.65, 0.34, 0.33, 0, 0),
+            (12.3, 0.36, 0.34, 0, 0),
+        ],
+        "museumTimber",
+        n=16,
+    )
+    ring_solid(
+        m,
+        "CollarBand",
+        [
+            (10.9, 0.52, 0.45, 0, 0),
+            (11.35, 0.46, 0.41, 0, 0),
+            (11.65, 0.44, 0.39, 0, 0),
+        ],
+        "museumLinen",
+        n=16,
+    )
     head = m.node("Head", m.root, (0, 12.8, 0))
-    ellip(m, "BlankHead", (0, 0, 0), (0.95, 1.85, 0.8), "limestone", head, n=12, lat=7)
+    # A restrained generic carved face, identical for every unnamed track.
+    ring_solid(
+        m,
+        "SculptedHead",
+        [
+            (-0.65, 0.33, 0.35, 0, -0.07),
+            (-0.42, 0.57, 0.46, 0, -0.08),
+            (0.02, 0.77, 0.57, 0, -0.03),
+            (0.55, 0.84, 0.63, 0, 0.02),
+            (1.12, 0.82, 0.64, 0, 0.04),
+            (1.55, 0.74, 0.56, 0, 0.07),
+            (1.73, 0.56, 0.44, 0, 0.06),
+            (1.85, 0.12, 0.12, 0, 0.03),
+        ],
+        "museumTimber",
+        head,
+        n=16,
+        phase=math.pi / 16,
+    )
+    for sign in [-1, 1]:
+        ellip(
+            m,
+            "Ear_" + str(sign),
+            (sign * 0.84, 0.58, 0.025),
+            (0.16, 0.25, 0.12),
+            "museumTimber",
+            head,
+            n=12,
+            lat=6,
+        )
+        profile(
+            m,
+            "EyeOrbit_" + str(sign),
+            [
+                (sign * 0.17, 0.79),
+                (sign * 0.37, 0.89),
+                (sign * 0.59, 0.79),
+                (sign * 0.36, 0.70),
+            ],
+            0.035,
+            "museumOrbit",
+            head,
+            z=-0.611,
+        )
+        tube(
+            m,
+            "UpperLid_" + str(sign),
+            [
+                (sign * 0.17, 0.81, -0.644),
+                (sign * 0.36, 0.90, -0.659),
+                (sign * 0.58, 0.81, -0.621),
+            ],
+            0.025,
+            "museumTimber",
+            head,
+            n=6,
+        )
+        ellip(
+            m,
+            "Eye_" + str(sign),
+            (sign * 0.36, 0.795, -0.658),
+            (0.055, 0.064, 0.021),
+            "museumJoint",
+            head,
+            n=9,
+            lat=5,
+        )
+        tube(
+            m,
+            "BrowPlane_" + str(sign),
+            [
+                (sign * 0.18, 1.02, -0.60),
+                (sign * 0.39, 1.07, -0.63),
+                (sign * 0.62, 1.00, -0.56),
+            ],
+            0.040,
+            "museumTimber",
+            head,
+            n=6,
+        )
+    m.mesh(
+        "NosePlanes",
+        [
+            (-0.14, 0.89, -0.59),
+            (0.14, 0.89, -0.59),
+            (0.16, 0.28, -0.59),
+            (-0.16, 0.28, -0.59),
+            (0, 0.40, -1.04),
+        ],
+        [[0, 1, 4], [1, 2, 4], [2, 3, 4], [3, 0, 4], [0, 3, 2], [0, 2, 1]],
+        "museumTimber",
+        head,
+    )
+    tube(
+        m,
+        "MouthIncision",
+        [(-0.22, -0.12, -0.62), (0, -0.155, -0.67), (0.22, -0.12, -0.62)],
+        0.021,
+        "museumOrbit",
+        head,
+        n=6,
+    )
+    # Batch only within a rigid joint/material; every skeletal pivot stays independent.
+    m.flush()
+    # Fine timber grain comes from the original Collection albedo, never baked light.
+    texture = ROOT.parent / "Collection" / "oak-albedo.jpg"
+    if texture.exists():
+        while len(m.bin) % 4:
+            m.bin += b"\0"
+        offset = len(m.bin)
+        payload = texture.read_bytes()
+        m.bin += payload
+        m.views.append({"buffer": 0, "byteOffset": offset, "byteLength": len(payload)})
+        m.images = [
+            {
+                "name": "CarvedTimberGrain",
+                "mimeType": "image/jpeg",
+                "bufferView": len(m.views) - 1,
+            }
+        ]
+        m.samplers = [
+            {"magFilter": 9729, "minFilter": 9987, "wrapS": 10497, "wrapT": 10497}
+        ]
+        m.textures = [{"sampler": 0, "source": 0}]
+        next(
+            material for material in m.materials if material["name"] == "museumTimber"
+        )["pbrMetallicRoughness"]["baseColorTexture"] = {"index": 0}
+        for node, vertices, _, material in m.raw:
+            if material != "museumTimber":
+                continue
+            dimensions = np.ptp(vertices, axis=0)
+            along = int(np.argmax(dimensions))
+            across = next(
+                axis for axis in np.argsort(dimensions)[::-1] if axis != along
+            )
+            physical = vertices * (100 / 6)
+            uv = np.stack(
+                [physical[:, along] / 0.70, physical[:, across] / 0.18], axis=1
+            ).astype("<f4")
+            m.meshes[m.nodes[node]["mesh"]]["primitives"][0]["attributes"][
+                "TEXCOORD_0"
+            ] = m.accessor(uv, "VEC2", 5126)
+    m.contract = {
+        "kind": "role-neutral reconstruction puppet",
+        "artVersion": 2,
+        "rigVersion": 1,
+        "sameTemplateForEveryTrack": True,
+        "roleAccessories": False,
+        "forwardAxis": "-Z",
+        "bindEnvelopeCm": [3.5303, 10.255, 1.6625],
+        "jointNames": [
+            "Head",
+            "Hip_L",
+            "Hip_R",
+            "Knee_L",
+            "Knee_R",
+            "Shoulder_L",
+            "Shoulder_R",
+            "Forearm_L",
+            "Forearm_R",
+            "Hand_L",
+            "Hand_R",
+        ],
+    }
     return m
 
 
@@ -1250,7 +1792,31 @@ def main():
         type=Path,
         help="Optional output directory for an offline contact sheet",
     )
+    parser.add_argument(
+        "--only",
+        choices=["AnonymousTrack", "DisplayCase", "Ruby"],
+        help="Regenerate one art resource and its manifest record",
+    )
     args = parser.parse_args()
+    if args.only:
+        record = {"AnonymousTrack": anonymous_puppet, "DisplayCase": make_display_case, "Ruby": make_ruby}[args.only]().export()
+        manifest_path = ROOT / "manifest.json"
+        manifest = (
+            json.loads(manifest_path.read_text(encoding="utf-8"))
+            if manifest_path.exists()
+            else {"version": 1, "resources": []}
+        )
+        manifest["resources"] = [
+            item for item in manifest["resources"] if item["name"] != args.only
+        ] + [record]
+        manifest_path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+        print(
+            json.dumps(
+                {key: record[key] for key in ["name", "bytes", "triangles", "aabb_cm"]},
+                indent=2,
+            )
+        )
+        return
     figures = [make_figure(r) for r in ["Guard", "Courier", "Conservator"]]
     models = (
         figures + props() + [anonymous_puppet()] + [role_mark_model(f) for f in figures]

@@ -11,7 +11,9 @@ import {
 } from "../Detective/DetectiveSession";
 import { VaultEntry } from "../Domain/types";
 import { SessionShelf } from "../Shelf/SessionShelf";
+import { getObservations } from "../Domain/observe";
 import { PlayTable, PlayTableSnapshot, CaseTargetView } from "./PlayTable";
+import { RevealAction, RevealTransport } from "./MuseumGame/RevealTransport";
 import {
   CaseViewAction,
   CaseViewPorts,
@@ -66,6 +68,7 @@ export class MuseumGame {
   private shelf = new SessionShelf();
   private caseView: CaseViewRouting | undefined;
   private arrivalAlarm: number | undefined;
+  private revealClock: RevealTransport | undefined;
   constructor(
     private root: SceneObject,
     private ports: MuseumGamePorts,
@@ -167,6 +170,9 @@ export class MuseumGame {
         reveal: (vault) => {
           this.revealed = vault;
           if (this.revealView) this.state = this.revealView;
+          this.revealClock = new RevealTransport(
+            this.state?.detective?.tick ?? vault.sourceDraft.alarmTick,
+          );
           this.revealView = undefined;
           return {
             detach: () => {
@@ -189,6 +195,8 @@ export class MuseumGame {
     }
   }
   private clearRole(): void {
+    this.revealClock?.dispose();
+    this.revealClock = undefined;
     this.arrivalAlarm = undefined;
     this.revealed = undefined;
     if (this.state) this.state = { flow: this.state.flow };
@@ -216,6 +224,36 @@ export class MuseumGame {
   }
   private render(): void {
     if (!this.state || this.disposed) return;
+    if (this.revealed && this.revealClock) {
+      const reveal = this.revealClock.snapshot();
+      const detective = this.state.detective;
+      const tape =
+        detective &&
+        this.shelf.publicCase({ id: detective.caseId, rev: detective.rev })
+          ?.clues;
+      this.state = {
+        ...this.state,
+        reveal,
+        ...(detective
+          ? {
+              detective: {
+                ...detective,
+                tick: reveal.tick,
+                frame: tape?.clues.find(
+                  (clue) =>
+                    clue.kind === "Frame" &&
+                    clue.witness === detective.source &&
+                    clue.tick === reveal.tick,
+                ),
+                observations: tape
+                  ? getObservations(tape, detective.source, reveal.tick)
+                  : [],
+                focusedObservation: undefined,
+              },
+            }
+          : {}),
+      };
+    }
     this.caseView?.sync();
     if (this.caseView)
       this.state = { ...this.state, view: this.caseView.snapshot() };
@@ -238,6 +276,12 @@ export class MuseumGame {
   }
   update(seconds: number): void {
     if (this.disposed || !Number.isFinite(seconds) || seconds < 0) return;
+    if (this.revealed && this.revealClock) {
+      if (this.revealClock.update(seconds)) this.render();
+      this.ports.presentPose?.(this.revealClock.presentationTick());
+      this.caseView?.update(seconds);
+      return;
+    }
     const session = this.detective;
     session?.update(seconds);
     if (
@@ -264,6 +308,12 @@ export class MuseumGame {
   }
   dispatch(action: string, payload?: unknown): boolean {
     if (this.disposed || !this.flow) return false;
+    if (action === "reveal") {
+      if (!this.revealed || !this.revealClock || !payload) return false;
+      const accepted = this.revealClock.dispatch(payload as RevealAction);
+      if (accepted) this.render();
+      return accepted;
+    }
     if (
       this.arrivalAlarm !== undefined &&
       ["flow", "author", "detective", "view"].includes(action)

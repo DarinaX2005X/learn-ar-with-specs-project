@@ -6,6 +6,9 @@ import {
 } from "../Domain/index";
 import { roleSilhouette } from "../Scripts/TableKit/RoleSilhouette";
 import { RECORDED_HEAD_ART } from "./MuseumScene/RecordedHeadArt";
+import { RECORDED_TORSO_ART } from "./MuseumScene/RecordedTorsoArt";
+import { stableRecordingOptics } from "./MuseumScene/RecordedOptics";
+import { getWitnessBackground } from "../Spatial/WitnessBackground";
 export interface RecordedSurface {
   segment: string;
   via: "direct" | "mirror";
@@ -77,32 +80,60 @@ export class RecordedGlass {
           fragment,
           roleSilhouette(fragment.role),
         ),
+        torso: RECORDED_TORSO_ART[fragment.role ?? "anonymous"].map(
+          (patch) => ({
+            kind: patch.kind,
+            color: patch.color,
+            triangles: patch.triangles.flatMap((outline) =>
+              projectVisibleSurface(board, frame.witness, fragment, outline),
+            ),
+          }),
+        ),
       }))
-      .filter((item) => item.triangles.length > 0);
+      .filter(
+        (item) =>
+          item.triangles.length > 0 ||
+          item.torso.some((patch) => patch.triangles.length > 0),
+      );
     const selected =
       this.opticalDetail && this.detail
         ? observed.filter((item) => this.key(item.fragment) === this.detail)
         : [];
     const visible = selected.length ? selected : observed;
     const points = visible.flatMap((item) =>
-      item.triangles.flatMap((triangle) =>
-        triangle.map((point) => this.point(point)),
-      ),
+      [
+        ...item.triangles,
+        ...item.torso.flatMap((patch) => patch.triangles),
+      ].flatMap((triangle) => triangle.map((point) => this.point(point))),
     );
-    if (!points.length) return;
-    const left = Math.min(...points.map((p) => p[0])),
-      right = Math.max(...points.map((p) => p[0])),
-      bottom = Math.min(...points.map((p) => p[1])),
-      top = Math.max(...points.map((p) => p[1]));
+    const fixed = stableRecordingOptics(board, frame.witness);
+    const left = points.length ? Math.min(...points.map((p) => p[0])) : 0,
+      right = points.length ? Math.max(...points.map((p) => p[0])) : 0;
+    const bottom = points.length ? Math.min(...points.map((p) => p[1])) : 0,
+      top = points.length ? Math.max(...points.map((p) => p[1])) : 0;
+    // Common glass has one public fixed optical calibration for the whole case.
+    // Only an explicitly toggled, selected physical loupe changes its crop.
     const gain = this.zoom
-      ? Math.min(
-          selected.length ? 1200 : 160,
-          32 / Math.max(0.001, right - left),
-          16 / Math.max(0.001, top - bottom),
-        )
+      ? selected.length
+        ? Math.min(
+            1200,
+            32 / Math.max(0.001, right - left),
+            16 / Math.max(0.001, top - bottom),
+          )
+        : fixed.gain
       : 12 / Math.tan(Math.PI / 3);
-    const centerX = this.zoom ? (left + right) / 2 : 0,
-      centerY = this.zoom ? (bottom + top) / 2 : 0;
+    const centerX = this.zoom
+      ? selected.length
+        ? (left + right) / 2
+        : fixed.centerX
+      : 0;
+    const centerY = this.zoom
+      ? selected.length
+        ? (bottom + top) / 2
+        : fixed.centerY
+      : 0;
+    const gainY = this.zoom ? gain : 6 / Math.tan(Math.PI * 0.4);
+    this.background(board, frame.witness, centerX, centerY, gain, gainY);
     const map = (p: {
       horizontal: number;
       vertical: number;
@@ -115,12 +146,18 @@ export class RecordedGlass {
           : (q[1] / Math.tan(Math.PI * 0.4)) * 6,
       ];
     };
-    for (const { fragment, triangles } of visible) {
+    for (const { fragment, triangles, torso } of visible) {
       const art = fragment.role ? RECORDED_HEAD_ART[fragment.role] : undefined;
       const base: RGB = art?.base ?? [0.24, 0.29, 0.28];
       const projected = triangles.map((triangle) => triangle.map(map));
-      const xs = projected.flatMap((triangle) => triangle.map((p) => p[0])),
-        ys = projected.flatMap((triangle) => triangle.map((p) => p[1]));
+      const allProjected = [
+        ...projected,
+        ...torso.flatMap((patch) =>
+          patch.triangles.map((triangle) => triangle.map(map)),
+        ),
+      ];
+      const xs = allProjected.flatMap((triangle) => triangle.map((p) => p[0])),
+        ys = allProjected.flatMap((triangle) => triangle.map((p) => p[1]));
       const minX = Math.min(...xs),
         maxX = Math.max(...xs),
         minY = Math.min(...ys),
@@ -140,15 +177,23 @@ export class RecordedGlass {
           (p) => [cx + (p[0] - cx) * 1.045, cy + (p[1] - cy) * 1.045] as const,
         ),
       );
+      for (let layer = 0; layer < torso.length; layer++)
+        this.mesh(
+          fragment,
+          "Torso_" + torso[layer].kind,
+          torso[layer].triangles.map((triangle) => triangle.map(map)),
+          torso[layer].color,
+          0.015 + layer * 0.025,
+        );
       this.mesh(
         fragment,
         "Contour",
         contour,
         [0.018, 0.029, 0.025],
-        0.025,
+        0.12,
         [0.62, 0.3, 0.055],
       );
-      this.mesh(fragment, "Face", projected, base, 0.045);
+      this.mesh(fragment, "Face", projected, base, 0.14);
       if (art)
         for (let layer = 0; layer < art.patches.length; layer++) {
           const patch = art.patches[layer];
@@ -160,12 +205,75 @@ export class RecordedGlass {
             patch.kind,
             clipped.map((triangle) => triangle.map(map)),
             patch.color,
-            0.065 + layer * 0.018,
+            0.16 + layer * 0.025,
           );
         }
       if (fragment.role) this.roles.push(fragment.role);
     }
     this.paintFocus();
+  }
+  private background(
+    board: Board,
+    witnessId: string,
+    centerX: number,
+    centerY: number,
+    gain: number,
+    gainY: number,
+  ): void {
+    const plate = getWitnessBackground(board, witnessId, {
+      roomHeight: 3.8,
+      frameWidth: 0.025,
+      frameHeight: 0.035,
+    }).sample(
+      {
+        minX: centerX - 17.5 / gain,
+        maxX: centerX + 17.5 / gain,
+        minY: centerY - 9.5 / gainY,
+        maxY: centerY + 9.5 / gainY,
+      },
+      64,
+      40,
+    );
+    for (const batch of plate.batches) {
+      const builder = new MeshBuilder([
+        { name: "position", components: 3 },
+        { name: "normal", components: 3 },
+        { name: "texture0", components: 2 },
+      ]);
+      builder.topology = MeshTopology.Triangles;
+      builder.indexType = MeshIndexType.UInt16;
+      const vertices: number[] = [];
+      for (const point of batch.vertices)
+        vertices.push(
+          (point[0] - centerX) * gain,
+          (point[1] - centerY) * gainY,
+          -0.15 + batch.layer * 0.035,
+          0,
+          0,
+          1,
+          0,
+          0,
+        );
+      builder.appendVerticesInterleaved(vertices);
+      builder.appendIndices(batch.indices);
+      builder.updateMesh();
+      const object = global.scene.createSceneObject(
+        "RecordedRoom_" + batch.material,
+      );
+      object.setParent(this.parent);
+      const visual = object.createComponent("Component.RenderMeshVisual");
+      visual.mesh = builder.getMesh();
+      const material = this.material.clone();
+      material.mainPass.baseColor = new vec4(
+        batch.color[0],
+        batch.color[1],
+        batch.color[2],
+        1,
+      );
+      material.mainPass.twoSided = true;
+      visual.mainMaterial = material;
+      this.objects.push(object);
+    }
   }
   private key(fragment: Pick<Fragment, "segment" | "via">): string {
     return fragment.segment + "|" + fragment.via;

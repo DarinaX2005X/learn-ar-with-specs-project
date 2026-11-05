@@ -344,7 +344,7 @@
     {
       "name": "DisplayCase",
       "path": "DisplayCase.glb",
-      "bytes": 117340,
+      "bytes": 369164,
       "aabb_cm": [
         4.7,
         9.09,
@@ -366,41 +366,80 @@
         "BaseStep",
         "Pedestal",
         "Rim",
+        "PlatformMetalEdge",
+        "PlatformMetalEdge",
+        "PlatformMetalEdge",
+        "PlatformMetalEdge",
         "VelvetCushion",
         "RubySocket",
+        "SocketWellFloor",
+        "SocketNarrowRim",
+        "SocketContact",
         "CaseUpright_-2-2",
+        "LiftPostSleeve",
         "CaseUpright_-22",
+        "LiftPostSleeve",
         "CaseUpright_2-2",
+        "LiftPostSleeve",
         "CaseUpright_22",
+        "LiftPostSleeve",
         "TopRailZ_-2",
         "TopRailZ_2",
         "TopRailX_-2",
         "TopRailX_2",
-        "GlassTop",
-        "GlassSide_-1.96",
-        "GlassSide_1.96",
-        "GlassFront_-1.96",
-        "GlassFront_1.96"
+        "LiftedClocheGlass",
+        "ClocheGrip",
+        "ClocheLowerBinding"
       ],
-      "triangles": 1192
+      "triangles": 4104,
+      "kind": "universally accessible exhibition vitrine",
+      "artVersion": 2,
+      "nativeModelScale": [
+        65,
+        98.0392,
+        65
+      ],
+      "socketContactLocalTableCm": [
+        0,
+        6.12,
+        0
+      ],
+      "seatRimTopLocalTableCm": 6.25,
+      "seatClearOpeningLocalTableCm": [
+        1.12,
+        0.94
+      ],
+      "clocheUndersideLocalTableCm": 7.8,
+      "clocheAlwaysRaised": true,
+      "accessSides": [
+        "-X",
+        "+X",
+        "-Z",
+        "+Z"
+      ],
+      "collisionEnvelopeLocalTableCm": [
+        4.7,
+        9.09,
+        4.7
+      ]
     },
     {
       "name": "Ruby",
       "path": "Ruby.glb",
-      "bytes": 10568,
+      "bytes": 10736,
       "aabb_cm": [
-        1.9401,
-        1.061,
-        1.5891
+        0.66,
+        0.381,
+        0.54
       ],
       "aabb_min_cm": [
-        -0.9701,
+        -0.33,
         0.0,
-        -0.7945
+        -0.27
       ],
       "aabb_center_offset_cm": [
         0.0,
-        0.5305,
+        0.1905,
         0.0
       ],
       "nodeNames": [
@@ -408,7 +447,17 @@
         "RubyGem",
         "RubyLightFacet"
       ],
-      "triangles": 66
+      "triangles": 66,
+      "kind": "handheld faceted ruby",
+      "artVersion": 2,
+      "bottomPivotUnchanged": true,
+      "nativeImportScale": 100,
+      "fullSizeStoryCm": [
+        11,
+        6.35,
+        9
+      ],
+      "lightEmission": false
     },
     {
       "name": "MirrorHousing",
@@ -643,7 +692,7 @@
     {
       "name": "AnonymousTrack",
       "path": "AnonymousTrack.glb",
-      "bytes": 387744,
+      "bytes": 538464,
       "aabb_cm": [
         3.5303,
         10.255,
@@ -651,7 +700,7 @@
       ],
       "aabb_min_cm": [
         -1.7652,
-        0.0,
+        -0.0,
         -1.0675
       ],
       "aabb_center_offset_cm": [
@@ -662,37 +711,82 @@
       "nodeNames": [
         "glass",
         "Hip_L",
-        "Thigh_L",
         "Knee_L",
+        "Shoulder_L",
+        "Forearm_L",
+        "Hand_L",
+        "Hip_R",
+        "Knee_R",
+        "Shoulder_R",
+        "Forearm_R",
+        "Hand_R",
+        "Head",
+        "Thigh_L",
         "KneeJoint_L",
         "Shin_L",
+        "TrouserSeam_L",
         "Foot_L",
-        "Shoulder_L",
+        "Sole_L",
+        "BootWelt_L",
         "UpperArm_L",
-        "Forearm_L",
+        "ShoulderStitch_L",
         "Elbow_L",
         "ForeArm_L",
-        "Hand_L",
+        "Cuff_L",
+        "ElbowClothFold_L",
+        "WristJoint_L",
         "Palm_L",
-        "Hip_R",
         "Thigh_R",
-        "Knee_R",
         "KneeJoint_R",
         "Shin_R",
+        "TrouserSeam_R",
         "Foot_R",
-        "Shoulder_R",
+        "Sole_R",
+        "BootWelt_R",
         "UpperArm_R",
-        "Forearm_R",
+        "ShoulderStitch_R",
         "Elbow_R",
         "ForeArm_R",
-        "Hand_R",
+        "Cuff_R",
+        "ElbowClothFold_R",
+        "WristJoint_R",
         "Palm_R",
-        "NeutralTorso",
+        "CoatBody",
+        "PlainVest",
+        "LapelTurn_-1",
+        "CoatFrontSeam_-1",
+        "CollarPoint_-1",
+        "VestFastener_7.15",
         "Neck",
-        "Head",
-        "BlankHead"
+        "SculptedHead",
+        "EyeOrbit_-1",
+        "Eye_-1"
       ],
-      "triangles": 4392
+      "triangles": 5278,
+      "kind": "role-neutral reconstruction puppet",
+      "artVersion": 2,
+      "rigVersion": 1,
+      "sameTemplateForEveryTrack": true,
+      "roleAccessories": false,
+      "forwardAxis": "-Z",
+      "bindEnvelopeCm": [
+        3.5303,
+        10.255,
+        1.6625
+      ],
+      "jointNames": [
+        "Head",
+        "Hip_L",
+        "Hip_R",
+        "Knee_L",
+        "Knee_R",
+        "Shoulder_L",
+        "Shoulder_R",
+        "Forearm_L",
+        "Forearm_R",
+        "Hand_L",
+        "Hand_R"
+      ]
     },
     {
       "name": "RoleMarkGuard",
@@ -881,7 +975,7 @@
     {
       "name": "MuseumBuilding",
       "path": "MuseumBuilding.glb",
-      "bytes": 12710380,
+      "bytes": 12728752,
       "aabb_cm": [
         1308.0,
         422.0,
@@ -899,6 +993,9 @@
       ],
       "nodeNames": [
         "shadowInner",
+        "CaseLidPivot",
+        "CaseLidSurface",
+        "CaseLidInnerLining",
         "ArrivalRiverCanvas",
         "ConservatorToolsCanvas",
         "Anchor_Entrance",
@@ -980,6 +1077,7 @@
         "WorkshopFurniture__clothTeal",
         "WorkshopFurniture__leather",
         "WorkshopFurniture__paper",
+        "WorkshopCaseHinge__brass",
         "WorkshopFurniture__brass",
         "WorkshopFurniture__glass",
         "WorkshopFurniture__ruby",
@@ -1009,7 +1107,7 @@
         "FoyerSculpture__paintOchre",
         "FoyerSculpture__parquetChestnut"
       ],
-      "triangles": 107650,
+      "triangles": 107812,
       "storyBoundsMetres": {
         "x": [
           -5,
@@ -1022,6 +1120,28 @@
       },
       "heightMetres": 3.94,
       "roomCount": 4,
+      "caseLid": {
+        "pivotNode": "CaseLidPivot",
+        "surfaceNode": "CaseLidSurface",
+        "hingeMetres": [
+          -3.725,
+          1.035,
+          3.65
+        ],
+        "axis": "+Z",
+        "closedRadians": 0,
+        "openRadians": 1.3089969389957472,
+        "surfaceLocalCentreMetres": [
+          0.225,
+          0.0125,
+          0
+        ],
+        "surfaceSizeMetres": [
+          0.45,
+          0.025,
+          0.32
+        ]
+      },
       "anchorsMetres": {
         "Entrance": [
           3.5,
@@ -1084,9 +1204,9 @@
           -1.738743
         ],
         "CaseLid": [
-          -3.9,
-          1.02,
-          3.8
+          -3.725,
+          1.035,
+          3.65
         ],
         "ArchiveRecorder": [
           -3.6,

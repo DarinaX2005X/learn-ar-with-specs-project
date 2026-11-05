@@ -25,6 +25,7 @@ import {
 } from "../Spatial/CaseViewRouting";
 import { caseViewHandleSlots } from "./CaseViewHandles";
 import { ShelfItem } from "../Shelf/SessionShelf";
+import { RevealAction, RevealPlayback } from "./MuseumGame/RevealTransport";
 
 export interface CaseTargetView {
   readonly targetName: string;
@@ -36,6 +37,7 @@ export interface CaseTargetView {
 
 /** Public investigation data only. A vault never crosses this presentation port. */
 export interface PlayTableSnapshot {
+  reveal?: RevealPlayback;
   flow: FlowState;
   author?: AuthorSnapshot;
   detective?: DetectiveState;
@@ -71,6 +73,7 @@ export type PlayTableCommand =
     }
   | { action: "author"; payload: AuthorCommand }
   | { action: "detective"; payload: DetectiveAction }
+  | { action: "reveal"; payload: RevealAction }
   | { action: "view"; payload: CaseViewAction };
 export interface PlayTablePorts {
   dispatch(action: string, payload?: unknown): void;
@@ -145,7 +148,7 @@ export class PlayTable {
     snapshot = {
       ...snapshot,
       author: snapshot.flow.mode === "author" ? snapshot.author : undefined,
-      detective: ["detective", "finished"].includes(snapshot.flow.mode)
+      detective: !snapshot.reveal && ["detective", "finished"].includes(snapshot.flow.mode)
         ? snapshot.detective
         : undefined,
     };
@@ -180,6 +183,7 @@ export class PlayTable {
         this.sceneObjects.clear();
       }
     }
+    this.updateCaseLidTarget();
     this.updateMovingTargets();
     this.updateObservationTargets();
     this.updateViewHandles();
@@ -419,6 +423,9 @@ export class PlayTable {
   private detective(action: DetectiveAction): void {
     if (this.state.detective) this.send("detective", action);
   }
+  private reveal(action: RevealAction): void {
+    if(this.state.reveal)this.send("reveal",action);
+  }
 
   /** The hit area belongs to an actual object. Its inscription never follows the viewer. */
   private bindObject(
@@ -602,6 +609,7 @@ export class PlayTable {
       position,
       [22, 24, 8],
       () => {
+        if(this.state.reveal)return (this.state.reveal.playing?"Pause theft ":"Play theft ")+(this.state.reveal.tick/2).toFixed(1)+" s";
         const playing =
           this.state.author?.playing ?? this.state.detective?.playing;
         const tick = this.state.author?.tick ?? this.state.detective?.tick;
@@ -611,6 +619,7 @@ export class PlayTable {
       },
       () => {
         if (this.state.flow.mode === "ready") this.flow("replayAlarm");
+        else if(this.state.reveal)this.reveal({type:this.state.reveal.playing?"pause":"play"});
         else if (this.state.author)
           this.author({ kind: this.state.author.playing ? "pause" : "play" });
         else if (this.state.detective)
@@ -620,7 +629,7 @@ export class PlayTable {
       },
       () =>
         this.state.flow.mode !== "handoff" &&
-        (this.state.flow.mode !== "finished" ||
+        (!!this.state.reveal || this.state.flow.mode !== "finished" ||
           this.state.detective?.mode === "reconstruction"),
     );
     let startTick = 0,
@@ -632,7 +641,7 @@ export class PlayTable {
       capturedGeneration = this.inputGeneration;
       this.dragging = true;
       distance = 0;
-      startTick = this.state.author?.tick ?? this.state.detective?.tick ?? 12;
+      startTick = this.state.reveal?.tick ?? this.state.author?.tick ?? this.state.detective?.tick ?? 12;
     });
     clock.input.onDragUpdate.add((event) => {
       if (
@@ -642,13 +651,22 @@ export class PlayTable {
         return;
       distance += this.storyDelta(event.dragVector).x;
       const tick = clamp(Math.round(startTick + distance / 2), 0, 24);
-      if (this.state.author) this.author({ kind: "setTick", tick });
+      if(this.state.reveal)this.reveal({type:"seek",tick});
+      else if (this.state.author) this.author({ kind: "setTick", tick });
       else this.detective({ type: "seek", tick });
       clock.text.text = (tick / 2).toFixed(1) + " s";
     });
     this.finishDrag(clock.input, () => {
       captured = -1;
     });
+    this.bindObject(
+      id + "Reset",
+      this.offset(position, 0, -17, 0),
+      [12, 6, 8],
+      () => "Replay the theft",
+      () => this.reveal({ type: "replay" }),
+      () => !!this.state.reveal,
+    );
     this.bindObject(
       id + "Previous",
       this.offset(position, -15, 0, 0),
@@ -667,7 +685,8 @@ export class PlayTable {
     );
   }
   private step(delta: -1 | 1): void {
-    if (this.state.author) this.author({ kind: "stepTick", delta });
+    if(this.state.reveal)this.reveal({type:"step",delta});
+    else if (this.state.author) this.author({ kind: "stepTick", delta });
     else this.detective({ type: "step", delta });
   }
 
@@ -1645,6 +1664,22 @@ export class PlayTable {
     }
     if (clue.kind === "Rim") return "Rim mark";
     return clue.box;
+  }
+
+  /** Follow the actual hinged panel, including the building's world placement.
+   * Its authored mesh uses metre vertices under an import scale; these collider
+   * dimensions are the resulting physical centimetres, not that import scale. */
+  private updateCaseLidTarget(): void {
+    const action = this.actions.get("CaseLid");
+    const surface = this.find("CaseLidSurface");
+    if (!action || !surface) return;
+    const physical = surface.getTransform();
+    const target = action.object.getTransform();
+    target.setWorldPosition(physical.getWorldPosition());
+    target.setWorldRotation(physical.getWorldRotation());
+    target.setWorldScale(new vec3(1, 1, 1));
+    action.shape.size = new vec3(45, 2.5, 32);
+    action.inscription.getTransform().setLocalPosition(new vec3(0, 1.4, 0));
   }
 
   private updateMovingTargets(): void {
