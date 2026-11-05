@@ -13,6 +13,7 @@ import numpy as np
 root = Path(__file__).resolve().parents[2]
 models = root / "Assets" / "Art" / "TableKit"
 expected_models = {
+    "MuseumBuilding",
     "Guard",
     "Courier",
     "Conservator",
@@ -32,7 +33,7 @@ expected_models = {
 found_models = {file.stem for file in models.glob("*.glb")}
 require(
     found_models == expected_models,
-    f"Expected 15 TableKit models; missing={expected_models-found_models}; unexpected={found_models-expected_models}",
+    f"Expected 16 TableKit models; missing={expected_models-found_models}; unexpected={found_models-expected_models}",
 )
 audio_directory = root / "Assets" / "Audio" / "TableKit"
 expected_audio = {"cloth", "engage", "latch"}
@@ -44,8 +45,8 @@ require(
 manifest = json.loads((models / "manifest.json").read_text(encoding="utf-8"))
 records = {record["name"]: record for record in manifest["resources"]}
 require(
-    len(manifest["resources"]) == 15 and set(records) == expected_models,
-    "Manifest must list all 15 models exactly once",
+    len(manifest["resources"]) == 16 and set(records) == expected_models,
+    "Manifest must list all 16 models exactly once",
 )
 
 for file in models.glob("*.glb"):
@@ -76,7 +77,7 @@ for file in models.glob("*.glb"):
         v = d["bufferViews"][a["bufferView"]]
         count = a["count"]
         require(count > 0, file.name + ": mesh accessor is empty")
-        n = {"VEC3": 3, "SCALAR": 1}[a["type"]]
+        n = {"VEC3": 3, "VEC2": 2, "SCALAR": 1}[a["type"]]
         dtype = {5126: "<f4", 5125: "<u4"}[a["componentType"]]
         require(
             v["byteOffset"] + v["byteLength"] <= len(data),
@@ -88,11 +89,20 @@ for file in models.glob("*.glb"):
 
     require(bool(d.get("meshes")), file.name + ": no renderable meshes")
     count = 0
+    building_triangles = []
     for m in d["meshes"]:
         for p in m["primitives"]:
             v = access(p["attributes"]["POSITION"])
             n = access(p["attributes"]["NORMAL"])
             ix = access(p["indices"]).reshape(-1, 3)
+            if "TEXCOORD_0" in p["attributes"]:
+                uv = access(p["attributes"]["TEXCOORD_0"])
+                require(
+                    len(uv) == len(v) and np.isfinite(uv).all(),
+                    file.name + ": UV count/values are invalid",
+                )
+            if file.stem == "MuseumBuilding":
+                building_triangles.extend(v[ix])
             require(
                 np.isfinite(v).all() and np.isfinite(n).all(),
                 file.name + ": mesh contains non-finite positions or normals",
@@ -112,6 +122,89 @@ for file in models.glob("*.glb"):
             )
             count += len(ix)
     names = {n["name"] for n in d["nodes"]}
+    teal = next(material for material in d["materials"] if material["name"] == "teal")
+    require(
+        np.allclose(
+            teal["pbrMetallicRoughness"]["baseColorFactor"][:3],
+            [0.008023193, 0.045186204, 0.042311410],
+            atol=1e-6,
+        ),
+        file.name + ": teal material factor must use linear RGB, not raw sRGB",
+    )
+    if file.stem == "MuseumBuilding":
+        require(
+            {
+                "Anchor_Entrance",
+                "Anchor_RubyHall",
+                "Anchor_Workshop",
+                "Anchor_Archive",
+                "Anchor_ConservationBench",
+            }
+            <= names,
+            "MuseumBuilding: missing room/interaction anchors",
+        )
+        require(
+            len(d.get("images", [])) == 4,
+            "MuseumBuilding: four original JPEG images must be embedded",
+        )
+        for image in d["images"]:
+            require(
+                "uri" not in image and image.get("mimeType") == "image/jpeg",
+                "MuseumBuilding: textures must use embedded JPEG bufferViews",
+            )
+            view = d["bufferViews"][image["bufferView"]]
+            payload = data[view["byteOffset"] : view["byteOffset"] + view["byteLength"]]
+            require(
+                payload.startswith(b"\xff\xd8") and payload.endswith(b"\xff\xd9"),
+                "MuseumBuilding: embedded JPEG payload invalid",
+            )
+        triangles = np.asarray(building_triangles)
+
+        def blocked(start, end):
+            start = np.asarray(start)
+            direction = np.asarray(end) - start
+            edge1 = triangles[:, 1] - triangles[:, 0]
+            edge2 = triangles[:, 2] - triangles[:, 0]
+            h = np.cross(np.broadcast_to(direction, edge2.shape), edge2)
+            det = np.sum(edge1 * h, axis=1)
+            valid = abs(det) > 1e-9
+            inverse = np.zeros_like(det)
+            inverse[valid] = 1 / det[valid]
+            s = start - triangles[:, 0]
+            u = np.sum(s * h, axis=1) * inverse
+            q = np.cross(s, edge1)
+            v = np.sum(direction * q, axis=1) * inverse
+            t = np.sum(edge2 * q, axis=1) * inverse
+            return bool(
+                np.any(
+                    valid
+                    & (u >= -1e-7)
+                    & (v >= -1e-7)
+                    & (u + v <= 1 + 1e-7)
+                    & (t > 1e-6)
+                    & (t < 1 - 1e-6)
+                )
+            )
+
+        passages = [
+            ((3.5, 1.65, -5.5), (3.5, 1.65, -4.5)),
+            ((3.5, 1.65, -0.6), (3.5, 1.65, 0.6)),
+            ((-0.6, 1.65, 2.5), (0.6, 1.65, 2.5)),
+            ((-0.6, 1.65, -2.5), (0.6, 1.65, -2.5)),
+            ((-2.5, 1.65, -0.6), (-2.5, 1.65, 0.6)),
+        ]
+        for start, end in passages:
+            require(
+                not blocked(start, end),
+                f"MuseumBuilding: doorway is physically blocked at {start} -> {end}",
+            )
+        require(
+            blocked((1, 1.65, -0.6), (1, 1.65, 0.6)),
+            "MuseumBuilding: masonry beside the door must remain closed",
+        )
+        print(
+            "MuseumBuilding: five genuine open passages, four embedded images, linear factors and UVs verified"
+        )
     if file.stem in ["Guard", "Courier", "Conservator"]:
         require(
             {

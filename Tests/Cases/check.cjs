@@ -40,6 +40,10 @@ const flow = new CaseFlow({
 });
 assert.equal(flow.snapshot().primary, "Replay the alarm");
 assert(flow.replayAlarm());
+assert.equal(detective.caseId, 'missing-ruby');
+const courier = detective.board.tracks.find(track => track.id === 'A');
+assert(courier.keys.some(key => key.x !== courier.keys[0].x || key.z !== courier.keys[0].z), 'The actual starter mount must contain the moving Courier route');
+assert.deepEqual(prove(detective.board, detective.clues, [], 'Underdetermined').possibleCulprits, ['Conservator']);
 const original = JSON.stringify(detective);
 assert(!flow.stageTheft());
 assert(flow.finishAttempt(true));

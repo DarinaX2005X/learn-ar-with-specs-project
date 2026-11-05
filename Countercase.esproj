@@ -1,8 +1,8 @@
 studioVersion:
   major: 5
   minor: 23
-  patch: 0
-  build: 26072705
+  patch: 2
+  build: 26081320
   type: Public
 coreVersion: 372
 clientVersion: 14.16
@@ -15,7 +15,7 @@ metaInfo:
     []
   lensName: SpecsBaseTemplate
   lensDescriptors:
-    []
+    - AI_MUTATED
   lensApplicableContext:
     - live_camera
     - reply_camera

@@ -1,0 +1,3020 @@
+- !<AssetImportMetadata/0c249ac3-68ae-40a2-94ce-097b6ec8a818>
+  ImportedAssetIds:
+    .hidden/ArrivalRiver: !<reference> e81143fb-ed28-4ae2-8ec3-3b96954dce0f
+    00e9647c9a9e8dd9: !<reference> 92ceaa80-df14-4c71-a77e-a581765cf16d
+    025c465d245b590b: !<reference> 2beb04ea-368d-4200-9962-e36ddea42d90
+    040bae6193d275f5: !<reference> b14222c1-dc19-42f0-9aef-5cf7986ffe79
+    04bae6bb3dfe9fc9: !<reference> 266166b8-ba6c-4d37-8923-33f6bf3f332a
+    07887da5c2101b9f: !<reference> 5d22866b-998c-4733-8a48-7e2d3e008485
+    0852791afc725448: !<reference> f3f59d9a-bdde-4d99-beb7-203cc1fc9d74
+    09bc417d5b64e50a: !<reference> 107cdc9a-eaee-41ff-8710-289e5ba64e4b
+    0abadf9f4400136f: !<reference> e013dd0c-127f-4bc1-b50c-e56d9b27a169
+    0b3be791e088a20c: !<reference> e4858ea6-c868-49bf-8324-2339709547d6
+    0c9e61e77aa8cd62: !<reference> 31095f60-32ec-4083-a2fe-6916b66095d1
+    1252cd63be777517: !<reference> 648f6744-99a4-4dd9-bc44-bb35a5d5d549
+    1518d8e51a31fc2f: !<reference> cbd699cd-8986-435e-86b5-b147abcceb67
+    184b9ad823cf159c: !<reference> 8283846a-2a38-4e00-b687-861cb6dcc55b
+    18ac19c9ec72b4bd: !<reference> fdcf650c-11cd-4f62-80f1-05eadea63590
+    1d14a2f3a10df83f: !<reference> b7662982-27f2-4a87-9feb-dc56b3467469
+    1f0da488cc15ed32: !<reference> 2e24b6f6-5b3c-4f4f-abfa-16474306f75c
+    2222e4dbc3f3f915: !<reference> be3fa014-68f6-4325-b50e-c337b7529095
+    2451a7feeb4a7820: !<reference> 38b15072-3745-4b8c-87f6-b33f2795d66e
+    25a7566dc94ecb1d: !<reference> 1ab0c641-b7e0-4218-872c-db41db3154de
+    25ccb7617fe5f83e: !<reference> 642b3202-c8df-4ad7-b864-3ac25e4a4ab2
+    26ba073d67b9d0dd: !<reference> 81698ecb-b6e9-477d-aa51-1213ae22e022
+    2a5a3a7b46bc13ca: !<reference> 9741b366-a096-4017-ae9b-fb14880ba9b0
+    2ad6a594cf8aa2d7: !<reference> 9c31811c-2cd4-40b5-b547-f0b58deb8db1
+    2affecee73726ee9: !<reference> 6b8c579e-2acf-484c-8970-53b5ada4684f
+    2f312bb19f9a226c: !<reference> 2e95a3bb-e85b-403b-9d02-29033439516c
+    311139f6735b6d9d: !<reference> c9601b57-e92c-43f1-8e73-61fb421d518b
+    314b43bb68053a46: !<reference> 7b3aef0c-6c1b-4354-b192-5a422abaf9b5
+    35c9fdb194856393: !<reference> ffa82c9b-b1c0-4f0d-91b0-b7b31946dfca
+    3722ce8e9dbe3186: !<reference> 335fed23-c177-4b8b-9c59-0ad736ddcd62
+    3aaf34e62aca5e10: !<reference> 2d9ae79b-3286-4471-a33f-95a51e9a4678
+    3d4c8051f983769b: !<reference> 572c3da0-3c66-4cec-9831-b4c854054549
+    3e08e1e5ee5aeecc: !<reference> 4e3a01bb-6f79-4592-ae66-ee20eaf391c1
+    3e2d4c28ad5c5c01: !<reference> c39cdaea-1c5f-4f10-9406-2f510819ddc2
+    3fe56bfa8c17b007: !<reference> 29e91bba-fcc6-41eb-a5c0-c715c5be30e6
+    3ff56ad86333eb87: !<reference> 5e288388-1154-4129-a27b-9f8ada1b1660
+    401f3aefe0e6dc06: !<reference> ada4a761-8a97-4eae-aff6-1dd2545a0b40
+    40770a74c70ed0cf: !<reference> d8ef030f-2e66-4642-a00c-0adc1819faa8
+    40b0d0fe28b5b1ca: !<reference> bdb0c821-1ed9-4918-b158-9b9111616505
+    42b45c1db3e4a5bb: !<reference> 6cfc97c5-9c0e-4739-80c3-ebb09260f3b4
+    444d08299ceebfad: !<reference> edf62aa3-37e2-44a0-ba50-f274066799eb
+    45d9006b60f95c84: !<reference> 330d2b57-4133-4ee6-8e4e-522c04cb0493
+    47ff051727264a81: !<reference> 4e175af5-bc40-4c81-8ff0-291545e45baa
+    48dd8d1deafaa474: !<reference> 9966b55b-60bb-4fd1-b77e-9106807666d7
+    4916509d1ec39cba: !<reference> 5cf2e77b-d6d3-4988-85fb-a0b741df768a
+    4a887b26126ec49d: !<reference> d4b17192-44ce-430e-8212-3e4ef80f6993
+    4c138809850f6736: !<reference> 5c59fcd2-7e7b-4a98-8b58-66643a87db09
+    4c576fb44325d400: !<reference> 266cc595-0265-45bd-86d0-e39532354898
+    502038d124282051: !<reference> 613653eb-207e-4c3e-9e39-17bb3413cbe1
+    50484d2bcde43a38: !<reference> 15c46fda-0221-40ec-98a6-76e0b5b4b285
+    5105b2e0f903c678: !<reference> 60682bb5-0bbd-47d7-9761-d38b6c44a41b
+    51123c85a89bc153: !<reference> d3541fd5-ae75-411d-90fe-dfa0d84a1c9e
+    51628fc55839c578: !<reference> 45e76771-47aa-4dd4-b222-5fa0cb7de391
+    517a6e83b1f3c4b5: !<reference> 715b1d6a-0c02-4c6f-905a-d196fd1d6c4a
+    530cebe7728aec9f: !<reference> a6bec65f-cfd2-4235-aa0d-250d397fbe02
+    53ffe831d1d85e81: !<reference> 9526af00-cfe3-458c-9766-8c4bef97c927
+    54c2cc4f114ae542: !<reference> 05394479-be61-4de1-b386-6845ecf46694
+    5987c35bbe331d29: !<reference> 6ac33630-3ac2-4c18-9863-01256ad33fca
+    59fa7e51cf35e1ce: !<reference> 046a2185-5947-4e8f-b157-b489defbd099
+    5a370bc6a7549451: !<reference> aee53916-07d2-45f2-be79-c71894dcfc05
+    5a89e702e1a91574: !<reference> 5bd162c0-1332-427b-a544-cae94f7ab499
+    5b18f978840a982a: !<reference> 793d13b8-f609-481f-b2d4-42de414b10d3
+    5b1ea27e45ddf47e: !<reference> b879a07b-f517-4922-aa1b-de9794de8d6f
+    5e72f42007aed4a6: !<reference> 857c492d-c9f0-4f68-b025-b38d55bcb8dd
+    63bc727090506494: !<reference> afb6e9bd-0206-4747-a6d9-9b9481dc8f9e
+    64bd05666dd99f56: !<reference> cbc8b168-f0cb-40f9-9c95-dbc236e3508c
+    671f421e48ace8d5: !<reference> 38b86b05-69b0-43b3-aa1b-bada9cca9411
+    6c147d7380343dfd: !<reference> ff117840-dc51-4d53-b4a8-6518809da0d1
+    6c587c983b26be22: !<reference> c2d2545c-253a-45cd-a5cd-b7dc3b6a4f12
+    70bb7e7f686f4059: !<reference> 067f8627-a06d-41b8-891f-25587903a50c
+    716755f1ad591fd7: !<reference> 0e456e69-4e3f-439a-9347-0672522c457a
+    751e79c4ff28bf72: !<reference> 185cfa73-f7b9-4900-8e34-bb43d1bb947b
+    768869dbefa9721e: !<reference> 415cc666-b2fa-4db1-916e-63a779c527e7
+    77d11f6bd2817e32: !<reference> 35512b81-7887-4b3b-9ac3-cbf8c848fd24
+    7bd9114e78a0e0aa: !<reference> ff5321be-62f3-4998-931e-76082b2e9e1d
+    7d5880bf5e056700: !<reference> 8c38ff58-7873-42c4-934f-c58827338ef0
+    7d8e01ed702feca8: !<reference> d2ebec22-af73-4177-83e6-ddf2f290edf0
+    7e5af931728d3c70: !<reference> 9b70d293-a7ee-4310-8ef8-baf48149fead
+    7e725d1b9d711fbe: !<reference> 0fcca15a-ad65-4154-83c8-12d9cdb34c27
+    8276c0976cdc19a1: !<reference> 0b08c821-5c3a-428c-8902-85227c942f5e
+    844f3acb7053c05c: !<reference> 9af4807e-4fcd-415c-b354-f7a4b014bda6
+    871371a0702d4d9b: !<reference> 718e6895-3011-4f2c-bbb9-297d318bd2d5
+    88ab437fd121cc69: !<reference> a585400f-990c-490c-8bc3-440fecfa5541
+    8b4c80a3254c5451: !<reference> f20eeac9-2bbf-464f-a3d6-c567a1bdbc45
+    8c2c6f3cf8d060fd: !<reference> af0e2b9f-aa7d-4114-b84e-c99a0bd4d3f0
+    8d6f9800fbf8eeaf: !<reference> 31e8ecee-b32c-4386-b924-e60b59923eb5
+    901c74a106179794: !<reference> aa5caaac-f9aa-4ec4-8559-00ad4470a283
+    913aa2c1c04ebf12: !<reference> 7a15239d-f2a5-4eeb-8e79-d54919e79060
+    9263d942e9633bec: !<reference> ebf156cb-7081-4601-828d-51b20105a6e9
+    93c5ce951c5962fa: !<reference> 66988c77-cef5-49bd-bd9c-364ea8e6c5ec
+    93eba0de36db5a97: !<reference> e888e799-b765-4fab-8cb6-41f96e1f847c
+    951f667a85dda764: !<reference> f72ce6fb-9f5e-4295-96ab-38f97fd0e1af
+    956586c06c138d2d: !<reference> 37e84f11-98d5-4fe8-9e98-99e4a08bc7a9
+    95a0a2f99f3e92e6: !<reference> 587b1214-b3cf-44ab-8410-f8f7359bb783
+    98d9d618291c574b: !<reference> e5b0a05e-c9aa-4eb8-9126-16968b9d8575
+    99f76c327d06ca6f: !<reference> 29b1d1d9-3e62-4f49-9858-641111bb685e
+    9c0c95c3a5681076: !<reference> 27992c12-3ab6-4d83-9cb8-9400d68ed3e5
+    9c15822213032fee: !<reference> c3eb69eb-29bf-4d70-bcfd-a083685e1760
+    9dfa84e06563c66b: !<reference> 65ee1047-ae5f-4245-9e28-cfd40d878e81
+    9e54811cfafe27a3: !<reference> 03da02c0-dc99-4ded-9403-4b90e775bef9
+    9fc0348476ef98e3: !<reference> eed55dde-00f9-4a90-9bf2-436df1beaaa2
+    Materials/ArrivalRiver: !<reference> 88e562c6-a193-4934-9604-8b31e832b018
+    Materials/ArrivalRiver|ArrivalRiver|GraphPassInfo: !<reference> c01b200f-95ea-491b-aea0-6b96b493886d
+    Materials/ConservatorTools: !<reference> 407ce346-b496-4444-abc5-1c903fa9c1fe
+    Materials/ConservatorTools|ConservatorTools|GraphPassInfo: !<reference> d418f474-bb75-4efe-97f2-28c8ed5d6ddd
+    Materials/brass: !<reference> 79214429-259b-4e55-9ab7-f8717a789202
+    Materials/brass|brass|GraphPassInfo: !<reference> 40491386-8bec-4fad-be85-bdf5156c4f9c
+    Materials/clothTeal: !<reference> baa934e5-d6bb-42c3-81eb-bd2226c17310
+    Materials/clothTeal|clothTeal|GraphPassInfo: !<reference> 198f0c79-8781-4db8-9463-ff32fc4784ca
+    Materials/cream: !<reference> fd108e3b-9928-44cd-b839-79a58104275f
+    Materials/cream|cream|GraphPassInfo: !<reference> ac2a6844-698f-4d74-a01a-98b4dcb0ba6b
+    Materials/glass: !<reference> 8a0fe50d-0202-4172-8152-af1f65c33674
+    Materials/glass|glass|GraphPassInfo: !<reference> 43ac7691-ffcb-407d-bced-99450c385c18
+    Materials/ink: !<reference> 8e9750c6-0070-41c4-b56d-6123ab3b57ad
+    Materials/ink|ink|GraphPassInfo: !<reference> 1d788a1f-73f2-48af-873b-17709f41ad86
+    Materials/leather: !<reference> 06cdc816-5b7f-404b-a4a6-97921e116f09
+    Materials/leather|leather|GraphPassInfo: !<reference> 8c00503d-a283-4e56-9899-79acfa0209fc
+    Materials/limestone: !<reference> 95ca5a60-0433-45fc-a180-6431f867d60b
+    Materials/limestone|limestone|GraphPassInfo: !<reference> 17e3a5b5-53ed-4882-ab87-3aabbd6e3321
+    Materials/paintBlue: !<reference> 82fd657f-f715-42b3-93af-3fb3829a22ff
+    Materials/paintBlue|paintBlue|GraphPassInfo: !<reference> 3b05df6d-f5b3-4f04-b765-e5a042c2c8d4
+    Materials/paintOchre: !<reference> 40735b4d-3385-4d1f-b51d-56b2ed5c099e
+    Materials/paintOchre|paintOchre|GraphPassInfo: !<reference> 959aa2ae-fc33-456d-ae6c-5fae70084f9a
+    Materials/paper: !<reference> 2f113528-4a30-409f-9c9b-55594e17af35
+    Materials/paper|paper|GraphPassInfo: !<reference> 9766bfa5-eb65-4429-a308-25fd1365c240
+    Materials/parquetChestnut: !<reference> 00946316-9fc5-411d-b45a-e67b3f251c77
+    Materials/parquetChestnut|parquetChestnut|GraphPassInfo: !<reference> 6d28caae-efa5-46ce-bfd6-443def0b49d2
+    Materials/parquetHoney: !<reference> f9b5fbbf-ded9-4a6a-9eb1-5103c64cb8f2
+    Materials/parquetHoney|parquetHoney|GraphPassInfo: !<reference> 7d4a2157-7929-472b-9052-b8fd5f62fc59
+    Materials/parquetLight: !<reference> 6eaec0bf-33d6-44c2-879a-af2a8ba9e945
+    Materials/parquetLight|parquetLight|GraphPassInfo: !<reference> af63b729-72e4-4122-afb1-33c51300e5b2
+    Materials/plaster: !<reference> 35365c91-a49d-4d83-94fe-7b92c5f944de
+    Materials/plasterLight: !<reference> 610fc3bd-5277-403e-9fbe-98e1597e729d
+    Materials/plasterLight|plasterLight|GraphPassInfo: !<reference> 7dc5e9ef-69c9-4784-af94-0fddafa6bb44
+    Materials/plaster|plaster|GraphPassInfo: !<reference> 4c31c442-42b4-462c-ad6a-7a9604315794
+    Materials/ruby: !<reference> 9b7d4472-3233-4ce0-84d1-c8fc00f7b7e7
+    Materials/ruby|ruby|GraphPassInfo: !<reference> 1cd74c54-bd86-495f-b7c1-3f31fab75ce6
+    Materials/slate: !<reference> 4f7272d8-51a0-48da-9e30-9a7bb02199f4
+    Materials/slate|slate|GraphPassInfo: !<reference> 254a4dd9-8eb7-4da3-aa47-d23989f240f2
+    Materials/stoneShade: !<reference> 48e15ed4-df33-4ef4-bdd9-6654ba51121e
+    Materials/stoneShade|stoneShade|GraphPassInfo: !<reference> b6680be2-2af0-42ed-9209-ac919c080c52
+    Materials/teal: !<reference> bbe04beb-1dea-430c-a116-d89c9119d780
+    Materials/teal|teal|GraphPassInfo: !<reference> 173b7815-d70d-4f21-a0a0-c3fced9f3021
+    Materials/wood: !<reference> dd363480-f39b-4c0f-8ff9-70156149c3c2
+    Materials/woodGrain: !<reference> 271bbcf4-2b02-4337-9b4d-bbbb189dc455
+    Materials/woodGrain|woodGrain|GraphPassInfo: !<reference> 3b585fa3-27df-447c-bffc-046f4cbda647
+    Materials/wood|wood|GraphPassInfo: !<reference> 435111c1-1a9a-404c-a260-a192eb91fec5
+    Meshes/ArchiveFloor__slate: !<reference> e0782114-9f02-42b0-a90c-1f638c693782
+    Meshes/ArchiveFloor__teal: !<reference> 8ab802a0-d871-45d7-a23c-1ef884e172ad
+    Meshes/ArchiveFloor__woodGrain: !<reference> 70d4ad74-9aab-455a-941c-f5edd9c96775
+    Meshes/ArchiveFurniture__brass: !<reference> dcbb004b-9719-4dcc-9b65-a18b74384de0
+    Meshes/ArchiveFurniture__clothTeal: !<reference> 723aea35-8ff2-432c-92e5-885ac51af3c6
+    Meshes/ArchiveFurniture__cream: !<reference> ef2f36ec-0b31-420f-b659-3f70607dd3ad
+    Meshes/ArchiveFurniture__ink: !<reference> c8311fff-0268-4732-9bcf-e341906b9980
+    Meshes/ArchiveFurniture__leather: !<reference> 31995193-fee3-4de3-98a8-a2c331683cdd
+    Meshes/ArchiveFurniture__parquetChestnut: !<reference> e2571574-0b45-45fe-b5cc-a115146aea58
+    Meshes/ArchiveFurniture__parquetLight: !<reference> 20bd7615-e2f6-4c85-812e-65fabc42a5d5
+    Meshes/ArchiveFurniture__teal: !<reference> 970c2e38-0ec8-46c9-a6a6-05aa3776f905
+    Meshes/ArchiveFurniture__wood: !<reference> b75fecf4-98c7-47fe-a55c-bc03fbe44458
+    Meshes/ArchiveFurniture__woodGrain: !<reference> 5f5833c0-e846-4b31-88e4-645c65be6de6
+    Meshes/ArrivalRiverCanvas: !<reference> f2606f56-2b99-4807-adc0-f8e952a53b71
+    Meshes/ConnectedDoorways__brass: !<reference> dc17a8d8-9f99-4537-94b6-85a97a6a5706
+    Meshes/ConnectedDoorways__limestone: !<reference> 1948b41a-2120-4371-97a1-5f169b9949d2
+    Meshes/ConnectedDoorways__plaster: !<reference> 59e29e73-1f50-4532-9d7e-3e0f3977f71b
+    Meshes/ConnectedDoorways__teal: !<reference> 994274cd-9c31-4da2-a33a-8519cd4606ec
+    Meshes/ConservatorToolsCanvas: !<reference> 3588d025-06ef-4a79-9358-50ec2fe11933
+    Meshes/FoyerFloor__limestone: !<reference> f141f28d-f602-4d1c-bd59-3f265e16be4c
+    Meshes/FoyerFloor__stoneShade: !<reference> 52f5f75b-5760-4d37-9ea7-a2a1a462dc28
+    Meshes/FoyerFloor__teal: !<reference> 8540b132-8fa5-46f4-bf2a-de9fd519f7d1
+    Meshes/FoyerFloor__woodGrain: !<reference> 6818f126-8b4c-409e-a5b6-74b8d373bc45
+    Meshes/FoyerSculpture__paintOchre: !<reference> 1ed71f6b-df6f-4910-9e38-919176ac82a9
+    Meshes/FoyerSculpture__parquetChestnut: !<reference> 544d7c32-f969-46e7-9bd7-237068af25a5
+    Meshes/FoyerSculpture__slate: !<reference> 8966eba1-40c8-4c63-a001-43497022658a
+    Meshes/OriginalArtFrames__brass: !<reference> ccf12a2f-d3d4-4980-a3ee-810576eb8ba7
+    Meshes/OriginalArtFrames__woodGrain: !<reference> e4202e50-33a5-4a1b-8bda-8f5b0ac1e596
+    Meshes/OuterWalls__brass: !<reference> 62c00f10-4ee5-4203-901a-d6275470a399
+    Meshes/OuterWalls__limestone: !<reference> 95f3c171-541e-46cb-b69f-80df0398b1d8
+    Meshes/OuterWalls__plaster: !<reference> f64c0cfb-6063-4c42-aa83-329f9bb24707
+    Meshes/OuterWalls__plasterLight: !<reference> d850ca45-d08e-4abd-bfcc-0831d4aadb5d
+    Meshes/OuterWalls__teal: !<reference> db243d56-d9db-4c13-9ab4-3608f5bc7661
+    Meshes/ReceptionFurniture__brass: !<reference> 5c677f43-7fb3-499a-9926-121da6a72114
+    Meshes/ReceptionFurniture__cream: !<reference> 7bb26fce-5bf1-4e8f-8554-2b4e68793a82
+    Meshes/ReceptionFurniture__ink: !<reference> 57c65a5f-c77e-4e5f-8954-ec80d4d01bd6
+    Meshes/ReceptionFurniture__paper: !<reference> 232e647f-82e9-4510-8d1d-1564e42115a1
+    Meshes/ReceptionFurniture__parquetChestnut: !<reference> c50eb840-34aa-4d23-806f-d63da536d33e
+    Meshes/ReceptionFurniture__parquetLight: !<reference> c4c8b576-abe1-4878-9eb4-17e721cb9469
+    Meshes/ReceptionFurniture__woodGrain: !<reference> 62386128-4e2c-4c48-9e64-2648eb97e6a7
+    Meshes/RoofAndCoffers__parquetHoney: !<reference> 396be185-6ffa-4d8a-ba7f-5c403290dc7f
+    Meshes/RoofAndCoffers__plasterLight: !<reference> 60c8a9c0-e67b-45f7-b898-873a9fd03155
+    Meshes/RoofAndCoffers__woodGrain: !<reference> 8b92926e-dc3e-44cd-875a-73f6b8625c71
+    Meshes/RubyHallFloor__parquetChestnut: !<reference> a24204f1-0ad2-4e91-ad07-b7c303c3ac3e
+    Meshes/RubyHallFloor__parquetHoney: !<reference> 24658d64-221c-414a-8b27-cb5367fa1cd9
+    Meshes/RubyHallFloor__parquetLight: !<reference> 82915276-29c7-4503-81b8-c56c0c296317
+    Meshes/RubyHallFloor__teal: !<reference> 57859203-d4e6-4da9-a330-2217ebc007f8
+    Meshes/RubyHallFloor__woodGrain: !<reference> 1a320a55-3fa6-40c4-9bdd-70b054eafdd4
+    Meshes/StoneOrder__limestone: !<reference> 6fe0ab29-0dea-435f-899e-a1b0b55e10fa
+    Meshes/StoneOrder__stoneShade: !<reference> 68e9c892-4829-42ad-9598-4f438cb64db2
+    Meshes/WorkshopFloor__parquetChestnut: !<reference> b700e4bc-b862-4d4d-b6ff-bf4e0d66df1f
+    Meshes/WorkshopFloor__parquetHoney: !<reference> 21a86558-937f-417d-9f03-5284016831b6
+    Meshes/WorkshopFloor__parquetLight: !<reference> 829f65dc-da5a-421e-8a60-e147e34b0418
+    Meshes/WorkshopFloor__teal: !<reference> 4c118c3e-a860-4ca9-ad8b-1be8a582ee33
+    Meshes/WorkshopFloor__woodGrain: !<reference> ca18a8d5-bd6c-4994-a7a2-3876118260ec
+    Meshes/WorkshopFurniture__brass: !<reference> 37303a35-72e3-40c8-ae4a-d6e3a30f1401
+    Meshes/WorkshopFurniture__clothTeal: !<reference> 5b626cae-144b-4d94-b71a-bfa5616fc830
+    Meshes/WorkshopFurniture__cream: !<reference> b92e7d25-085f-475f-a241-7d9407b3281a
+    Meshes/WorkshopFurniture__glass: !<reference> 646403fa-e400-49b9-949b-af8bb9ff76da
+    Meshes/WorkshopFurniture__leather: !<reference> 294a0e19-b2b4-4cba-b12e-f0e948131585
+    Meshes/WorkshopFurniture__paintBlue: !<reference> e567fd3e-613b-4dea-b6fd-45393144a7b8
+    Meshes/WorkshopFurniture__paintOchre: !<reference> 449f57bd-616f-4dd6-88b6-881694b330ec
+    Meshes/WorkshopFurniture__paper: !<reference> 07654fc9-4957-4057-a143-20764c13cd2f
+    Meshes/WorkshopFurniture__parquetChestnut: !<reference> 10176ca5-856f-49a0-b787-77c9ea73873c
+    Meshes/WorkshopFurniture__parquetHoney: !<reference> 963be547-b52e-4e27-b15f-c67b1e98b3a3
+    Meshes/WorkshopFurniture__parquetLight: !<reference> 0a75b696-0cb4-4bcc-ad65-212e5b9a9908
+    Meshes/WorkshopFurniture__ruby: !<reference> 3073dc5b-048b-40b9-8020-4e0e5ca093fe
+    Meshes/WorkshopFurniture__teal: !<reference> 08f608a0-4535-4fd1-b9d6-ef01a034fa08
+    Meshes/WorkshopFurniture__wood: !<reference> b04357ba-17fe-4065-806f-10cd4526350b
+    Meshes/WorkshopFurniture__woodGrain: !<reference> fab27fcb-6f33-4abb-a407-a4b4c595a400
+    Scene: !<reference> 18cfd91b-d5db-4ba6-8c9a-6fa8d4492538
+    Textures/ArrivalRiver: !<reference> 48374d5e-be1d-4eec-bb7d-64dcd00daca1
+    Textures/ConservatorTools: !<reference> cb9179ae-cd1b-44cc-8791-ae81ed8df7c0
+    Textures/parquetHoneySurface: !<reference> 71c30f98-7980-466e-8ff6-3e185b0a8124
+    Textures/parquetHoneySurface1: !<reference> 453da0a0-d4d5-4fbe-8241-644f07b70c2b
+    Textures/parquetHoneySurface2: !<reference> febfb54f-bd21-491f-8ccf-f812fec9add9
+    Textures/parquetHoneySurface3: !<reference> edfbb1a5-2724-42bf-8fe2-cb65e4411323
+    Textures/parquetHoneySurface4: !<reference> 087b6d73-e58f-4bcd-9519-98dc14756cb1
+    Textures/plasterSurface: !<reference> 69883337-2410-407d-b5c0-38db4a10faef
+    Textures/plasterSurface1: !<reference> 2095852d-0bb6-4bc4-b6ad-b69e3012b0fb
+    a5498eec475d7d37: !<reference> adcf1cbc-a6ab-4521-982b-1c4933b505fc
+    a7de34b8a5eae0b1: !<reference> 3228e66c-3df4-4638-82c6-ddc0116b88ac
+    a8d2c905cd76bc2f: !<reference> 76ed8853-6092-4b15-8246-52d2e5e4afa1
+    afb81d214738ed0b: !<reference> cc9120cb-8a7d-415b-9433-34416b8b10cb
+    aff716995c884de2: !<reference> ea21f781-e83f-47b0-bf74-85fbb78c1a56
+    b0c392e437c270e0: !<reference> 1aa81672-9294-46ee-ac1d-788dfb3ed73d
+    b16345c905048deb: !<reference> b7a95cb2-1b22-4fd9-bf9a-122db10042b9
+    b30374bde4f9d085: !<reference> 7d9c147b-52a6-475d-8f23-dbaadbdcfcee
+    b41795a05997fc01: !<reference> dc541654-784a-49e1-9408-20c865e5fcf7
+    b437f5bb5a97f9c0: !<reference> c39654fd-6cfc-4679-b16c-4a6a4ac58bd9
+    b5c983674dab2504: !<reference> a781278f-c11d-4a0f-a1ce-1be80435d7ab
+    be25036f6584dba7: !<reference> 6973fddc-9624-41b8-8b90-3bccf76c404f
+    c2f17fd310b26cad: !<reference> 91344267-3056-4642-a4b5-8438e88c2814
+    c3f543759b69c080: !<reference> 88eb5254-2225-4f73-aef2-e1960505cb8e
+    c47464cc11e6068b: !<reference> f89f8e09-6605-447d-a315-8941a622e443
+    c5c20ccba334502f: !<reference> 47c67e99-e3b1-4c42-8ee3-169c505b8dda
+    c65fc13b57445bc9: !<reference> 07e6c9b0-ffef-446b-b644-fb7ae02abe12
+    c784ac7c2cdf0501: !<reference> 70388c1d-9ed0-4534-86d5-94c12c8a2a04
+    c879619ac0d94c58: !<reference> c5264fec-21c2-48c4-bcc1-71f1fbba5ea0
+    cbf7bc31d7ea247f: !<reference> 63a28fff-8974-4714-9132-e7ed865f1092
+    cd59468bbedae62c: !<reference> 7e88bb1f-9069-490e-9785-f151852c6205
+    cd6542a6ebe8a1c6: !<reference> cb05681a-d7aa-472b-8111-c2db67fbd91f
+    ceaaa5385b6c5367: !<reference> 77fc6e4f-4c8a-433b-bf6f-5d1ce89794d0
+    cf207fdb4fe247bc: !<reference> 982dc9f8-2c74-4836-86ce-a685cbaed970
+    cf73b6d15b87fe7a: !<reference> 641adf3c-2342-4af2-bfd0-9784aa947dfe
+    cfdca823784ef3e2: !<reference> eadb991f-1531-4753-a7ec-920ff8c6262d
+    d2ad14f88bdb001d: !<reference> c67e8c36-ecd0-4d4b-a6a6-7f56735a15fc
+    d3ad95a30df3e276: !<reference> 90fb7053-ff0d-4237-9102-0b3864aba1ad
+    d85b37d4c454176c: !<reference> cc2b683f-99a9-40d6-b5c1-23d479b935bf
+    d896b3935c66736d: !<reference> c3356e0a-57ee-4864-a71d-43a202a1c87c
+    d89bc0a1ac0f51f3: !<reference> f7bab5fc-9e08-43c2-85cd-70f89389d808
+    d8cbe44499b187b9: !<reference> 1f2a3ea9-6d0d-40d6-8606-5ea9c637d2c6
+    dbdf0ce2bee2d0a6: !<reference> 70051d06-68f0-4e4e-9092-c6946e6c5845
+    dc096e50a0aaed48: !<reference> ad3f935c-f478-4799-8a1f-a1798fb29073
+    dc9e7b8a9d1becbf: !<reference> 211c2a1b-a9f6-4ba4-bdac-2b2a5e0a7069
+    ddc83c55e9e60048: !<reference> 49319684-818e-44f2-9981-e6ec28259584
+    ddf5baed7d60a11c: !<reference> 12ef84e9-18dc-4b83-acfd-4fe8d19bd910
+    e0abc30afd374576: !<reference> 4e5637f4-e8ea-4dd6-89ac-f74a6a685193
+    e13e8220c91ec417: !<reference> 46b8cae9-3d1c-4db7-8f41-837e08235764
+    e306ff791176a45f: !<reference> ca7566b8-55bf-45fa-adb9-225a80f8b426
+    e48139bc074104b5: !<reference> 06397daa-601d-43dd-8950-2c522b56a6f4
+    e488d24ffe5b67f9: !<reference> 2d683fb1-23f0-44d3-b16b-a7ac0f9079ba
+    e5f13c2f7b11b9f8: !<reference> 24769d40-e8bc-4dff-8e82-54d4a6958e24
+    e6adf505185c5aab: !<reference> e42fd5ae-998a-43a6-abc6-40e1d4331f87
+    e8e58dec24497b24: !<reference> 8e979fb4-ec34-42ab-a6e8-a245af8f8d07
+    e999b31817c55940: !<reference> 90b90faf-a44b-48db-8019-7f543ffabde5
+    ec18f7585a988eec: !<reference> edcdb57b-a5e4-4f46-92a5-e1957298f1f8
+    ec27b1bcae3bf9fa: !<reference> a601adf9-5af9-4353-9718-03752c6a47dc
+    edc3797f7589a29f: !<reference> 73986ae3-4ef7-408a-af1b-716be10679d9
+    f36356506d01f61c: !<reference> 9f23f11a-b1c0-4b1a-828a-496f15677bc0
+    f487ee5982a032e1: !<reference> c68aadbf-97e9-48fc-9cd8-0e30c01969b9
+    f5d04a138caca9ff: !<reference> 7504325f-eaa2-402a-adbb-88c85c5e22e7
+    f876b6cc39d8370e: !<reference> b1b64b3e-ffe0-4cce-8d23-6b6f6d85122a
+    f8e94ebd5b9a0820: !<reference> 0d9dcf66-c7a6-4c36-8352-e5a3a88a672a
+    fa0ee17c8f365801: !<reference> 6b1f80f3-2a74-49ef-8cdd-708f134ade89
+    fc8cae29bf69399d: !<reference> e31d9d52-dc8c-4911-9197-1ab81e8fe4f5
+  ImporterName: GltfImporter
+  PrimaryAsset: !<reference> 18cfd91b-d5db-4ba6-8c9a-6fa8d4492538
+  PackageType: LegacyPackage
+  LegacyPackagePolicy: CanBeUnpackedTransparent
+  ExtraData:
+    {}
+  AssetDataMap:
+    Scene: !<own> be16bb45-32ae-41fa-a0b6-6d2f4cc46754
+  DependentFiles:
+    []
+  ImporterSettings: !<GltfImporterSettings>
+    UseLegacyImporter: false
+    WithMaterials: true
+    NamingConvention: ByCategorySanitizeV2
+    PersistentIdGenerationAlgorithm: DescriptorBasedV2
+    AnimationCurveOptimization: true
+    CustomAnimationSamplingRate: 30.000000
+    ImportVertexColor: true
+    ImportTangents: true
+    ImportMorphTargetAnimation: true
+    ConvertMetersToCentimeters: true
+    RegenerateTangents: false
+    OptimizeMesh: true
+  CompressionSettings: !<ComplexCompressionSettings>
+    Presets:
+      None Compression: !<FileCompressionSettings>
+        {}
+    ExtensionMappings:
+      mesh: None Compression
+    Overrides:
+      {}
+- !<RenderMeshVisual/03da02c0-dc99-4ded-6bfc-b46f188a4106>
+  PrefabRemaps:
+    []
+  Name: ArchiveFurniture__parquetChestnut
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 00946316-9fc5-411d-b45a-e67b3f251c77
+  Mesh: !<reference> e2571574-0b45-45fe-b5cc-a115146aea58
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<RenderMeshVisual/046a2185-5947-4e8f-4ea8-4b7621042f66>
+  PrefabRemaps:
+    []
+  Name: WorkshopFurniture__parquetHoney
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> f9b5fbbf-ded9-4a6a-9eb1-5103c64cb8f2
+  Mesh: !<reference> 963be547-b52e-4e27-b15f-c67b1e98b3a3
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<SceneObject/05394479-be61-4de1-4c79-97ba130b996b>
+  PrefabRemaps:
+    []
+  Name: RubyHallFloor__parquetLight
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> a781278f-c11d-4a0f-5e31-e417fbca2854
+- !<RenderMeshVisual/06397daa-601d-43dd-76af-d3add4a9590b>
+  PrefabRemaps:
+    []
+  Name: RubyHallFloor__parquetHoney
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> f9b5fbbf-ded9-4a6a-9eb1-5103c64cb8f2
+  Mesh: !<reference> 24658d64-221c-414a-8b27-cb5367fa1cd9
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<RenderMeshVisual/067f8627-a06d-41b8-76e0-daa786fc5af3>
+  PrefabRemaps:
+    []
+  Name: ReceptionFurniture__cream
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> fd108e3b-9928-44cd-b839-79a58104275f
+  Mesh: !<reference> 7bb26fce-5bf1-4e8f-8554-2b4e68793a82
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<RenderMeshVisual/0b08c821-5c3a-428c-76fd-7add836bd0a1>
+  PrefabRemaps:
+    []
+  Name: FoyerSculpture__paintOchre
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 40735b4d-3385-4d1f-b51d-56b2ed5c099e
+  Mesh: !<reference> 1ed71f6b-df6f-4910-9e38-919176ac82a9
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<SceneObject/0bbc5ee5-68b7-4bb6-4aeb-09eb5a019da1>
+  PrefabRemaps:
+    []
+  Name: ArchiveFurniture__wood
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 3228e66c-3df4-4638-7d39-223fee947753
+- !<RenderMeshVisual/0d9dcf66-c7a6-4c36-7cad-1a5c577598d5>
+  PrefabRemaps:
+    []
+  Name: RubyHallFloor__parquetChestnut
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 00946316-9fc5-411d-b45a-e67b3f251c77
+  Mesh: !<reference> a24204f1-0ad2-4e91-ad07-b7c303c3ac3e
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<SceneObject/0e456e69-4e3f-439a-6cb8-f98dadd3ba85>
+  PrefabRemaps:
+    []
+  Name: Anchor_HallClock
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 5.400000, y: 1.350000, z: 0.260000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    []
+- !<RenderMeshVisual/0fcca15a-ad65-4154-7c37-ed26324cb3d8>
+  PrefabRemaps:
+    []
+  Name: RoofAndCoffers__woodGrain
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 271bbcf4-2b02-4337-9b4d-bbbb189dc455
+  Mesh: !<reference> 8b92926e-dc3e-44cd-875a-73f6b8625c71
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<RenderMeshVisual/107cdc9a-eaee-41ff-78ef-d761a459b1b4>
+  PrefabRemaps:
+    []
+  Name: WorkshopFloor__parquetChestnut
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 00946316-9fc5-411d-b45a-e67b3f251c77
+  Mesh: !<reference> b700e4bc-b862-4d4d-b6ff-bf4e0d66df1f
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<SceneObject/12ef84e9-18dc-4b83-5302-b0172e6426ef>
+  PrefabRemaps:
+    []
+  Name: ConservatorToolsCanvas
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> cbd699cd-8986-435e-794a-4eb854331498
+- !<RenderMeshVisual/15c46fda-0221-40ec-6759-891f4a4b4d7a>
+  PrefabRemaps:
+    []
+  Name: WorkshopFurniture__parquetLight
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 6eaec0bf-33d6-44c2-879a-af2a8ba9e945
+  Mesh: !<reference> 0a75b696-0cb4-4bcc-ad65-212e5b9a9908
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<SceneObject/185cfa73-f7b9-4900-71cb-44bc2e446b84>
+  PrefabRemaps:
+    []
+  Name: ConnectedDoorways__plaster
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 73986ae3-4ef7-408a-50e4-8e941ef98626
+- !<SceneObject/1a5bb006-e48c-4b49-54f3-2c6ca028e198>
+  PrefabRemaps:
+    []
+  Name: ArchiveFurniture__cream
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> cbc8b168-f0cb-40f9-636a-243dc91caf73
+- !<SceneObject/1aa81672-9294-46ee-53e2-877204c128c2>
+  PrefabRemaps:
+    []
+  Name: RubyHallFloor__woodGrain
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 60682bb5-0bbd-47d7-689e-2c7493bb5be4
+- !<RenderMeshVisual/1ab0c641-b7e0-4218-78d3-24be24ceab21>
+  PrefabRemaps:
+    []
+  Name: ArchiveFurniture__ink
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 8e9750c6-0070-41c4-b56d-6123ab3b57ad
+  Mesh: !<reference> c8311fff-0268-4732-9bcf-e341906b9980
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<SceneObject/1b920d9c-7f44-49ee-5bc0-d4704ef997e6>
+  PrefabRemaps:
+    []
+  Name: FoyerSculpture__paintOchre
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 0b08c821-5c3a-428c-76fd-7add836bd0a1
+- !<SceneObject/1f2a3ea9-6d0d-40d6-79f9-a15639c82d39>
+  PrefabRemaps:
+    []
+  Name: Anchor_Workshop
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: -2.500000, y: 0.000000, z: 2.500000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    []
+- !<SceneObject/211c2a1b-a9f6-4ba4-4253-d4d5a1f58f96>
+  PrefabRemaps:
+    []
+  Name: ReceptionFurniture__cream
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 067f8627-a06d-41b8-76e0-daa786fc5af3
+- !<RenderMeshVisual/24769d40-e8bc-4dff-717d-ab2b596a71db>
+  PrefabRemaps:
+    []
+  Name: WorkshopFurniture__paper
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 2f113528-4a30-409f-9c9b-55594e17af35
+  Mesh: !<reference> 07654fc9-4957-4057-a143-20764c13cd2f
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<SceneObject/266cc595-0265-45bd-792f-1c6acdcab767>
+  PrefabRemaps:
+    []
+  Name: Anchor_EntryClock
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 4.900000, y: 1.150000, z: -2.400000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    []
+- !<SceneObject/27992c12-3ab6-4d83-6347-6bff29712c1a>
+  PrefabRemaps:
+    []
+  Name: paintOchre
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    - !<own> 857c492d-c9f0-4f68-4fda-4c72aa434722
+    - !<own> 12ef84e9-18dc-4b83-5302-b0172e6426ef
+    - !<own> 6cfc97c5-9c0e-4739-7f3c-144f6d9f0c4b
+    - !<own> 415cc666-b2fa-4db1-6e91-9c58863ad818
+    - !<own> 1f2a3ea9-6d0d-40d6-79f9-a15639c82d39
+    - !<own> 92ceaa80-df14-4c71-5881-5a7e89a30e92
+    - !<own> 45e76771-47aa-4dd4-4ddd-a05f34821c6e
+    - !<own> 266cc595-0265-45bd-792f-1c6acdcab767
+    - !<own> 0e456e69-4e3f-439a-6cb8-f98dadd3ba85
+    - !<own> 70388c1d-9ed0-4534-792a-6b3ed375d5fb
+    - !<own> d4b17192-44ce-430e-7ded-c1b107f0966c
+    - !<own> 7504325f-eaa2-402a-5244-7737a3a1dd18
+    - !<own> 38b15072-3745-4b8c-7809-4cc0d86a2991
+    - !<own> 6b8c579e-2acf-484c-768f-ac4a525b97b0
+    - !<own> 29b1d1d9-3e62-4f49-67a7-9beeee4497a1
+    - !<own> 47c67e99-e3b1-4c42-711c-e963afa47225
+    - !<own> e42fd5ae-998a-43a6-5439-bf1e2bcce078
+    - !<own> 9526af00-cfe3-458c-6899-73b4106836d8
+    - !<own> 1aa81672-9294-46ee-53e2-877204c128c2
+    - !<own> 642b3202-c8df-4ad7-479b-c53da1b5b54d
+    - !<own> f89f8e09-6605-447d-5cea-76be59dd1bbc
+    - !<own> 05394479-be61-4de1-4c79-97ba130b996b
+    - !<own> ad3f935c-f478-4799-75e0-5e86704d6f8c
+    - !<own> 88eb5254-2225-4f73-510d-1e69fafa3471
+    - !<own> 90fb7053-ff0d-4237-6efd-f4c79b545e52
+    - !<own> b7662982-27f2-4a87-6014-23a94cb98b96
+    - !<own> c2d2545c-253a-45cd-5a32-4823c495b0ed
+    - !<own> 38b86b05-69b0-43b3-55e4-452563356bee
+    - !<own> 9f23f11a-b1c0-4b1a-7d75-b690ea98843f
+    - !<own> afb6e9bd-0206-4747-5926-646b7e237061
+    - !<own> 49319684-818e-44f2-667e-1913d7da6a7b
+    - !<own> 31095f60-32ec-4083-5d01-96e9499f6a2e
+    - !<own> 8e979fb4-ec34-42ab-5917-5dba507072f8
+    - !<own> d2ebec22-af73-4177-7c19-220d0d6f120f
+    - !<own> 8283846a-2a38-4e00-4978-79e349233aa4
+    - !<own> c39654fd-6cfc-4679-4e93-b595b53a7426
+    - !<own> 185cfa73-f7b9-4900-71cb-44bc2e446b84
+    - !<own> 70051d06-68f0-4e4e-6f6d-396b9193a7ba
+    - !<own> a601adf9-5af9-4353-68e7-fc8ad395b823
+    - !<own> 7b3aef0c-6c1b-4354-4e6d-a5bdd545064a
+    - !<own> 29e91bba-fcc6-41eb-5a3f-38ea3a41cf19
+    - !<own> 572c3da0-3c66-4cec-67ce-4b37abfabab6
+    - !<own> e013dd0c-127f-4bc1-4af3-1a9264d85e96
+    - !<own> c39cdaea-1c5f-4f10-6bf9-d0aef7e6223d
+    - !<own> 2d683fb1-23f0-44d3-4e94-5853f06f8645
+    - !<own> 6ac33630-3ac2-4c18-679c-feda952cc035
+    - !<own> 91344267-3056-4642-5b4a-7bc71773d7eb
+    - !<own> 8c38ff58-7873-42c4-6cb0-3a77d8cc710f
+    - !<own> 9741b366-a096-4017-5164-04eb77f4564f
+    - !<own> f7bab5fc-9e08-43c2-7a32-8f076c7627f7
+    - !<own> 211c2a1b-a9f6-4ba4-4253-d4d5a1f58f96
+    - !<own> 715b1d6a-0c02-4c6f-6fa5-2e6902e293b5
+    - !<own> ada4a761-8a97-4eae-5009-e22daba5f4bf
+    - !<own> e4858ea6-c868-49bf-7cdb-dcc68f6ab829
+    - !<own> 66988c77-cef5-49bd-4263-c9b157193a13
+    - !<own> edf62aa3-37e2-44a0-45af-0d8bf9986614
+    - !<own> 7e88bb1f-9069-490e-687a-0eae7ad39dfa
+    - !<own> eadb991f-1531-4753-5813-6df00739d9d2
+    - !<own> 90873333-a9fc-4e82-6445-59a5f7b80545
+    - !<own> a3ab76d6-79e0-40ca-55b0-545b79895dc1
+    - !<own> bb47cb03-023d-42f2-77c5-1db9f993f8ac
+    - !<own> 42b0fdd7-ba41-4b80-70b9-f6de9759aefe
+    - !<own> 8cc1ce8e-9124-4db9-4e5a-e80cd280d7d5
+    - !<own> 8e44af37-8648-42bf-4fbf-169a144fd236
+    - !<own> 56b1abbd-6987-44ee-7daa-2fcdffab8c86
+    - !<own> 7df4fa69-3eff-4ccc-7f22-70385080016c
+    - !<own> 8b3549e1-a834-4ccd-7cf4-221acda243bc
+    - !<own> c38d1795-18bd-4d8e-51df-12e382aa9ce6
+    - !<own> de736880-7029-476d-4153-6c559755420a
+    - !<own> 676a5063-51f1-406c-7f49-4b11e7754977
+    - !<own> d771f44f-d2c7-42d1-6086-0372f5075020
+    - !<own> 8242c927-877a-412e-5f0f-539d65997c28
+    - !<own> 1a5bb006-e48c-4b49-54f3-2c6ca028e198
+    - !<own> d2ad96d0-e8ee-4b13-7bb5-f02a479094ed
+    - !<own> 0bbc5ee5-68b7-4bb6-4aeb-09eb5a019da1
+    - !<own> b8bafbf1-c66b-4398-4613-a201eb38bec1
+    - !<own> b63bcf1b-016a-43e8-4859-714302173148
+    - !<own> 3f7fce6a-40a4-4874-5b48-d522e65776f1
+    - !<own> 1b920d9c-7f44-49ee-5bc0-d4704ef997e6
+    - !<own> a87ae855-217c-423b-59a3-4c423e8e0078
+  Components:
+    []
+- !<SceneObject/29b1d1d9-3e62-4f49-67a7-9beeee4497a1>
+  PrefabRemaps:
+    []
+  Name: FoyerFloor__woodGrain
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> ff117840-dc51-4d53-4b57-9ae77f625f2e
+- !<SceneObject/29e91bba-fcc6-41eb-5a3f-38ea3a41cf19>
+  PrefabRemaps:
+    []
+  Name: StoneOrder__limestone
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> f20eeac9-2bbf-464f-5c29-3a985e4243ba
+- !<RenderMeshVisual/2beb04ea-368d-4200-669d-1c92215bd26f>
+  PrefabRemaps:
+    []
+  Name: OuterWalls__limestone
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 95ca5a60-0433-45fc-a180-6431f867d60b
+  Mesh: !<reference> 95f3c171-541e-46cb-b69f-80df0398b1d8
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<SceneObject/2d683fb1-23f0-44d3-4e94-5853f06f8645>
+  PrefabRemaps:
+    []
+  Name: RoofAndCoffers__parquetHoney
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> a6bec65f-cfd2-4235-55f2-daf2c68041fd
+- !<RenderMeshVisual/2d9ae79b-3286-4471-5cc0-6a5ae165b987>
+  PrefabRemaps:
+    []
+  Name: ReceptionFurniture__parquetLight
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 6eaec0bf-33d6-44c2-879a-af2a8ba9e945
+  Mesh: !<reference> c4c8b576-abe1-4878-9eb4-17e721cb9469
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<RenderMeshVisual/2e24b6f6-5b3c-4f4f-5405-e9b8bcf908a3>
+  PrefabRemaps:
+    []
+  Name: WorkshopFurniture__paintOchre
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 40735b4d-3385-4d1f-b51d-56b2ed5c099e
+  Mesh: !<reference> 449f57bd-616f-4dd6-88b6-881694b330ec
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<RenderMeshVisual/2e95a3bb-e85b-403b-62fd-d6fccbc6ae93>
+  PrefabRemaps:
+    []
+  Name: ArchiveFloor__woodGrain
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 271bbcf4-2b02-4337-9b4d-bbbb189dc455
+  Mesh: !<reference> 70d4ad74-9aab-455a-941c-f5edd9c96775
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<SceneObject/31095f60-32ec-4083-5d01-96e9499f6a2e>
+  PrefabRemaps:
+    []
+  Name: OuterWalls__plaster
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 6973fddc-9624-41b8-746f-c4330893bfb0
+- !<RenderMeshVisual/3228e66c-3df4-4638-7d39-223fee947753>
+  PrefabRemaps:
+    []
+  Name: ArchiveFurniture__wood
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> dd363480-f39b-4c0f-8ff9-70156149c3c2
+  Mesh: !<reference> b75fecf4-98c7-47fe-a55c-bc03fbe44458
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<RenderMeshVisual/330d2b57-4133-4ee6-71b1-add3fb34fb6c>
+  PrefabRemaps:
+    []
+  Name: OuterWalls__plasterLight
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 610fc3bd-5277-403e-9fbe-98e1597e729d
+  Mesh: !<reference> d850ca45-d08e-4abd-bfcc-0831d4aadb5d
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<SceneObject/38b15072-3745-4b8c-7809-4cc0d86a2991>
+  PrefabRemaps:
+    []
+  Name: Anchor_ArchiveRecorder
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: -3.600000, y: 1.150000, z: -3.700000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    []
+- !<SceneObject/38b86b05-69b0-43b3-55e4-452563356bee>
+  PrefabRemaps:
+    []
+  Name: WorkshopFloor__teal
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> aee53916-07d2-45f2-4186-38e76b2303fa
+- !<SceneObject/3f7fce6a-40a4-4874-5b48-d522e65776f1>
+  PrefabRemaps:
+    []
+  Name: FoyerSculpture__slate
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 4e175af5-bc40-4c81-700f-d6eaba1ba455
+- !<SceneObject/415cc666-b2fa-4db1-6e91-9c58863ad818>
+  PrefabRemaps:
+    []
+  Name: Anchor_RubyHall
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 3.500000, y: 0.000000, z: 2.500000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    []
+- !<SceneObject/42b0fdd7-ba41-4b80-70b9-f6de9759aefe>
+  PrefabRemaps:
+    []
+  Name: WorkshopFurniture__ruby
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> f72ce6fb-9f5e-4295-6954-c706802f1e50
+- !<SceneObject/45e76771-47aa-4dd4-4ddd-a05f34821c6e>
+  PrefabRemaps:
+    []
+  Name: Anchor_FileRack
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 5.550000, y: 1.020000, z: -2.600000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    []
+- !<RenderMeshVisual/46b8cae9-3d1c-4db7-70be-7c81f7dca89b>
+  PrefabRemaps:
+    []
+  Name: FoyerFloor__teal
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> bbe04beb-1dea-430c-a116-d89c9119d780
+  Mesh: !<reference> 8540b132-8fa5-46f4-bf2a-de9fd519f7d1
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<SceneObject/47c67e99-e3b1-4c42-711c-e963afa47225>
+  PrefabRemaps:
+    []
+  Name: FoyerFloor__stoneShade
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 9b70d293-a7ee-4310-7107-450b7eb60152
+- !<SceneObject/49319684-818e-44f2-667e-1913d7da6a7b>
+  PrefabRemaps:
+    []
+  Name: ArchiveFloor__slate
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> aa5caaac-f9aa-4ec4-7aa6-ff52bb8f5d7c
+- !<RenderMeshVisual/4e175af5-bc40-4c81-700f-d6eaba1ba455>
+  PrefabRemaps:
+    []
+  Name: FoyerSculpture__slate
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 4f7272d8-51a0-48da-9e30-9a7bb02199f4
+  Mesh: !<reference> 8966eba1-40c8-4c63-a001-43497022658a
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<RenderMeshVisual/4e3a01bb-6f79-4592-5199-11df150c6e3e>
+  PrefabRemaps:
+    []
+  Name: FoyerFloor__limestone
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 95ca5a60-0433-45fc-a180-6431f867d60b
+  Mesh: !<reference> f141f28d-f602-4d1c-bd59-3f265e16be4c
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<RenderMeshVisual/4e5637f4-e8ea-4dd6-7653-08b59597ae6c>
+  PrefabRemaps:
+    []
+  Name: WorkshopFurniture__wood
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> dd363480-f39b-4c0f-8ff9-70156149c3c2
+  Mesh: !<reference> b04357ba-17fe-4065-806f-10cd4526350b
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<SceneObject/56b1abbd-6987-44ee-7daa-2fcdffab8c86>
+  PrefabRemaps:
+    []
+  Name: WorkshopFurniture__parquetHoney
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 046a2185-5947-4e8f-4ea8-4b7621042f66
+- !<SceneObject/572c3da0-3c66-4cec-67ce-4b37abfabab6>
+  PrefabRemaps:
+    []
+  Name: StoneOrder__stoneShade
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> fdcf650c-11cd-4f62-7f0e-fa152159ca6f
+- !<RenderMeshVisual/587b1214-b3cf-44ab-7bef-0708ca64487c>
+  PrefabRemaps:
+    []
+  Name: ReceptionFurniture__parquetChestnut
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 00946316-9fc5-411d-b45a-e67b3f251c77
+  Mesh: !<reference> c50eb840-34aa-4d23-806f-d63da536d33e
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<RenderMeshVisual/5bd162c0-1332-427b-5abb-3516b0854b66>
+  PrefabRemaps:
+    []
+  Name: ArchiveFurniture__leather
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 06cdc816-5b7f-404b-a4a6-97921e116f09
+  Mesh: !<reference> 31995193-fee3-4de3-98a8-a2c331683cdd
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<RenderMeshVisual/5cf2e77b-d6d3-4988-7a04-5f48be208975>
+  PrefabRemaps:
+    []
+  Name: ArrivalRiverCanvas
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 2f113528-4a30-409f-9c9b-55594e17af35
+  Mesh: !<reference> f2606f56-2b99-4807-adc0-f8e952a53b71
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<RenderMeshVisual/60682bb5-0bbd-47d7-689e-2c7493bb5be4>
+  PrefabRemaps:
+    []
+  Name: RubyHallFloor__woodGrain
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 271bbcf4-2b02-4337-9b4d-bbbb189dc455
+  Mesh: !<reference> 1a320a55-3fa6-40c4-9bdd-70b054eafdd4
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<RenderMeshVisual/613653eb-207e-4c3e-61c6-e844cbec341e>
+  PrefabRemaps:
+    []
+  Name: WorkshopFurniture__cream
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> fd108e3b-9928-44cd-b839-79a58104275f
+  Mesh: !<reference> b92e7d25-085f-475f-a241-7d9407b3281a
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<RenderMeshVisual/63a28fff-8974-4714-6ecd-181279a0ef6d>
+  PrefabRemaps:
+    []
+  Name: FoyerSculpture__parquetChestnut
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 00946316-9fc5-411d-b45a-e67b3f251c77
+  Mesh: !<reference> 544d7c32-f969-46e7-9bd7-237068af25a5
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<RenderMeshVisual/641adf3c-2342-4af2-402f-687b556b8201>
+  PrefabRemaps:
+    []
+  Name: OriginalArtFrames__woodGrain
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 271bbcf4-2b02-4337-9b4d-bbbb189dc455
+  Mesh: !<reference> e4202e50-33a5-4a1b-8bda-8f5b0ac1e596
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<SceneObject/642b3202-c8df-4ad7-479b-c53da1b5b54d>
+  PrefabRemaps:
+    []
+  Name: RubyHallFloor__parquetHoney
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 06397daa-601d-43dd-76af-d3add4a9590b
+- !<SceneObject/66988c77-cef5-49bd-4263-c9b157193a13>
+  PrefabRemaps:
+    []
+  Name: WorkshopFurniture__woodGrain
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> dc541654-784a-49e1-6bf7-df379a1a0308
+- !<SceneObject/676a5063-51f1-406c-7f49-4b11e7754977>
+  PrefabRemaps:
+    []
+  Name: ArchiveFurniture__brass
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> cb05681a-d7aa-472b-7eee-3d24980426e0
+- !<RenderMeshVisual/6973fddc-9624-41b8-746f-c4330893bfb0>
+  PrefabRemaps:
+    []
+  Name: OuterWalls__plaster
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 35365c91-a49d-4d83-94fe-7b92c5f944de
+  Mesh: !<reference> f64c0cfb-6063-4c42-aa83-329f9bb24707
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<SceneObject/6ac33630-3ac2-4c18-679c-feda952cc035>
+  PrefabRemaps:
+    []
+  Name: ReceptionFurniture__parquetChestnut
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 587b1214-b3cf-44ab-7bef-0708ca64487c
+- !<RenderMeshVisual/6b1f80f3-2a74-49ef-7322-8f70ecb52176>
+  PrefabRemaps:
+    []
+  Name: ConnectedDoorways__brass
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 79214429-259b-4e55-9ab7-f8717a789202
+  Mesh: !<reference> dc17a8d8-9f99-4537-94b6-85a97a6a5706
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<SceneObject/6b8c579e-2acf-484c-768f-ac4a525b97b0>
+  PrefabRemaps:
+    []
+  Name: Anchor_EvidenceShelf
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: -4.650000, y: 1.250000, z: -1.800000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    []
+- !<SceneObject/6cfc97c5-9c0e-4739-7f3c-144f6d9f0c4b>
+  PrefabRemaps:
+    []
+  Name: Anchor_Entrance
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 3.500000, y: 0.000000, z: -3.400000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    []
+- !<SceneObject/70051d06-68f0-4e4e-6f6d-396b9193a7ba>
+  PrefabRemaps:
+    []
+  Name: ConnectedDoorways__teal
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> e888e799-b765-4fab-7349-be0691e07b83
+- !<SceneObject/70388c1d-9ed0-4534-792a-6b3ed375d5fb>
+  PrefabRemaps:
+    []
+  Name: Anchor_ConservationBench
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: -3.500000, y: 0.940000, z: 3.800000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    []
+- !<SceneObject/715b1d6a-0c02-4c6f-6fa5-2e6902e293b5>
+  PrefabRemaps:
+    []
+  Name: ReceptionFurniture__ink
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 9af4807e-4fcd-415c-4cab-085b4feb4259
+- !<RenderMeshVisual/718e6895-3011-4f2c-4446-d682ce742d2a>
+  PrefabRemaps:
+    []
+  Name: ArchiveFurniture__clothTeal
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> baa934e5-d6bb-42c3-81eb-bd2226c17310
+  Mesh: !<reference> 723aea35-8ff2-432c-92e5-885ac51af3c6
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<RenderMeshVisual/73986ae3-4ef7-408a-50e4-8e941ef98626>
+  PrefabRemaps:
+    []
+  Name: ConnectedDoorways__plaster
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 35365c91-a49d-4d83-94fe-7b92c5f944de
+  Mesh: !<reference> 59e29e73-1f50-4532-9d7e-3e0f3977f71b
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<SceneObject/7504325f-eaa2-402a-5244-7737a3a1dd18>
+  PrefabRemaps:
+    []
+  Name: Anchor_CaseLid
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: -3.900000, y: 1.020000, z: 3.800000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    []
+- !<RenderMeshVisual/76ed8853-6092-4b15-7db9-ad2d1a1b505e>
+  PrefabRemaps:
+    []
+  Name: ReceptionFurniture__brass
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 79214429-259b-4e55-9ab7-f8717a789202
+  Mesh: !<reference> 5c677f43-7fb3-499a-9926-121da6a72114
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<RenderMeshVisual/793d13b8-f609-481f-4d2b-bd21beb4ef2c>
+  PrefabRemaps:
+    []
+  Name: WorkshopFurniture__clothTeal
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> baa934e5-d6bb-42c3-81eb-bd2226c17310
+  Mesh: !<reference> 5b626cae-144b-4d94-b71a-bfa5616fc830
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<SceneObject/7b3aef0c-6c1b-4354-4e6d-a5bdd545064a>
+  PrefabRemaps:
+    []
+  Name: ConnectedDoorways__limestone
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> c67e8c36-ecd0-4d4b-5959-80a98ca5ea03
+- !<RenderMeshVisual/7d9c147b-52a6-475d-70dc-245524230311>
+  PrefabRemaps:
+    []
+  Name: WorkshopFloor__parquetLight
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 6eaec0bf-33d6-44c2-879a-af2a8ba9e945
+  Mesh: !<reference> 829f65dc-da5a-421e-8a60-e147e34b0418
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<SceneObject/7df4fa69-3eff-4ccc-7f22-70385080016c>
+  PrefabRemaps:
+    []
+  Name: ArchiveFurniture__parquetChestnut
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 03da02c0-dc99-4ded-6bfc-b46f188a4106
+- !<SceneObject/7e88bb1f-9069-490e-687a-0eae7ad39dfa>
+  PrefabRemaps:
+    []
+  Name: WorkshopFurniture__leather
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> b7a95cb2-1b22-4fd9-4065-edd24effbd46
+- !<SceneObject/81698ecb-b6e9-477d-55ae-edec51dd1fdd>
+  PrefabRemaps:
+    []
+  Name: MuseumBuilding
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 100.000000, y: 100.000000, z: 100.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    - !<own> a585400f-990c-490c-743c-bbf01305aabe
+  Components:
+    []
+- !<SceneObject/8242c927-877a-412e-5f0f-539d65997c28>
+  PrefabRemaps:
+    []
+  Name: ArchiveFurniture__leather
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 5bd162c0-1332-427b-5abb-3516b0854b66
+- !<SceneObject/8283846a-2a38-4e00-4978-79e349233aa4>
+  PrefabRemaps:
+    []
+  Name: OuterWalls__limestone
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 2beb04ea-368d-4200-669d-1c92215bd26f
+- !<SceneObject/857c492d-c9f0-4f68-4fda-4c72aa434722>
+  PrefabRemaps:
+    []
+  Name: ArrivalRiverCanvas
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 5cf2e77b-d6d3-4988-7a04-5f48be208975
+- !<SceneObject/88eb5254-2225-4f73-510d-1e69fafa3471>
+  PrefabRemaps:
+    []
+  Name: WorkshopFloor__woodGrain
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> d3541fd5-ae75-411d-6f01-205f27b5e361
+- !<SceneObject/8b3549e1-a834-4ccd-7cf4-221acda243bc>
+  PrefabRemaps:
+    []
+  Name: ArchiveFurniture__parquetLight
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> b14222c1-dc19-42f0-6510-a30867900186
+- !<SceneObject/8c38ff58-7873-42c4-6cb0-3a77d8cc710f>
+  PrefabRemaps:
+    []
+  Name: ReceptionFurniture__woodGrain
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> ffa82c9b-b1c0-4f0d-6e4f-484ce6b92035
+- !<SceneObject/8cc1ce8e-9124-4db9-4e5a-e80cd280d7d5>
+  PrefabRemaps:
+    []
+  Name: WorkshopFurniture__paintOchre
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 2e24b6f6-5b3c-4f4f-5405-e9b8bcf908a3
+- !<SceneObject/8e44af37-8648-42bf-4fbf-169a144fd236>
+  PrefabRemaps:
+    []
+  Name: WorkshopFurniture__paintBlue
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> be3fa014-68f6-4325-4af1-3cc848ad6f6a
+- !<SceneObject/8e979fb4-ec34-42ab-5917-5dba507072f8>
+  PrefabRemaps:
+    []
+  Name: OuterWalls__teal
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> f3f59d9a-bdde-4d99-4148-dfc33e03628b
+- !<SceneObject/90873333-a9fc-4e82-6445-59a5f7b80545>
+  PrefabRemaps:
+    []
+  Name: WorkshopFurniture__wood
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 4e5637f4-e8ea-4dd6-7653-08b59597ae6c
+- !<SceneObject/90fb7053-ff0d-4237-6efd-f4c79b545e52>
+  PrefabRemaps:
+    []
+  Name: WorkshopFloor__parquetHoney
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> b879a07b-f517-4922-55e4-21686b217290
+- !<SceneObject/91344267-3056-4642-5b4a-7bc71773d7eb>
+  PrefabRemaps:
+    []
+  Name: ReceptionFurniture__parquetLight
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 2d9ae79b-3286-4471-5cc0-6a5ae165b987
+- !<SceneObject/92ceaa80-df14-4c71-5881-5a7e89a30e92>
+  PrefabRemaps:
+    []
+  Name: Anchor_Archive
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: -2.500000, y: 0.000000, z: -2.500000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    []
+- !<SceneObject/9526af00-cfe3-458c-6899-73b4106836d8>
+  PrefabRemaps:
+    []
+  Name: FoyerFloor__teal
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 46b8cae9-3d1c-4db7-70be-7c81f7dca89b
+- !<SceneObject/9741b366-a096-4017-5164-04eb77f4564f>
+  PrefabRemaps:
+    []
+  Name: ReceptionFurniture__brass
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 76ed8853-6092-4b15-7db9-ad2d1a1b505e
+- !<RenderMeshVisual/9966b55b-60bb-4fd1-4881-6ef97f899928>
+  PrefabRemaps:
+    []
+  Name: ArchiveFurniture__woodGrain
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 271bbcf4-2b02-4337-9b4d-bbbb189dc455
+  Mesh: !<reference> 5f5833c0-e846-4b31-88e4-645c65be6de6
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<RenderMeshVisual/9af4807e-4fcd-415c-4cab-085b4feb4259>
+  PrefabRemaps:
+    []
+  Name: ReceptionFurniture__ink
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 8e9750c6-0070-41c4-b56d-6123ab3b57ad
+  Mesh: !<reference> 57c65a5f-c77e-4e5f-8954-ec80d4d01bd6
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<RenderMeshVisual/9b70d293-a7ee-4310-7107-450b7eb60152>
+  PrefabRemaps:
+    []
+  Name: FoyerFloor__stoneShade
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 48e15ed4-df33-4ef4-bdd9-6654ba51121e
+  Mesh: !<reference> 52f5f75b-5760-4d37-9ea7-a2a1a462dc28
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<SceneObject/9f23f11a-b1c0-4b1a-7d75-b690ea98843f>
+  PrefabRemaps:
+    []
+  Name: ArchiveFloor__woodGrain
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 2e95a3bb-e85b-403b-62fd-d6fccbc6ae93
+- !<SceneObject/a3ab76d6-79e0-40ca-55b0-545b79895dc1>
+  PrefabRemaps:
+    []
+  Name: WorkshopFurniture__brass
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> ca7566b8-55bf-45fa-5246-dda57f074bd9
+- !<SceneObject/a585400f-990c-490c-743c-bbf01305aabe>
+  PrefabRemaps:
+    []
+  Name: Scenes
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    - !<own> af0e2b9f-aa7d-4114-47b1-3665f42b2c0f
+  Components:
+    []
+- !<SceneObject/a601adf9-5af9-4353-68e7-fc8ad395b823>
+  PrefabRemaps:
+    []
+  Name: ConnectedDoorways__brass
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 6b1f80f3-2a74-49ef-7322-8f70ecb52176
+- !<RenderMeshVisual/a6bec65f-cfd2-4235-55f2-daf2c68041fd>
+  PrefabRemaps:
+    []
+  Name: RoofAndCoffers__parquetHoney
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> f9b5fbbf-ded9-4a6a-9eb1-5103c64cb8f2
+  Mesh: !<reference> 396be185-6ffa-4d8a-ba7f-5c403290dc7f
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<RenderMeshVisual/a781278f-c11d-4a0f-5e31-e417fbca2854>
+  PrefabRemaps:
+    []
+  Name: RubyHallFloor__parquetLight
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 6eaec0bf-33d6-44c2-879a-af2a8ba9e945
+  Mesh: !<reference> 82915276-29c7-4503-81b8-c56c0c296317
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<SceneObject/a87ae855-217c-423b-59a3-4c423e8e0078>
+  PrefabRemaps:
+    []
+  Name: FoyerSculpture__parquetChestnut
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 63a28fff-8974-4714-6ecd-181279a0ef6d
+- !<RenderMeshVisual/aa5caaac-f9aa-4ec4-7aa6-ff52bb8f5d7c>
+  PrefabRemaps:
+    []
+  Name: ArchiveFloor__slate
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 4f7272d8-51a0-48da-9e30-9a7bb02199f4
+  Mesh: !<reference> e0782114-9f02-42b0-a90c-1f638c693782
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<SceneObject/ad3f935c-f478-4799-75e0-5e86704d6f8c>
+  PrefabRemaps:
+    []
+  Name: RubyHallFloor__teal
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> b1b64b3e-ffe0-4cce-72dc-9490927aedd5
+- !<SceneObject/ada4a761-8a97-4eae-5009-e22daba5f4bf>
+  PrefabRemaps:
+    []
+  Name: WorkshopFurniture__parquetChestnut
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> e5b0a05e-c9aa-4eb8-6ed9-e96974627a8a
+- !<RenderMeshVisual/aee53916-07d2-45f2-4186-38e76b2303fa>
+  PrefabRemaps:
+    []
+  Name: WorkshopFloor__teal
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> bbe04beb-1dea-430c-a116-d89c9119d780
+  Mesh: !<reference> 4c118c3e-a860-4ca9-ad8b-1be8a582ee33
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<SceneObject/af0e2b9f-aa7d-4114-47b1-3665f42b2c0f>
+  PrefabRemaps:
+    []
+  Name: Scene0
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    - !<own> 27992c12-3ab6-4d83-6347-6bff29712c1a
+  Components:
+    []
+- !<SceneObject/afb6e9bd-0206-4747-5926-646b7e237061>
+  PrefabRemaps:
+    []
+  Name: ArchiveFloor__teal
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> cc2b683f-99a9-40d6-4a3e-dc2b8646ca40
+- !<RenderMeshVisual/b14222c1-dc19-42f0-6510-a30867900186>
+  PrefabRemaps:
+    []
+  Name: ArchiveFurniture__parquetLight
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 6eaec0bf-33d6-44c2-879a-af2a8ba9e945
+  Mesh: !<reference> 20bd7615-e2f6-4c85-812e-65fabc42a5d5
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<RenderMeshVisual/b1b64b3e-ffe0-4cce-72dc-9490927aedd5>
+  PrefabRemaps:
+    []
+  Name: RubyHallFloor__teal
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> bbe04beb-1dea-430c-a116-d89c9119d780
+  Mesh: !<reference> 57859203-d4e6-4da9-a330-2217ebc007f8
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<SceneObject/b63bcf1b-016a-43e8-4859-714302173148>
+  PrefabRemaps:
+    []
+  Name: OriginalArtFrames__brass
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> c3356e0a-57ee-4864-58e2-bc5dfd5e3783
+- !<SceneObject/b7662982-27f2-4a87-6014-23a94cb98b96>
+  PrefabRemaps:
+    []
+  Name: WorkshopFloor__parquetChestnut
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 107cdc9a-eaee-41ff-78ef-d761a459b1b4
+- !<RenderMeshVisual/b7a95cb2-1b22-4fd9-4065-edd24effbd46>
+  PrefabRemaps:
+    []
+  Name: WorkshopFurniture__leather
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 06cdc816-5b7f-404b-a4a6-97921e116f09
+  Mesh: !<reference> 294a0e19-b2b4-4cba-b12e-f0e948131585
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<RenderMeshVisual/b879a07b-f517-4922-55e4-21686b217290>
+  PrefabRemaps:
+    []
+  Name: WorkshopFloor__parquetHoney
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> f9b5fbbf-ded9-4a6a-9eb1-5103c64cb8f2
+  Mesh: !<reference> 21a86558-937f-417d-9f03-5284016831b6
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<SceneObject/b8bafbf1-c66b-4398-4613-a201eb38bec1>
+  PrefabRemaps:
+    []
+  Name: OriginalArtFrames__woodGrain
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 641adf3c-2342-4af2-402f-687b556b8201
+- !<SceneObject/bb47cb03-023d-42f2-77c5-1db9f993f8ac>
+  PrefabRemaps:
+    []
+  Name: WorkshopFurniture__cream
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 613653eb-207e-4c3e-61c6-e844cbec341e
+- !<ObjectPrefabAssetData/be16bb45-32ae-41fa-a0b6-6d2f4cc46754>
+  Prototype: !<ObjectOwner/f83f68e3-3fef-4f81-9a7b-93dd4aa02b48>
+    PackagePath: ""
+    objects:
+      - !<own> 81698ecb-b6e9-477d-55ae-edec51dd1fdd
+- !<RenderMeshVisual/be3fa014-68f6-4325-4af1-3cc848ad6f6a>
+  PrefabRemaps:
+    []
+  Name: WorkshopFurniture__paintBlue
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 82fd657f-f715-42b3-93af-3fb3829a22ff
+  Mesh: !<reference> e567fd3e-613b-4dea-b6fd-45393144a7b8
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<SceneObject/c2d2545c-253a-45cd-5a32-4823c495b0ed>
+  PrefabRemaps:
+    []
+  Name: WorkshopFloor__parquetLight
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 7d9c147b-52a6-475d-70dc-245524230311
+- !<RenderMeshVisual/c3356e0a-57ee-4864-58e2-bc5dfd5e3783>
+  PrefabRemaps:
+    []
+  Name: OriginalArtFrames__brass
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 79214429-259b-4e55-9ab7-f8717a789202
+  Mesh: !<reference> ccf12a2f-d3d4-4980-a3ee-810576eb8ba7
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<SceneObject/c38d1795-18bd-4d8e-51df-12e382aa9ce6>
+  PrefabRemaps:
+    []
+  Name: ArchiveFurniture__woodGrain
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 9966b55b-60bb-4fd1-4881-6ef97f899928
+- !<SceneObject/c39654fd-6cfc-4679-4e93-b595b53a7426>
+  PrefabRemaps:
+    []
+  Name: OuterWalls__plasterLight
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 330d2b57-4133-4ee6-71b1-add3fb34fb6c
+- !<SceneObject/c39cdaea-1c5f-4f10-6bf9-d0aef7e6223d>
+  PrefabRemaps:
+    []
+  Name: RoofAndCoffers__woodGrain
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 0fcca15a-ad65-4154-7c37-ed26324cb3d8
+- !<RenderMeshVisual/c3eb69eb-29bf-4d70-4302-5f7c97a1e89f>
+  PrefabRemaps:
+    []
+  Name: ArchiveFurniture__teal
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> bbe04beb-1dea-430c-a116-d89c9119d780
+  Mesh: !<reference> 970c2e38-0ec8-46c9-a6a6-05aa3776f905
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<RenderMeshVisual/c5264fec-21c2-48c4-433e-8e0e0445a15f>
+  PrefabRemaps:
+    []
+  Name: ReceptionFurniture__paper
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 2f113528-4a30-409f-9c9b-55594e17af35
+  Mesh: !<reference> 232e647f-82e9-4510-8d1d-1564e42115a1
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<RenderMeshVisual/c67e8c36-ecd0-4d4b-5959-80a98ca5ea03>
+  PrefabRemaps:
+    []
+  Name: ConnectedDoorways__limestone
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 95ca5a60-0433-45fc-a180-6431f867d60b
+  Mesh: !<reference> 1948b41a-2120-4371-97a1-5f169b9949d2
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<RenderMeshVisual/ca7566b8-55bf-45fa-5246-dda57f074bd9>
+  PrefabRemaps:
+    []
+  Name: WorkshopFurniture__brass
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 79214429-259b-4e55-9ab7-f8717a789202
+  Mesh: !<reference> 37303a35-72e3-40c8-ae4a-d6e3a30f1401
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<RenderMeshVisual/cb05681a-d7aa-472b-7eee-3d24980426e0>
+  PrefabRemaps:
+    []
+  Name: ArchiveFurniture__brass
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 79214429-259b-4e55-9ab7-f8717a789202
+  Mesh: !<reference> dcbb004b-9719-4dcc-9b65-a18b74384de0
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<RenderMeshVisual/cbc8b168-f0cb-40f9-636a-243dc91caf73>
+  PrefabRemaps:
+    []
+  Name: ArchiveFurniture__cream
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> fd108e3b-9928-44cd-b839-79a58104275f
+  Mesh: !<reference> ef2f36ec-0b31-420f-b659-3f70607dd3ad
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<RenderMeshVisual/cbd699cd-8986-435e-794a-4eb854331498>
+  PrefabRemaps:
+    []
+  Name: ConservatorToolsCanvas
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 2f113528-4a30-409f-9c9b-55594e17af35
+  Mesh: !<reference> 3588d025-06ef-4a79-9358-50ec2fe11933
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<RenderMeshVisual/cc2b683f-99a9-40d6-4a3e-dc2b8646ca40>
+  PrefabRemaps:
+    []
+  Name: ArchiveFloor__teal
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> bbe04beb-1dea-430c-a116-d89c9119d780
+  Mesh: !<reference> 8ab802a0-d871-45d7-a23c-1ef884e172ad
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<SceneObject/d2ad96d0-e8ee-4b13-7bb5-f02a479094ed>
+  PrefabRemaps:
+    []
+  Name: ArchiveFurniture__clothTeal
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 718e6895-3011-4f2c-4446-d682ce742d2a
+- !<SceneObject/d2ebec22-af73-4177-7c19-220d0d6f120f>
+  PrefabRemaps:
+    []
+  Name: OuterWalls__brass
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> e31d9d52-dc8c-4911-6e68-e547e1701b0a
+- !<RenderMeshVisual/d3541fd5-ae75-411d-6f01-205f27b5e361>
+  PrefabRemaps:
+    []
+  Name: WorkshopFloor__woodGrain
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 271bbcf4-2b02-4337-9b4d-bbbb189dc455
+  Mesh: !<reference> ca18a8d5-bd6c-4994-a7a2-3876118260ec
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<SceneObject/d4b17192-44ce-430e-7ded-c1b107f0966c>
+  PrefabRemaps:
+    []
+  Name: Anchor_PinGlass
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: -3.100000, y: 1.000000, z: 3.600000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    []
+- !<SceneObject/d771f44f-d2c7-42d1-6086-0372f5075020>
+  PrefabRemaps:
+    []
+  Name: ArchiveFurniture__ink
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 1ab0c641-b7e0-4218-78d3-24be24ceab21
+- !<RenderMeshVisual/dc541654-784a-49e1-6bf7-df379a1a0308>
+  PrefabRemaps:
+    []
+  Name: WorkshopFurniture__woodGrain
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 271bbcf4-2b02-4337-9b4d-bbbb189dc455
+  Mesh: !<reference> fab27fcb-6f33-4abb-a407-a4b4c595a400
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<SceneObject/de736880-7029-476d-4153-6c559755420a>
+  PrefabRemaps:
+    []
+  Name: ArchiveFurniture__teal
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> c3eb69eb-29bf-4d70-4302-5f7c97a1e89f
+- !<SceneObject/e013dd0c-127f-4bc1-4af3-1a9264d85e96>
+  PrefabRemaps:
+    []
+  Name: RoofAndCoffers__plasterLight
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> ebf156cb-7081-4601-7d72-ae4dfefa5916
+- !<RenderMeshVisual/e31d9d52-dc8c-4911-6e68-e547e1701b0a>
+  PrefabRemaps:
+    []
+  Name: OuterWalls__brass
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 79214429-259b-4e55-9ab7-f8717a789202
+  Mesh: !<reference> 62c00f10-4ee5-4203-901a-d6275470a399
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<SceneObject/e42fd5ae-998a-43a6-5439-bf1e2bcce078>
+  PrefabRemaps:
+    []
+  Name: FoyerFloor__limestone
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 4e3a01bb-6f79-4592-5199-11df150c6e3e
+- !<SceneObject/e4858ea6-c868-49bf-7cdb-dcc68f6ab829>
+  PrefabRemaps:
+    []
+  Name: WorkshopFurniture__parquetLight
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 15c46fda-0221-40ec-6759-891f4a4b4d7a
+- !<RenderMeshVisual/e5b0a05e-c9aa-4eb8-6ed9-e96974627a8a>
+  PrefabRemaps:
+    []
+  Name: WorkshopFurniture__parquetChestnut
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 00946316-9fc5-411d-b45a-e67b3f251c77
+  Mesh: !<reference> 10176ca5-856f-49a0-b787-77c9ea73873c
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<RenderMeshVisual/e888e799-b765-4fab-7349-be0691e07b83>
+  PrefabRemaps:
+    []
+  Name: ConnectedDoorways__teal
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> bbe04beb-1dea-430c-a116-d89c9119d780
+  Mesh: !<reference> 994274cd-9c31-4da2-a33a-8519cd4606ec
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<SceneObject/eadb991f-1531-4753-5813-6df00739d9d2>
+  PrefabRemaps:
+    []
+  Name: WorkshopFurniture__paper
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 24769d40-e8bc-4dff-717d-ab2b596a71db
+- !<RenderMeshVisual/ebf156cb-7081-4601-7d72-ae4dfefa5916>
+  PrefabRemaps:
+    []
+  Name: RoofAndCoffers__plasterLight
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 610fc3bd-5277-403e-9fbe-98e1597e729d
+  Mesh: !<reference> 60c8a9c0-e67b-45f7-b898-873a9fd03155
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<SceneObject/edf62aa3-37e2-44a0-45af-0d8bf9986614>
+  PrefabRemaps:
+    []
+  Name: WorkshopFurniture__clothTeal
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 793d13b8-f609-481f-4d2b-bd21beb4ef2c
+- !<RenderMeshVisual/f20eeac9-2bbf-464f-5c29-3a985e4243ba>
+  PrefabRemaps:
+    []
+  Name: StoneOrder__limestone
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 95ca5a60-0433-45fc-a180-6431f867d60b
+  Mesh: !<reference> 6fe0ab29-0dea-435f-899e-a1b0b55e10fa
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<RenderMeshVisual/f3f59d9a-bdde-4d99-4148-dfc33e03628b>
+  PrefabRemaps:
+    []
+  Name: OuterWalls__teal
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> bbe04beb-1dea-430c-a116-d89c9119d780
+  Mesh: !<reference> db243d56-d9db-4c13-9ab4-3608f5bc7661
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<RenderMeshVisual/f72ce6fb-9f5e-4295-6954-c706802f1e50>
+  PrefabRemaps:
+    []
+  Name: WorkshopFurniture__ruby
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 9b7d4472-3233-4ce0-84d1-c8fc00f7b7e7
+  Mesh: !<reference> 3073dc5b-048b-40b9-8020-4e0e5ca093fe
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<SceneObject/f7bab5fc-9e08-43c2-7a32-8f076c7627f7>
+  PrefabRemaps:
+    []
+  Name: ReceptionFurniture__paper
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> c5264fec-21c2-48c4-433e-8e0e0445a15f
+- !<SceneObject/f89f8e09-6605-447d-5cea-76be59dd1bbc>
+  PrefabRemaps:
+    []
+  Name: RubyHallFloor__parquetChestnut
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 0d9dcf66-c7a6-4c36-7cad-1a5c577598d5
+- !<RenderMeshVisual/fdcf650c-11cd-4f62-7f0e-fa152159ca6f>
+  PrefabRemaps:
+    []
+  Name: StoneOrder__stoneShade
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 48e15ed4-df33-4ef4-bdd9-6654ba51121e
+  Mesh: !<reference> 68e9c892-4829-42ad-9598-4f438cb64db2
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<RenderMeshVisual/ff117840-dc51-4d53-4b57-9ae77f625f2e>
+  PrefabRemaps:
+    []
+  Name: FoyerFloor__woodGrain
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 271bbcf4-2b02-4337-9b4d-bbbb189dc455
+  Mesh: !<reference> 6818f126-8b4c-409e-a5b6-74b8d373bc45
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<RenderMeshVisual/ffa82c9b-b1c0-4f0d-6e4f-484ce6b92035>
+  PrefabRemaps:
+    []
+  Name: ReceptionFurniture__woodGrain
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 271bbcf4-2b02-4337-9b4d-bbbb189dc455
+  Mesh: !<reference> 62386128-4e2c-4c48-9e64-2648eb97e6a7
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}

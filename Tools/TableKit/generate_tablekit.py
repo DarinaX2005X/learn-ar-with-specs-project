@@ -32,6 +32,15 @@ PALETTE = {
 
 
 def rgb(h):
+    """glTF material factors are linear; palette hex values are sRGB."""
+    return [
+        channel / 12.92 if channel <= 0.04045 else ((channel + 0.055) / 1.055) ** 2.4
+        for channel in srgb(h)
+    ]
+
+
+def srgb(h):
+    """Display-space helper, used only by the optional offline proof raster."""
     return [int(h[i : i + 2], 16) / 255 for i in (1, 3, 5)]
 
 
@@ -158,6 +167,9 @@ class Model:
             "bufferViews": self.views,
             "buffers": [{"byteLength": len(self.bin)}],
         }
+        for optional in ("images", "textures", "samplers"):
+            if hasattr(self, optional):
+                doc[optional] = getattr(self, optional)
         j = json.dumps(doc, separators=(",", ":")).encode()
         j += b" " * ((-len(j)) % 4)
         b = bytes(self.bin)
@@ -1262,6 +1274,14 @@ def main():
             "ambientRatio": 0.38,
         },
     }
+    previous_manifest = ROOT / "manifest.json"
+    if previous_manifest.exists():
+        previous = json.loads(previous_manifest.read_text(encoding="utf-8"))
+        manifest["resources"].extend(
+            record
+            for record in previous.get("resources", [])
+            if record["name"] == "MuseumBuilding" and (ROOT / record["path"]).exists()
+        )
     (ROOT / "manifest.json").write_text(
         json.dumps(manifest, indent=2), encoding="utf-8"
     )
@@ -1313,7 +1333,7 @@ def render_contact_sheet(models, review_dir):
                     for p in q
                 ]
                 lum = 0.49 + 0.51 * max(0, np.dot(n, [-0.45, 0.75, -0.5]))
-                col = tuple(int(min(255, x * 255 * lum)) for x in rgb(PALETTE[mat][0]))
+                col = tuple(int(min(255, x * 255 * lum)) for x in srgb(PALETTE[mat][0]))
                 points.append((q[:, 2] - q[:, 1] * 0.25, xy, col))
         for zz, xy, col in points:
             tri = np.array(xy)
@@ -1343,7 +1363,7 @@ def render_contact_sheet(models, review_dir):
     font = ImageFont.load_default()
     d.text(
         (36, 20),
-        "Countercase / original geometry contact sheet — offline artwork review",
+        "Countercase / original geometry contact sheet вЂ” offline artwork review",
         font=font,
         fill="#163c3a",
     )

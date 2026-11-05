@@ -4,7 +4,8 @@ import {
   SealedCase,
   VaultEntry,
 } from "../Domain/index";
-import {CaseRef, SessionShelf, ShelfItem} from '../Shelf/SessionShelf';
+import { CaseRef, SessionShelf, ShelfItem } from "../Shelf/SessionShelf";
+import { DetectiveArchive } from "../Detective/DetectiveSession";
 
 export type BuiltinId = "missing-ruby" | "packing-room";
 export type FlowMode =
@@ -22,11 +23,16 @@ export interface AuthorHandle {
 /** A mount owns all its renderers, input subscriptions, audio and grabbed objects. */
 export interface RoleMount {
   detach(): void;
+  archive?(): DetectiveArchive;
 }
 export interface CasePorts {
   createAuthor(draft: CaseDraft, checkpoint?: AuthorCheckpoint): AuthorHandle;
   mountAuthor(author: AuthorHandle, inputEpoch: number): RoleMount;
-  mountDetective(sealed: SealedCase, inputEpoch: number): RoleMount;
+  mountDetective(
+    sealed: SealedCase,
+    inputEpoch: number,
+    saved?: DetectiveArchive,
+  ): RoleMount;
   /** Must remove privileged layers before displaying the closed lid. */
   closeLid(): void;
   openLid(): void;
@@ -73,10 +79,16 @@ export class CaseFlow {
   private tutorial = true;
   private message = "";
 
-  constructor(private ports: CasePorts, shelf = new SessionShelf()) {
+  constructor(
+    private ports: CasePorts,
+    shelf = new SessionShelf(),
+  ) {
     this.shelf = shelf;
     const ref = shelf.activeRef();
-    this.active = {title: shelf.caseTitle(ref)!, sealed: shelf.publicCase(ref)!};
+    this.active = {
+      title: shelf.caseTitle(ref)!,
+      sealed: shelf.publicCase(ref)!,
+    };
     this.emit();
   }
   snapshot(): FlowState {
@@ -116,6 +128,11 @@ export class CaseFlow {
   private detach(): void {
     ++this.epoch;
     this.ports.cancelInput();
+    if (
+      this.mount?.archive &&
+      (this.mode === "detective" || this.mode === "finished")
+    )
+      this.shelf.saveAttempt(this.mount.archive());
     if (this.mount) this.mount.detach();
     this.mount = undefined;
   }
@@ -123,7 +140,11 @@ export class CaseFlow {
     if (this.mode !== "ready") return false;
     this.detach();
     this.mode = "detective";
-    this.mount = this.ports.mountDetective(this.active.sealed, this.epoch);
+    this.mount = this.ports.mountDetective(
+      this.active.sealed,
+      this.epoch,
+      this.shelf.attempt(this.activeRef()),
+    );
     this.ports.openLid();
     this.emit();
     return true;
@@ -195,8 +216,14 @@ export class CaseFlow {
     this.pending = freeze({ title: draft.title, sealed: clone(result.sealed) });
     this.returnDraft = clone(draft);
     this.returnCheckpoint = this.author.checkpoint();
-    try { this.shelf.store(result); }
-    catch (_) { this.pending = undefined; this.message = 'The case could not be sealed. Try again'; this.emit(); return false; }
+    try {
+      this.shelf.store(result);
+    } catch (_) {
+      this.pending = undefined;
+      this.message = "The case could not be sealed. Try again";
+      this.emit();
+      return false;
+    }
     this.detach();
     this.author.dispose();
     this.author = undefined;
@@ -245,46 +272,63 @@ export class CaseFlow {
     if (this.mode !== "finished") return false;
     this.detach();
     this.mode = "detective";
-    this.mount = this.ports.mountDetective(this.active.sealed, this.epoch);
+    this.mount = this.ports.mountDetective(
+      this.active.sealed,
+      this.epoch,
+      this.shelf.attempt(this.activeRef()),
+    );
     this.emit();
     return true;
   }
   selectCase(id: BuiltinId): boolean {
     return this.selectSavedCase(id, 1);
   }
-  private activeRef(): CaseRef { return {id: this.active.sealed.caseId, rev: this.active.sealed.rev}; }
+  private activeRef(): CaseRef {
+    return { id: this.active.sealed.caseId, rev: this.active.sealed.rev };
+  }
   selectSavedCase(id: string, rev: number): boolean {
-    if (this.mode !== 'ready') return false;
-    const ref = {id, rev};
+    if (this.mode !== "ready") return false;
+    const ref = { id, rev };
     const sealed = this.shelf.publicCase(ref);
     if (!sealed || !this.shelf.select(ref)) return false;
-    this.active = {title: this.shelf.caseTitle(ref)!, sealed};
-    this.message = ''; this.emit(); return true;
+    this.active = { title: this.shelf.caseTitle(ref)!, sealed };
+    this.message = "";
+    this.emit();
+    return true;
   }
   resumeSavedDraft(id: string): boolean {
-    if (this.mode !== 'ready') return false;
+    if (this.mode !== "ready") return false;
     const saved = this.shelf.draft(id);
     return saved ? this.edit(saved.draft, saved.checkpoint) : false;
   }
   editThisCase(): boolean {
-    if (this.mode !== 'finished') return false;
+    if (this.mode !== "finished") return false;
     const draft = this.shelf.fork(this.activeRef());
     return draft ? this.edit(draft) : false;
   }
   keepThisRoom(): boolean {
-    if (this.mode !== 'finished') return false;
+    if (this.mode !== "finished") return false;
     const draft = this.shelf.keepRoom(this.activeRef());
     return draft ? this.edit(draft) : false;
   }
   emptyRoom(): boolean {
-    if (this.mode !== 'ready' && this.mode !== 'finished') return false;
+    if (this.mode !== "ready" && this.mode !== "finished") return false;
     return this.edit(this.shelf.emptyRoom());
   }
   revealTheft(caseId: string, rev: number): boolean {
-    if (this.mode !== 'finished' || !this.ports.reveal || caseId !== this.active.sealed.caseId || rev !== this.active.sealed.rev) return false;
-    const vault = this.shelf.reveal({id: caseId, rev});
+    if (
+      this.mode !== "finished" ||
+      !this.ports.reveal ||
+      caseId !== this.active.sealed.caseId ||
+      rev !== this.active.sealed.rev
+    )
+      return false;
+    const vault = this.shelf.reveal({ id: caseId, rev });
     if (!vault) return false;
-    this.detach(); this.mount = this.ports.reveal(vault, this.epoch); this.emit(); return true;
+    this.detach();
+    this.mount = this.ports.reveal(vault, this.epoch);
+    this.emit();
+    return true;
   }
   dispose(): void {
     this.detach();

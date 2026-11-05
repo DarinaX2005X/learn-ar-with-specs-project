@@ -1,7 +1,21 @@
 # Countercase TableKit
 
-Original carved miniature geometry and PBR materials. No textures, external meshes,
-character likenesses or AI room images are embedded in these resources.
+Original carved puppet geometry and PBR materials. No external meshes, character
+likenesses or reference-room images are embedded. MuseumBuilding embeds the four
+original Collection artwork/surface JPEGs; puppet models use geometric materials.
+
+MuseumBuilding is a full-size connected four-room museum, not a miniature.
+It mounts at identity with metre geometry and Lens import scale 100. Story +Z
+points into the building. Ruby Hall is X=[0,7], Z=[0,5] m; foyer X=[0,7],
+Z=[−5,0]; workshop X=[−5,0], Z=[0,5]; archive X=[−5,0], Z=[−5,0].
+The entrance viewer is (3.5,1.65,−3.4), looking +Z. Five genuine arched openings
+connect the outside and rooms; the roof, pilasters and floors form one building.
+The central hall contains no new interior sight-line obstacles. Game-case walls,
+actors, mirror and ruby display remain mounted by the authoritative runtime.
+MuseumBuilding.contract.json lists all semantic interaction anchors in metres.
+The two framed Collection paintings use full 3:2 UVs, while oak/plaster tiles
+repeat at 0.70×0.18 m and 1.6×1.6 m. JPEGs stay sRGB; every palette multiplier
+is converted to linear RGB for glTF baseColorFactor.
 
 Import each GLB as its own model/prefab. Files use metres, +Y up and front −Z.
 Lens Studio's imported model uses scale 100 to display centimetres. Keep that

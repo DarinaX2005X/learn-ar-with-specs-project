@@ -50,7 +50,7 @@ def main():
         )
         if (
             missing_assets.returncode == 0
-            or "Expected 15 TableKit models" not in missing_assets.stderr
+            or "Expected 16 TableKit models" not in missing_assets.stderr
         ):
             raise RuntimeError(
                 "Asset validation did not reject an empty project clearly"

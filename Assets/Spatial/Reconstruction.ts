@@ -1,0 +1,140 @@
+import { Board, History, TrackId, Vec3, Field, Verdict } from "../Domain/types";
+import { poseAt, add, sub, mul } from "../Domain/geometry";
+import { answer } from "../Domain/observe";
+import { ActorPose, WorldView } from "../Scripts/TableKit/TableKit";
+const mix = (a: Vec3, b: Vec3, f: number) =>
+  add(a, mul(sub(b, a), Math.max(0, Math.min(1, f))));
+const tuple = (p: Vec3): [number, number, number] => [
+  p.x * 100,
+  p.y * 100,
+  p.z * 100,
+];
+const smooth = (f: number) => {
+  f = Math.max(0, Math.min(1, f));
+  return f * f * (3 - 2 * f);
+};
+export interface ActionPose {
+  track: TrackId;
+  handCm: readonly [number, number, number];
+  grip: number;
+}
+export interface ReconstructionView extends WorldView {
+  hands: ActionPose[];
+  cache?: string;
+  nestEmpty: boolean;
+}
+/** Pure sample in story centimetres. Root scales to .06 for the table or 1 for room scale.
+ * The marker in Domain is head height; imported role mesh origin is floor height.
+ * Hand targets use the same action contact point on both partners, never a flying ruby.
+ */
+export function renderHistory(
+  board: Board,
+  h: History,
+  tick: number,
+): ReconstructionView {
+  if (!Number.isFinite(tick)) throw new Error("Choose a finite time");
+  const t = Math.max(0, Math.min(24, tick));
+  const positions = new Map(
+    board.tracks.map((track) => [track.id, poseAt(track, t)]),
+  );
+  const rest = (id: TrackId): Vec3 => {
+    const p = positions.get(id)!;
+    return {
+      x: p.x + 0.12 * Math.cos(p.yaw),
+      y: p.y - 0.3,
+      z: p.z - 0.12 * Math.sin(p.yaw),
+    };
+  };
+  const hands = new Map<TrackId, Vec3>(
+    board.tracks.map((track) => [track.id, rest(track.id)]),
+  );
+  const reach = (id: TrackId, target: Vec3, event: number) => {
+    const strength = t <= event ? smooth(t - event + 1) : 1 - smooth(t - event);
+    if (strength > 0) hands.set(id, mix(hands.get(id)!, target, strength));
+  };
+  const exhibit = board.room.exhibit.position;
+  reach(h.take, exhibit, board.alarmTick);
+  for (const brush of h.brushes) reach(brush.track, exhibit, brush.tick);
+  if (h.pass) {
+    const a = positions.get(h.pass.from)!,
+      b = positions.get(h.pass.to)!;
+    const contact = mix(a, b, 0.5);
+    contact.y = Math.min(a.y, b.y) - 0.25;
+    reach(h.pass.from, contact, h.pass.tick);
+    reach(h.pass.to, contact, h.pass.tick);
+  }
+  const box = h.stash && board.room.boxes?.find((b) => b.id === h.stash!.box);
+  if (h.stash && box) reach(h.stash.carrier, box.position, h.stash.tick);
+  const taken = t >= board.alarmTick,
+    stashed = !!h.stash && t >= h.stash.tick;
+  const carrier = h.pass && t >= h.pass.tick ? h.pass.to : h.take;
+  const ruby = taken
+    ? stashed && box
+      ? box.position
+      : hands.get(carrier)!
+    : exhibit;
+  const actors: ActorPose[] = board.tracks.map((track) => {
+    const p = positions.get(track.id)!;
+    const moving = track.keys.some(
+      (k, i) =>
+        i > 0 && (k.x !== track.keys[i - 1].x || k.z !== track.keys[i - 1].z),
+    );
+    const gait = moving ? Math.sin(t * Math.PI) * 0.2 : 0;
+    return {
+      role: h.casting[track.id],
+      positionCm: [p.x * 100, (p.y - 1) * 100, p.z * 100],
+      yawRad: p.yaw,
+      joints: {
+        Hip_L: [gait, 0, 0],
+        Hip_R: [-gait, 0, 0],
+        Knee_L: [Math.max(0, -gait), 0, 0],
+        Knee_R: [Math.max(0, gait), 0, 0],
+      },
+    };
+  });
+  return {
+    kind: "world",
+    revision: board.caseId + ":" + board.rev,
+    actors,
+    aperture: board.room.mirror?.aperture ?? 0,
+    ruby: { positionCm: tuple(ruby), visible: !stashed },
+    hands: board.tracks.map((track) => ({
+      track: track.id,
+      handCm: tuple(hands.get(track.id)!),
+      grip: taken && !stashed && track.id === carrier ? 1 : 0,
+    })),
+    cache: stashed ? h.stash!.box : undefined,
+    nestEmpty: taken,
+  };
+}
+export function compatiblePair(
+  board: Board,
+  v: Verdict,
+  field: Field,
+): [History, History] | undefined {
+  const histories =
+    v.examplesByField[field] ??
+    Object.values(v.examplesByCulprit).filter((h): h is History => !!h);
+  for (let i = 0; i < histories.length; i++)
+    for (let j = i + 1; j < histories.length; j++)
+      if (
+        answer(board, histories[i], field) !==
+        answer(board, histories[j], field)
+      )
+        return [histories[i], histories[j]];
+  return undefined;
+}
+/** Cache clues have no event time. Focus on final inspection instead. */
+export function comparisonFocus(
+  board: Board,
+  pair: [History, History],
+  field: Field,
+): { tick: number; inspection: boolean } {
+  if (field === "cache") return { tick: 24, inspection: true };
+  if (field === "recipient")
+    return {
+      tick: Math.min(pair[0].pass?.tick ?? 24, pair[1].pass?.tick ?? 24),
+      inspection: false,
+    };
+  return { tick: board.alarmTick, inspection: false };
+}

@@ -1,0 +1,183 @@
+{
+  "name": "MuseumBuilding",
+  "path": "MuseumBuilding.glb",
+  "bytes": 12109808,
+  "aabb_cm": [
+    1308.0,
+    422.0,
+    1094.0
+  ],
+  "aabb_min_cm": [
+    -547.0,
+    -28.0,
+    -547.0
+  ],
+  "aabb_center_offset_cm": [
+    107.0,
+    183.0,
+    0.0
+  ],
+  "nodeNames": [
+    "paintOchre",
+    "ArrivalRiverCanvas",
+    "ConservatorToolsCanvas",
+    "Anchor_Entrance",
+    "Anchor_RubyHall",
+    "Anchor_Workshop",
+    "Anchor_Archive",
+    "Anchor_FileRack",
+    "Anchor_EntryClock",
+    "Anchor_HallClock",
+    "Anchor_ConservationBench",
+    "Anchor_PinGlass",
+    "Anchor_CaseLid",
+    "Anchor_ArchiveRecorder",
+    "Anchor_EvidenceShelf",
+    "FoyerFloor__woodGrain",
+    "FoyerFloor__stoneShade",
+    "FoyerFloor__limestone",
+    "FoyerFloor__teal",
+    "RubyHallFloor__woodGrain",
+    "RubyHallFloor__parquetHoney",
+    "RubyHallFloor__parquetChestnut",
+    "RubyHallFloor__parquetLight",
+    "RubyHallFloor__teal",
+    "WorkshopFloor__woodGrain",
+    "WorkshopFloor__parquetHoney",
+    "WorkshopFloor__parquetChestnut",
+    "WorkshopFloor__parquetLight",
+    "WorkshopFloor__teal",
+    "ArchiveFloor__woodGrain",
+    "ArchiveFloor__teal",
+    "ArchiveFloor__slate",
+    "OuterWalls__plaster",
+    "OuterWalls__teal",
+    "OuterWalls__brass",
+    "OuterWalls__limestone",
+    "OuterWalls__plasterLight",
+    "ConnectedDoorways__plaster",
+    "ConnectedDoorways__teal",
+    "ConnectedDoorways__brass",
+    "ConnectedDoorways__limestone",
+    "StoneOrder__limestone",
+    "StoneOrder__stoneShade",
+    "RoofAndCoffers__plasterLight",
+    "RoofAndCoffers__woodGrain",
+    "RoofAndCoffers__parquetHoney",
+    "ReceptionFurniture__parquetChestnut",
+    "ReceptionFurniture__parquetLight",
+    "ReceptionFurniture__woodGrain",
+    "ReceptionFurniture__brass",
+    "ReceptionFurniture__paper",
+    "ReceptionFurniture__cream",
+    "ReceptionFurniture__ink",
+    "WorkshopFurniture__parquetChestnut",
+    "WorkshopFurniture__parquetLight",
+    "WorkshopFurniture__woodGrain",
+    "WorkshopFurniture__clothTeal",
+    "WorkshopFurniture__leather",
+    "WorkshopFurniture__paper",
+    "WorkshopFurniture__brass",
+    "WorkshopFurniture__glass",
+    "WorkshopFurniture__ruby",
+    "WorkshopFurniture__wood",
+    "WorkshopFurniture__teal",
+    "WorkshopFurniture__cream",
+    "WorkshopFurniture__paintOchre",
+    "WorkshopFurniture__paintBlue",
+    "WorkshopFurniture__parquetHoney",
+    "ArchiveFurniture__parquetChestnut",
+    "ArchiveFurniture__parquetLight",
+    "ArchiveFurniture__woodGrain",
+    "ArchiveFurniture__teal",
+    "ArchiveFurniture__brass",
+    "ArchiveFurniture__ink",
+    "ArchiveFurniture__leather",
+    "ArchiveFurniture__cream",
+    "ArchiveFurniture__clothTeal",
+    "ArchiveFurniture__wood",
+    "OriginalArtFrames__woodGrain",
+    "OriginalArtFrames__brass",
+    "FoyerSculpture__slate",
+    "FoyerSculpture__paintOchre",
+    "FoyerSculpture__parquetChestnut"
+  ],
+  "triangles": 102296,
+  "storyBoundsMetres": {
+    "x": [
+      -5,
+      7
+    ],
+    "z": [
+      -5,
+      5
+    ]
+  },
+  "heightMetres": 3.94,
+  "roomCount": 4,
+  "anchorsMetres": {
+    "Entrance": [
+      3.5,
+      0,
+      -3.4
+    ],
+    "RubyHall": [
+      3.5,
+      0,
+      2.5
+    ],
+    "Workshop": [
+      -2.5,
+      0,
+      2.5
+    ],
+    "Archive": [
+      -2.5,
+      0,
+      -2.5
+    ],
+    "FileRack": [
+      5.55,
+      1.02,
+      -2.6
+    ],
+    "EntryClock": [
+      4.9,
+      1.15,
+      -2.4
+    ],
+    "HallClock": [
+      5.4,
+      1.35,
+      0.26
+    ],
+    "ConservationBench": [
+      -3.5,
+      0.94,
+      3.8
+    ],
+    "PinGlass": [
+      -3.1,
+      1.0,
+      3.6
+    ],
+    "CaseLid": [
+      -3.9,
+      1.02,
+      3.8
+    ],
+    "ArchiveRecorder": [
+      -3.6,
+      1.15,
+      -3.7
+    ],
+    "EvidenceShelf": [
+      -4.65,
+      1.25,
+      -1.8
+    ]
+  },
+  "importScale": 100,
+  "forwardStory": "+Z",
+  "paintingCanvasUV": "Full 0..1, 3:2; assign Collection images"
+}
