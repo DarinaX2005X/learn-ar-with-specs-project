@@ -1,4 +1,6 @@
 /** Metres, radians, integer logical ticks 0..24. No Lens/SDK dependencies. */
+/** UTF16 units, matching JavaScript string.length in draft validation. */
+export const CASE_TITLE_MAX_UNITS = 160;
 export const ROLES = ["Courier", "Guard", "Conservator"] as const;
 export type Role = (typeof ROLES)[number];
 export type TrackId = "A" | "B" | "C";
@@ -81,10 +83,21 @@ export interface CaseDraft {
   witnesses: Witness[];
   tracks: Track[];
   casting: Record<TrackId, Role>;
+  /** Draft-only tray membership. Omitted on older cases: all figures are placed.
+   * A pending figure has no floor pose or camera presence and cannot be sealed. */
+  unplacedTracks?: TrackId[];
   events: Event[];
   alarmTick: number;
   chain?: boolean;
   fields?: Field[];
+}
+/** Single draft membership rule shared by rendering and author controls. */
+export function isTrackPlaced(draft: CaseDraft, id: TrackId): boolean {
+  return draft.unplacedTracks === undefined ||
+    (Array.isArray(draft.unplacedTracks) && !draft.unplacedTracks.includes(id));
+}
+export function placedDraftTracks(draft: CaseDraft): Track[] {
+  return draft.tracks.filter(track => isTrackPlaced(draft, track.id));
 }
 export interface ActionWindows {
   take: TrackId[];

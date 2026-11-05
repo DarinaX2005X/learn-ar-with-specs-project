@@ -1,4 +1,5 @@
 import {
+  CASE_TITLE_MAX_UNITS,
   Board,
   CaseDraft,
   CompileResult,
@@ -86,14 +87,22 @@ export function compileCase(input: CaseDraft): CompileResult {
     !d.id ||
     !Number.isInteger(d.rev) ||
     d.rev < 0 ||
-    !d.title ||
-    d.title.length > 40
+    !d.title?.trim() ||
+    d.title.length > CASE_TITLE_MAX_UNITS
   )
     error(
       "CASE_ID",
       "case",
-      "Use an ID, nonnegative revision and title of 1–40 characters.",
+      "Use an ID, nonnegative revision and title of 1–160 characters.",
     );
+  if (d.unplacedTracks !== undefined) {
+    if (!Array.isArray(d.unplacedTracks) ||
+      new Set(d.unplacedTracks).size !== d.unplacedTracks.length ||
+      d.unplacedTracks.some(id => !["A", "B", "C"].includes(id)))
+      error("ACTOR_PLACEMENT", "figures", "Restore the figures in the tray before testing");
+    else for (const id of d.unplacedTracks)
+      error("ACTOR_UNPLACED", id, "Place " + d.casting[id] + " from the tray before testing");
+  }
   if (!tick(d.alarmTick))
     error("TICK", "alarm", "Alarm must be an integer tick from 0 to 24.");
   if (

@@ -9,6 +9,7 @@ import {
 } from "../Domain/index";
 import { DetectiveArchive } from "../Detective/DetectiveSession";
 import { resolveObservation } from "../Domain/observe";
+import { caseTitle as title, caseSpine, copiedCaseTitle, generatedCaseTitle } from "./CaseTitles";
 
 export interface CaseRef {
   id: string;
@@ -38,8 +39,6 @@ function freeze<T>(value: T): T {
   return value;
 }
 const key = (ref: CaseRef): string => JSON.stringify([ref.id, ref.rev]);
-const title = (value: string): string =>
-  value.trim().replace(/\s+/g, " ").slice(0, 40) || "Untitled case";
 
 /** Private, session-only storage. Only list() and publicCase() may reach the shelf view. */
 export class SessionShelf {
@@ -67,7 +66,7 @@ export class SessionShelf {
       rev: entry.sealed.rev,
       title: entry.title,
       spine:
-        entry.title.length > 28 ? entry.title.slice(0, 27) + "…" : entry.title,
+        caseSpine(entry.title),
       state: "Ready to open" as const,
       solved: this.solved.has(
         key({ id: entry.sealed.caseId, rev: entry.sealed.rev }),
@@ -79,9 +78,7 @@ export class SessionShelf {
         rev: draft.rev,
         title: draft.title,
         spine:
-          draft.title.length > 28
-            ? draft.title.slice(0, 27) + "…"
-            : draft.title,
+          caseSpine(draft.title),
         state: "Draft" as const,
         solved: false,
       })),
@@ -149,7 +146,7 @@ export class SessionShelf {
     const draft = clone(entry.vault.sourceDraft);
     draft.id = "local-case-" + ++this.sequence;
     draft.rev = 1;
-    draft.title = title(entry.title.slice(0, 35) + " Copy");
+    draft.title = copiedCaseTitle(entry.title, this.sequence);
     return draft;
   }
   markSolved(ref: CaseRef): boolean {
@@ -187,7 +184,7 @@ export class SessionShelf {
   keepRoom(ref: CaseRef): CaseDraft | undefined {
     const draft = this.fork(ref);
     if (!draft) return undefined;
-    draft.title = title(this.caseTitle(ref) + " Room");
+    draft.title = generatedCaseTitle(this.caseTitle(ref)!, "Room", this.sequence);
     draft.tracks = [
       {
         id: "A",
@@ -212,6 +209,7 @@ export class SessionShelf {
       },
     ];
     draft.casting = { A: "Courier", B: "Guard", C: "Conservator" };
+    draft.unplacedTracks = ["A", "B", "C"];
     draft.events = [];
     draft.chain = false;
     draft.fields = ["taker"];

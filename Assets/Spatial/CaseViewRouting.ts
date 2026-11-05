@@ -11,6 +11,7 @@ export type CaseViewAction =
         | "backToTable"
         | "closeView";
     }
+  | { type: "switchVersion"; generation: number }
   | { type: "setReducedMotion"; enabled: boolean };
 export interface CaseViewPresentation {
   kind: CaseViewKind;
@@ -20,11 +21,14 @@ export interface CaseViewPresentation {
   source: string;
   tick: number;
   comparison: boolean;
+  versionIndex?: 0 | 1;
+  comparisonScope?: "all" | "selected";
 }
 export interface CaseViewSnapshot {
   mode: "museum" | "choice" | CaseViewKind;
   available: boolean;
   reducedMotion: boolean;
+  generation?: number;
   caseId?: string;
   rev?: number;
   instruction?: string;
@@ -63,7 +67,9 @@ export class CaseViewRouting {
     mode: "museum",
     available: false,
     reducedMotion: false,
+    generation: 0,
   };
+  private pairIdentity = "";
   private anchorViewer?: CaseViewViewer;
   private disposed = false;
   private transitioning = false;
@@ -101,15 +107,29 @@ export class CaseViewRouting {
       this.state.caseId = session.board.caseId;
       this.state.rev = session.board.rev;
     }
+    const comparison=session.detective.comparison;
+    // Identity excludes the potentially large tape. Histories and scope are
+    // already approved by DetectiveSession; evidence changes invalidate held input.
+    const pairIdentity = comparison ? JSON.stringify([comparison.field,comparison.scope,comparison.pair,
+      comparison.scope==="selected"?session.detective.glass.map(item=>item.id).sort():[]]) : "";
+    const pairChanged=pairIdentity !== this.pairIdentity;
+    if(pairChanged) {
+      this.pairIdentity=pairIdentity;
+      this.state.generation=(this.state.generation??0)+1;
+      if(this.state.presentation)this.state.presentation.versionIndex=0;
+    }
     this.state.available = true;
     if (this.state.presentation) {
       if (this.state.presentation.source !== session.detective.source)
         this.present(this.state.presentation.kind, false);
-      else {
+      else if(pairChanged || this.state.presentation.tick!==session.detective.tick ||
+        this.state.presentation.comparison!==!!comparison ||
+        this.state.presentation.comparisonScope!==comparison?.scope) {
         this.state.presentation = {
           ...this.state.presentation,
           tick: session.detective.tick,
           comparison: !!session.detective.comparison,
+          comparisonScope: session.detective.comparison?.scope,
         };
         this.ports.setPresentation(clone(this.state.presentation));
       }
@@ -118,6 +138,15 @@ export class CaseViewRouting {
   dispatch(action: CaseViewAction): boolean {
     if (this.disposed) return false;
     this.sync();
+    if(action.type === "switchVersion") {
+      const presentation=this.state.presentation;
+      if(action.generation!==this.state.generation||this.state.mode!=="room"||!presentation?.comparison||!this.pairIdentity)return false;
+      // Presentation selection only. Do not freeze, seek or recreate placement.
+      this.state.generation=(this.state.generation??0)+1;
+      this.state.presentation={...presentation,versionIndex:presentation.versionIndex===1?0:1};
+      this.ports.setPresentation(clone(this.state.presentation));
+      return true;
+    }
     if (action.type === "setReducedMotion") {
       this.state.reducedMotion = action.enabled;
       return true;
@@ -129,6 +158,7 @@ export class CaseViewRouting {
     if (!this.state.available) return false;
     if (action.type === "chooseView") {
       this.ports.finishTimeDrag();
+      this.state.generation=(this.state.generation??0)+1;
       this.state.mode = "choice";
       this.state.instruction = "Keep space around the case clear";
       return true;
@@ -215,6 +245,8 @@ export class CaseViewRouting {
       source: session.detective.source,
       tick: session.detective.tick,
       comparison: !!session.detective.comparison,
+      comparisonScope: session.detective.comparison?.scope,
+      versionIndex: this.state.presentation?.versionIndex ?? 0,
     };
     // A brief physical frame cover hides instant relocation. No model sweeps
     // through the eyes, including reduced motion; there is no camera flight.
@@ -222,6 +254,7 @@ export class CaseViewRouting {
     try {
       this.ports.setPresentation(clone(presentation));
       this.ports.setSecondaryLabelsVisible(kind === "table");
+      this.state.generation=(this.state.generation??0)+1;
       this.state.mode = kind;
       this.state.presentation = presentation;
       this.state.instruction =
@@ -233,6 +266,8 @@ export class CaseViewRouting {
   }
   private reset(): void {
     this.coverSeconds = 0;
+    this.state.generation=(this.state.generation??0)+1;
+    this.pairIdentity="";
     this.ports.stopSound();
     this.ports.setFrameCovered(true);
     try {
@@ -296,6 +331,11 @@ export function caseViewControls(state: CaseViewSnapshot): CaseViewControl[] {
         label: "Back to table",
         action: { type: "backToTable" },
       },
+      ...(state.presentation?.comparison ? [{
+        id:"CaseViewVersion",
+        label:"Show version " + (state.presentation.versionIndex===1?"1":"2"),
+        action:{type:"switchVersion" as const,generation:state.generation??0},
+      }] : []),
       close,
     ];
   return [
@@ -306,4 +346,14 @@ export function caseViewControls(state: CaseViewSnapshot): CaseViewControl[] {
     },
     close,
   ];
+}
+
+/** A presentation-only version switch must not snap a running reconstruction
+ * back to its integer recording frame. Explicit seek/pause and new cases do. */
+export function comparisonPoseTick(tick:number,playing:boolean,
+  board:{caseId:string;rev:number}|undefined,
+  previous:{caseId?:string;rev?:number;tick?:number}):number {
+  const phase=previous.tick;
+  return playing && !!board && board.caseId===previous.caseId && board.rev===previous.rev &&
+    phase!==undefined && Number.isFinite(phase) && phase>=tick && phase<tick+1 ? phase : tick;
 }

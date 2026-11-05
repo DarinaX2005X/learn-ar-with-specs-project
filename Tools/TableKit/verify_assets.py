@@ -10,6 +10,59 @@ from pathlib import Path
 import struct, json, wave, hashlib
 import numpy as np
 
+def validate_niche_return_caps(content):
+    """Reject positive-area plaster/trim depth ties on exposed X=7 return caps."""
+    json_length = struct.unpack_from('<I', content, 12)[0]
+    document = json.loads(content[20:20 + json_length])
+    binary = content[28 + json_length:]
+    def values(index):
+        accessor = document['accessors'][index]
+        view = document['bufferViews'][accessor['bufferView']]
+        width = {'VEC3': 3, 'SCALAR': 1}[accessor['type']]
+        return np.frombuffer(binary,
+            dtype={5126: '<f4', 5125: '<u4'}[accessor['componentType']],
+            count=accessor['count'] * width,
+            offset=view.get('byteOffset', 0) + accessor.get('byteOffset', 0)
+        ).reshape(-1, width)
+    caps = {}
+    for node in document['nodes']:
+        if 'mesh' not in node:
+            continue
+        require(node.get('translation', [0, 0, 0]) == [0, 0, 0]
+                and node.get('rotation', [0, 0, 0, 1]) == [0, 0, 0, 1]
+                and node.get('scale', [1, 1, 1]) == [1, 1, 1],
+                'Mirror niche cap coordinates require identity batch transforms')
+        triangles = []
+        for primitive in document['meshes'][node['mesh']]['primitives']:
+            points = values(primitive['attributes']['POSITION'])
+            for face in values(primitive['indices']).reshape(-1, 3):
+                tri = points[face]
+                if np.max(abs(tri[:, 0] - 7)) < 1e-5:
+                    triangles.append(tri[:, [2, 1]].astype(float))
+        caps[node['name']] = triangles
+    def overlap(subject, clip):
+        polygon = list(subject)
+        sign = 1 if np.cross(clip[1]-clip[0], clip[2]-clip[0]) > 0 else -1
+        for a, b in zip(clip, np.roll(clip, -1, axis=0)):
+            result = []
+            for p, q in zip(polygon, polygon[1:] + polygon[:1]):
+                dp = float(np.cross(b-a, p-a)) * sign
+                dq = float(np.cross(b-a, q-a)) * sign
+                if dp >= 0:
+                    result.append(p)
+                if (dp >= 0) != (dq >= 0):
+                    result.append(p + (q-p) * dp/(dp-dq))
+            polygon = result
+            if len(polygon) < 3:
+                return 0
+        return abs(sum(float(np.cross(polygon[i], polygon[(i+1) % len(polygon)]))
+                       for i in range(len(polygon)))) / 2
+    for plaster in caps.get('MirrorNicheFinish__plaster', []):
+        for material in ['teal', 'brass']:
+            for trim in caps.get('MirrorNicheFinish__' + material, []):
+                require(overlap(plaster, trim) < 1e-7,
+                        f'Mirror niche: coplanar plaster/{material} overlap at return X=7.0')
+
 root = Path(__file__).resolve().parents[2]
 models = root / "Assets" / "Art" / "TableKit"
 expected_models = {
@@ -167,7 +220,8 @@ for file in models.glob("*.glb"):
     names = {n["name"] for n in d["nodes"]}
     if file.stem == "MuseumMirrorNiche":
         record = records[file.stem]
-        require(count == 672 and len(d["meshes"]) == 4, "Mirror niche must retain bounded 672 triangles / four material batches")
+        require(count == 682 and len(d["meshes"]) == 4, "Mirror niche must retain bounded 682 triangles / four material batches")
+        validate_niche_return_caps(b)
         require(len(d["nodes"]) == 5 and not any(name.startswith("Anchor_") for name in names), "Mirror niche must remain anchor-free")
         points = np.concatenate([access(p["attributes"]["POSITION"]) for mesh in d["meshes"] for p in mesh["primitives"]])
         require(points[:, 0].min() >= 7, "Mirror niche must not intrude into the canonical hall")

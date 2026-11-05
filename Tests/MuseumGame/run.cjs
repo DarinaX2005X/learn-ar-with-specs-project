@@ -127,6 +127,7 @@ const game = new MuseumGame(node(), {
   cancelInput() {},
 });
 game.mount();
+assert.equal(game.snapshot().arrivalHelp, true, "ordinary first start shows the physical invitation");
 const flow = (type, extra = {}) => game.dispatch("flow", { type, ...extra });
 const author = (p) => game.dispatch("author", p),
   detective = (p) => game.dispatch("detective", p);
@@ -148,6 +149,7 @@ assert.equal(poseSamples.at(-1), 8.25);
 for (let i = 0; i < 8; i++) game.update(0.25);
 assert.equal(game.snapshot().detective.tick, 12);
 assert.equal(game.snapshot().detective.playing, false);
+assert.equal(game.snapshot().arrivalHelp, true, "autoplay ending does not dismiss the invitation");
 assert(detective({ type: "play" }));
 game.update(0.125);
 assert.equal(poseSamples.at(-1), 12.25);
@@ -171,6 +173,7 @@ assert.equal(initialMarks.length, 2);
 assert(detective({ type: "selectObservation", id: initialMarks[0].id }));
 assert(detective({ type: "pin" }));
 assert.equal(game.snapshot().detective.glass.length, 1);
+assert.equal(game.snapshot().arrivalHelp, false, "accepted physical investigation removes first help");
 assert(detective({ type: "claim", claim: "Conservator" }));
 assert(detective({ type: "check" }));
 pump(() => !game.snapshot().detective.checking);
@@ -395,9 +398,11 @@ const interrupted = new MuseumGame(node(), {
   cancelInput() {},
 });
 interrupted.mount();
+assert.equal(interrupted.snapshot().arrivalHelp, true);
 interrupted.update(0.25);
 assert.equal(interrupted.snapshot().detective.playing, true);
 assert(interrupted.dispatch("detective", { type: "seek", tick: 5 }));
+assert.equal(interrupted.snapshot().arrivalHelp, false, "a clock drag dismisses help");
 interrupted.update(0.25);
 assert.equal(interrupted.snapshot().detective.tick, 5);
 assert.equal(interrupted.snapshot().detective.playing, false);
@@ -405,6 +410,7 @@ assert(
   interrupted.dispatch("flow", { type: "finishAttempt", confirmed: true }),
 );
 assert(interrupted.dispatch("flow", { type: "replayAlarm" }));
+assert.equal(interrupted.snapshot().arrivalHelp, false, "return does not repeat help");
 assert.equal(interrupted.snapshot().detective.tick, 5);
 assert.equal(interrupted.snapshot().detective.playing, false);
 interrupted.dispose();

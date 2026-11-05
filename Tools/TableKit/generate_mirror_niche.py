@@ -4,6 +4,7 @@ Does not write or modify MuseumBuilding. Coordinates are story metres, +Y up/+Z 
 """
 from pathlib import Path
 import argparse, runpy, json, hashlib
+import numpy as np
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--tools', type=Path, default=Path(__file__).resolve().parent)
@@ -46,6 +47,55 @@ def export_to_output(self):
         state['ROOT'] = previous
 
 Model.export = export_to_output
+
+def trim_exposed_return_caps(model):
+    """Remove plaster hidden by the real trim on the two front return caps.
+
+    Both materials share X=7.0. Their long faces and bevels remain unchanged;
+    only covered flat-cap polygons are removed, retaining interpolated UVs.
+    The plinth/belt caps contain the entire plaster cap width in Z.
+    """
+    vertices, faces, uv = model.batches[('MirrorNicheFinish', 'plaster')]
+    plane = 7.0
+    bands = []
+    for material in ['teal', 'brass']:
+        vv, ff, _ = model.batches[('MirrorNicheFinish', material)]
+        points = np.asarray(vv)
+        caps = [points[f] for f in ff
+                if np.max(abs(points[f, 0] - plane)) < 1e-8]
+        cap = np.concatenate(caps)
+        bands.append((float(cap[:, 1].min()), float(cap[:, 1].max())))
+    rebuilt = []
+    for face in faces:
+        points = np.asarray([vertices[i] for i in face])
+        if np.max(abs(points[:, 0] - plane)) >= 1e-8:
+            rebuilt.append(face)
+            continue
+        polygons = [[np.r_[vertices[i], uv[i]] for i in face]]
+        def clip(polygon, edge, keep_above):
+            result = []
+            for a, b in zip(polygon, polygon[1:] + polygon[:1]):
+                da = (a[1] - edge) * (1 if keep_above else -1)
+                db = (b[1] - edge) * (1 if keep_above else -1)
+                if da >= -1e-12:
+                    result.append(a)
+                if (da >= 0) != (db >= 0):
+                    result.append(a + (b-a) * da/(da-db))
+            return result
+        for low, high in bands:
+            polygons = [part for polygon in polygons
+                        for part in [clip(polygon, low, False),
+                                     clip(polygon, high, True)] if len(part) >= 3]
+        for polygon in polygons:
+            start = len(vertices)
+            vertices.extend([point[:3].tolist() for point in polygon])
+            uv.extend([point[3:].tolist() for point in polygon])
+            for i in range(1, len(polygon)-1):
+                rebuilt.append([start, start+i, start+i+1])
+    faces[:] = rebuilt
+
+trim_exposed_return_caps(m)
+
 record = m.finish()
 record['sha256'] = hashlib.sha256((args.output / record['path']).read_bytes()).hexdigest()
 record['generator'] = 'Tools/TableKit/generate_mirror_niche.py'

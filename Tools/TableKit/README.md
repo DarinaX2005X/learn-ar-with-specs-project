@@ -42,7 +42,7 @@ stored in this repository.
 
 The audio validator has a fixed 13-name allow-list independent of metadata.
 `verify_tablekit_audio.py` retains original legacy limits and stereo cloth, while
-museum clips require mono, 45–500 ms, peak below .30, DC below .002 and faded
+museum clips require mono, 45 to 500 ms, peak below .30, DC below .002 and faded
 endpoints. The original legacy limits remain peak below .5, DC below .01 and
 last-100-sample peak below .025. Both groups also match frozen approved bytes,
 channel layouts and frame counts in Assets/Audio/TableKit/tablekit-audio-contract.json.

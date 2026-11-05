@@ -1,3 +1,4 @@
+import { caseTitle, copiedCaseTitle } from "../Shelf/CaseTitles";
 import {blockingAuthorEditErrors} from "./AuthorDraftValidation";
 import { CaseDraft, CompileResult, DomainError, Event, Field, Key, Role, TrackId, Vec3, Verdict, Wall, Witness } from "../Domain/types";
 import { clone, compileCase, freeze } from "../Domain/compile";
@@ -59,6 +60,7 @@ export class AuthorSession {
 
   constructor(source: CaseDraft, checkpoint?: AuthorCheckpoint) {
     this.draft = clone(source);
+    this.draft.title = caseTitle(this.draft.title);
     if (checkpoint) { this.setTick(checkpoint.tick); this.selected = checkpoint.selected; }
   }
 
@@ -66,7 +68,7 @@ export class AuthorSession {
     const draft = clone(source);
     draft.id = id;
     draft.rev = 0;
-    draft.title = `${source.title.slice(0, 35)} Copy`;
+    draft.title = copiedCaseTitle(source.title);
     return new AuthorSession(draft);
   }
 
@@ -169,13 +171,23 @@ export class AuthorSession {
       case "setPathKey": {
         const track = d.tracks.find(t => t.id === edit.track);
         if (!track) return this.fail("TRACK", edit.track, "Choose a figure.");
+        // The first floor drop places a stationary figure for the entire tape.
+        // Stored placeholder keys are not a performance to interpolate from.
+        if (d.unplacedTracks?.includes(edit.track)) {
+          if (!tickValid(edit.key.tick)) return this.fail("TICK", edit.track, "Choose a step from 0 to 24.");
+          track.keys = [0, 24].map(tick => ({ ...edit.key, tick, y: 1 }));
+          d.unplacedTracks = d.unplacedTracks.filter(id => id !== edit.track);
+          break;
+        }
         const keys = track.keys.filter(k => k.tick !== edit.key.tick);
         keys.push({ ...edit.key, y: 1 }); keys.sort((a,b) => a.tick-b.tick); track.keys = keys; break;
       }
       case "setPath": {
         const track = d.tracks.find(t => t.id === edit.track);
         if (!track) return this.fail("TRACK", edit.track, "Choose a figure.");
-        track.keys = edit.keys.map(k => ({ ...k, y: 1 })); break;
+        track.keys = edit.keys.map(k => ({ ...k, y: 1 }));
+        if (d.unplacedTracks) d.unplacedTracks = d.unplacedTracks.filter(id => id !== edit.track);
+        break;
       }
       case "assignRole": {
         const other = d.tracks.find(t => d.casting[t.id] === edit.role);

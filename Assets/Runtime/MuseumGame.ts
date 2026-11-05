@@ -75,6 +75,7 @@ export class MuseumGame {
   private shelf = new SessionShelf();
   private caseView: CaseViewRouting | undefined;
   private arrivalAlarm: number | undefined;
+  private arrivalHelp = false;
   private revealClock: RevealTransport | undefined;
   constructor(
     private root: SceneObject,
@@ -218,6 +219,7 @@ export class MuseumGame {
     const alarm = this.state?.board?.alarmTick;
     if (alarm !== undefined && this.detective) {
       this.arrivalAlarm = alarm;
+      this.arrivalHelp = true;
       this.detective.dispatch({ type: "seek", tick: Math.max(0, alarm - 4) });
       this.detective.dispatch({ type: "play" });
     }
@@ -257,6 +259,7 @@ export class MuseumGame {
     this.revealClock?.dispose();
     this.revealClock = undefined;
     this.arrivalAlarm = undefined;
+    this.arrivalHelp = false;
     this.revealed = undefined;
     if (this.state) this.state = { flow: this.state.flow };
     this.caseView?.sync();
@@ -322,6 +325,7 @@ export class MuseumGame {
     if (this.caseView)
       this.state = { ...this.state, view: this.caseView.snapshot() };
     this.ports.foley?.observe(this.mechanismState().identity);
+    this.state = { ...this.state, arrivalHelp: this.arrivalHelp };
     this.ports.renderScene(this.state, this.revealed);
     this.table?.render(this.state);
   }
@@ -384,6 +388,10 @@ export class MuseumGame {
   dispatch(action: string, payload?: unknown): boolean {
     const before=this.mechanismState();
     const accepted=this.dispatchCore(action,payload);
+    if (accepted && this.arrivalHelp && ["detective", "flow", "view", "author", "authorView"].includes(action)) {
+      this.arrivalHelp = false;
+      this.render();
+    }
     const type=payload && typeof payload==='object' ? String((payload as {type?:string;kind?:string}).type ?? (payload as {kind?:string}).kind ?? '') : '';
     this.ports.foley?.accepted(action,type,accepted,before,this.mechanismState());
     return accepted;

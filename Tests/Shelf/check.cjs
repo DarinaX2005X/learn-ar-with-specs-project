@@ -15,11 +15,11 @@ copy.title =
   "  A long museum name with enough letters to wrap onto the spine  ";
 copy.room.mirror.aperture = 0;
 shelf.saveDraft(copy, { tick: 12, selected: "C" });
-assert.equal(shelf.draft(copy.id).draft.title.length, 40);
+assert.equal(shelf.draft(copy.id).draft.title, copy.title.trim());
 assert(
   shelf
     .list()
-    .some((item) => item.state === "Draft" && item.spine.endsWith("…")),
+    .some((item) => item.state === "Draft" && item.spine.includes("…")),
 );
 const compiled = compileCase(shelf.draft(copy.id).draft);
 assert(compiled.ok);
@@ -125,3 +125,48 @@ assert.equal(restored.snapshot().mode, "author");
 assert.equal(JSON.stringify(shelf.publicCase(originalRef)), original);
 assert(clears >= 6);
 restored.dispose();
+
+// Full public names survive storage, compilation and opening; spines alone shorten.
+const names = new SessionShelf();
+const longName = "The Packing Room and the missing ruby before the west gallery alarm";
+const named = names.fork(originalRef);named.title = "  " + longName + "  ";
+names.saveDraft(named);
+const resumed = names.draft(named.id).draft;
+assert.equal(resumed.title, longName);
+const namedCompile = compileCase(resumed);assert(namedCompile.ok);
+const namedRef = names.store(namedCompile);
+assert.equal(names.caseTitle(namedRef), longName);
+const namedFlow = new CaseFlow(ports, names);assert(namedFlow.selectSavedCase(namedRef.id,namedRef.rev));
+assert.equal(namedFlow.snapshot().title,longName);assert(namedFlow.replayAlarm());
+assert.equal(namedFlow.snapshot().title,longName);namedFlow.dispose();
+const a = names.fork(namedRef);names.saveDraft(a);const b = names.fork(namedRef);names.saveDraft(b);
+assert.notEqual(a.title,b.title);assert(a.title.startsWith(longName));assert(b.title.startsWith(longName));
+const aa=names.list().find(x=>x.id===a.id),bb=names.list().find(x=>x.id===b.id);
+assert.notEqual(aa.spine,bb.spine);assert.equal(aa.state,"Draft");assert.equal(names.list().find(x=>x.id===namedRef.id).state,"Ready to open");
+assert(Array.from(aa.spine).length<=28);assert(aa.spine.endsWith(a.title.slice(-8)));
+assert.equal(AuthorSession.createCopy(resumed,"author-copy").getDraft().title,longName+" Copy");
+const limit={...resumed,id:"limit",title:"L".repeat(160)};assert(compileCase(limit).ok);
+const tooLong={...limit,id:"over-limit",title:"L".repeat(161)};names.saveDraft(tooLong);
+const rejected=compileCase(names.draft(tooLong.id).draft);assert.equal(rejected.ok,false);
+assert(rejected.errors.some(e=>e.message.includes("1–160")));assert.equal(names.draft(tooLong.id).draft.title,tooLong.title);
+const blank={...resumed,id:"blank",title:" \n\t "};names.saveDraft(blank);
+assert.equal(names.draft(blank.id).draft.title,"Untitled case");assert.equal(new AuthorSession(blank).getDraft().title,"Untitled case");
+assert(!JSON.stringify(names.list()).includes("casting"));assert(!JSON.stringify(namedFlow.snapshot()).includes("actualHistory"));
+console.log("Full shelf titles, numbered copies, explicit limit, public opening and blank fallback passed");
+
+// Generated labels reserve their suffix inside the SAME compiler UTF16 budget.
+const {CASE_TITLE_MAX_UNITS}=require(path.join(root,"Domain/types.js"));
+const valid160="😀".repeat(79)+"AB";assert.equal(valid160.length,CASE_TITLE_MAX_UNITS);
+const generatedShelf=new SessionShelf();const sourceDraft=generatedShelf.fork(originalRef);sourceDraft.title=valid160;
+const sourceCompiled=compileCase(sourceDraft);assert(sourceCompiled.ok);let generatedRef=generatedShelf.store(sourceCompiled);
+assert.equal(generatedShelf.caseTitle(generatedRef),valid160);
+const wellFormed=value=>{for(let i=0;i<value.length;i++){const unit=value.charCodeAt(i);if(unit>=0xD800&&unit<=0xDBFF){assert(i+1<value.length);const next=value.charCodeAt(++i);assert(next>=0xDC00&&next<=0xDFFF);}else assert(!(unit>=0xDC00&&unit<=0xDFFF));}};
+const generatedNames=new Set();
+for(let index=0;index<12;index++){
+ const forked=generatedShelf.fork(generatedRef);assert(forked.title.length<=CASE_TITLE_MAX_UNITS);wellFormed(forked.title);assert(!generatedNames.has(forked.title));generatedNames.add(forked.title);assert(!/Copy(?: \d+)? Copy/.test(forked.title));
+ const next=compileCase(forked);assert(next.ok);generatedRef=generatedShelf.store(next);
+ const room=generatedShelf.keepRoom(generatedRef);assert(room.title.length<=CASE_TITLE_MAX_UNITS);wellFormed(room.title);const checkedRoom=compileCase(room);assert.equal(checkedRoom.ok,false);assert(!checkedRoom.errors.some(e=>e.code==="CASE_ID"),"intentional empty-cast/event errors, never an unfixable generated title");
+}
+assert.equal(generatedShelf.caseTitle({id:sourceDraft.id,rev:sourceDraft.rev}),valid160,"frozen original user name unchanged");
+const authorGenerated=AuthorSession.createCopy({...sourceDraft,title:valid160},"unicode-author-copy").getDraft();assert(authorGenerated.title.length<=CASE_TITLE_MAX_UNITS);wellFormed(authorGenerated.title);assert(compileCase(authorGenerated).ok);
+console.log("Generated160unit nonBMP copy/room/repeated labels remain wellformed, distinct, compile-bounded and source preserving");

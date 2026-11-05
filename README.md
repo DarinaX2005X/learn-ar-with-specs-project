@@ -2,15 +2,17 @@
 
 Countercase is a walk-through museum mystery for two on SPECS. Stage a ruby theft for a friend and hand them the case. They enter through the foyer, wind the clock back and follow the recording through the museum to find out who could have reached the display.
 
-<img src="docs/media/cover.webp" width="560" alt="Countercase illustrated poster. A gloved hand lifts a ruby from a velvet case while the guard appears in a small curtained mirror.">
+<img src="docs/media/mirror-recording.webp" width="720" alt="The author pulls the curtain across the guard. Two stills from the entrance camera at six seconds show the courier in both, and the guard only while the mirror is open.">
 
-Six seconds into **The Missing Ruby**, the entrance camera sees the courier. Look into the mirror in that same recording and the guard is across the room. That gives two people an alibi. Close the little curtain over the mirror in a copy of the case and play the theft again. The courier still has an alibi, but either the guard or the conservator could have taken the ruby.
+At six seconds, the entrance camera sees the courier. In the open mirror it also sees the guard across the room. That leaves the conservator at the display. Draw the curtain in a copy of the case and the courier still has an alibi. Now either the guard or the conservator could have taken the ruby.
+
+[Illustrated cover](docs/media/cover.webp) · [The open case](docs/media/gallery-03.png) · [The two possible thefts](docs/media/gallery-04.png)
 
 ## Play in Lens Studio
 
 1. Install Git LFS and run `git lfs install`. Clone this repository with `git clone` and its HTTPS URL. The museum models and Snap packages use LFS. If your checkout contains pointer files, run `git lfs pull` from the repository root. Open **Countercase.esproj** there in **Lens Studio 5.23.2** and let asset import and TypeScript compilation finish. [Lens Studio 5.23.2](https://ar.snap.com/download/v5-23-2)
 2. Open **Window → Preview** and choose **Interactive** in the preview-source picker. The first case begins in the foyer. Look for the clock and the case file on the wooden desk.
-3. Focus the Preview. Use **W/A/S/D** to walk and **right-drag** to look around. Hover over the clock face until its inscription appears, then click to play or pause. With the clock paused, use **Previous frame** or **Next frame** at its sides to reach **6.0 s**. The face resumes from the time you selected. The control below it, **Replay from alarm**, starts the recording again at the alarm. [Interactive Preview controls](https://developers.snap.com/lens-studio/lens-studio-workflow/previewing-your-lens#interactive-preview-mode)
+3. Focus the Preview. Use **W/A/S/D** to walk and **right-drag** to look around. Drag the clock face sideways to scrub through the recording. For a precise time, use **Previous frame** or **Next frame** at its sides until the clock reads **6.0 s**. Click the face to play or pause. The control below it, **Replay from alarm**, starts the recording again at the alarm. [Interactive Preview controls](https://developers.snap.com/lens-studio/lens-studio-workflow/previewing-your-lens#interactive-preview-mode)
 4. Find the entrance camera in the hall and choose **Watch this view**. At the evidence bench, select the courier on the recording, then use the pin handle beside the glass. Choose the conservator and press **Check accusation**. Read the names on the paper. The courier's alibi still allows two people to have taken the ruby.
 5. At the same instant, select the figure in the mirror on the recording. Pin that sighting and check the accusation again. After the case is solved, choose **Replay the evidence** at the bench. Your pins are still there. Select the courier's glass, **Remove evidence** and check again. **Undo evidence removal** restores the pin for another check. Each object also accepts a simulated point and pinch.
 
@@ -25,6 +27,8 @@ In the first shot, the detective sees an anonymous figure pass the camera. The s
 Use the **Stage a theft** file to copy the current case. Move the mirror curtain, then use the lid at the workbench to **Test case**. If two thefts fit the recording, **Keep different thefts** lets you keep that as the puzzle. Choose **Pass the case** and let the next player **Open the case** in the same session. They receive the recording and physical clues. The casting and private staging stay with the author.
 
 The shelf also holds **The Packing Room**. There, seeing who lifted the ruby settles only part of the case. A mark on the rim, sightings near a partition and the final contents of a box answer different questions about who carried it away. Copies, edits and investigations live for the current Lens session.
+
+To stage a theft from scratch, choose **Start an empty room** at the workbench. Pick the display and camera from the tray, then point to the floor to place each one. Place all three figures the same way, with one close enough to reach the display. At the moment you want the theft to happen, select that figure's base and choose **Take ruby** at the display. Use **Test case** to find out what the next player can prove.
 
 ## How the evidence works
 
@@ -51,7 +55,7 @@ These checks run from the repository root in PowerShell with Node.js and npm.
 
 The first run needs npm access for the pinned TypeScript compiler. The domain checks exercise the mirror and alternative histories. The other suites exercise pinning, accusation, changing a case and handing it over.
 
-In **Lens Studio Interactive Preview**, the public-recording LEAF scenario pinned the courier first and the guard second. It checked that an accusation changed from two possible suspects to one, then removed and restored the courier pin to check the result both ways. The museum walkthrough was captured in Preview. Physical SPECS testing remains open. [LEAF scenarios for Lens Studio](Assets/Tests/Leaf/)
+In **Lens Studio Interactive Preview**, the public-recording LEAF scenario pinned the courier first and the guard second. It checked that an accusation changed from two possible suspects to one, then removed and restored the courier pin to check the result both ways. In the author scenario, closing the curtain in a trial removed the guard from the camera recording at six seconds. Discarding that edit brought the guard back. Both scenarios use simulated input. Physical SPECS testing remains open. [LEAF scenarios for Lens Studio](Assets/Tests/Leaf/)
 
 ## Materials
 

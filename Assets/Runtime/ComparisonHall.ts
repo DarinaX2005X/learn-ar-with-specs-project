@@ -224,6 +224,8 @@ export class ComparisonHall {
       caseId: this.board?.caseId,
       rev: this.board?.rev,
       tick: this.context?.tick,
+      versionIndex: this.context?.versionIndex,
+      roomMode: this.roomMode,
       field: this.request?.field,
       scope: this.request?.scope,
       visibleWings: this.wings.filter((wing) => wing.root.enabled).length,
@@ -754,7 +756,7 @@ export class ComparisonHall {
         this.request?.scope === "all"
           ? "Fits the full recording"
           : "Fits your selected clues";
-      this.options.setRoomQualification?.("Possible reconstruction\n" + scope);
+      this.options.setRoomQualification?.("Possible version " + ((this.context?.versionIndex ?? 0)+1) + "\n" + scope);
     } else this.options.setRoomQualification?.(undefined);
   }
   private applyHands(index: number, targets: readonly ActionPose[]): void {

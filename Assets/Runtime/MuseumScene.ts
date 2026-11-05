@@ -8,6 +8,8 @@ import {
   Role,
   VaultEntry,
   FrameClue,
+  placedDraftTracks,
+  isTrackPlaced,
 } from "../Domain/types";
 import { PlayTableSnapshot } from "./PlayTable";
 import { RecordedGlass } from "./RecordedGlass";
@@ -18,6 +20,7 @@ import { curtainVisual } from "../Scripts/TableKit/TableKit";
 import { poseAt } from "../Domain/geometry";
 import { ComparisonHall } from "./ComparisonHall";
 import {
+  comparisonPoseTick,
   CaseViewPresentation,
   CaseViewViewer,
   CaseViewSnapshot,
@@ -25,6 +28,8 @@ import {
 
 import { CaseViewHandles } from "./CaseViewHandles";
 import { CasePaper } from "./CasePaper";
+import { CaseTitleInk } from "./CaseTitleInk";
+import { ArrivalFile } from "./ArrivalFile";
 import { BenchCameos } from "./BenchCameos";
 import { AuthorGlass } from "./MuseumScene/AuthorGlass";
 import { AuthorViewSnapshot } from "../Author/AuthorViewSession";
@@ -84,6 +89,8 @@ export class MuseumScene {
   private disposed = false;
   private viewHandles: CaseViewHandles;
   private paper: CasePaper;
+  private caseTitleInk: CaseTitleInk;
+  private arrivalFile: ArrivalFile;
   private benchCameos: BenchCameos;
   private cradle = new PublicCradleTransport();
   private authorGlass: AuthorGlass;
@@ -94,6 +101,7 @@ export class MuseumScene {
   private finishMirrorMode:'author'|'reveal'|'public'='public';
   /** Final renderer-owned visibility and poses are already settled when called. */
   updateNativeFinish(keyLight:SceneObject|undefined, enabled:boolean, mirrorEnabled:boolean):void {
+    this.arrivalFile?.update(getDeltaTime());
     if(this.disposed)return;
     const source=keyLight?.getComponent('Component.LightSource') as LightSource | undefined;
     const light=keyLight?.enabled && source?.enabled && source.lightType===LightType.Point && source.intensity>0
@@ -177,6 +185,8 @@ export class MuseumScene {
     });
     this.viewHandles = new CaseViewHandles(root, material);
     this.paper = new CasePaper(root);
+    this.caseTitleInk = new CaseTitleInk(root);
+    this.arrivalFile = new ArrivalFile(root, material);
     this.benchCameos = new BenchCameos(root, material);
     this.authorGlass = new AuthorGlass(root, material);
     this.mountClock("Anchor_EntryClock", false);
@@ -460,7 +470,7 @@ export class MuseumScene {
       rev: d.rev,
       room: d.room,
       witnesses: d.witnesses,
-      tracks: d.tracks,
+      tracks: placedDraftTracks(d),
       alarmTick: d.alarmTick,
       chain: !!d.chain,
       fields: d.fields || ["taker"],
@@ -473,6 +483,9 @@ export class MuseumScene {
     };
   }
   private draftHistory(d: CaseDraft): History | undefined {
+    if (d.events.some(e => e.kind === "Pass"
+      ? !isTrackPlaced(d, e.from) || !isTrackPlaced(d, e.to)
+      : !isTrackPlaced(d, e.kind === "Stash" ? e.carrier : e.track))) return undefined;
     const take = d.events.find((e) => e.kind === "Take");
     if (
       !take ||
@@ -835,6 +848,7 @@ export class MuseumScene {
     reveal?: VaultEntry,
   ): void {
     if (this.disposed) return;
+    const previousComparison = this.hall.read();
     this.lastPoseTick = undefined;
     this.finishMirrorMode=snapshot.flow.mode==='author' ? 'author' : reveal ? 'reveal' : 'public';
     if(this.finishMirrorMode==='public')this.liveFinish.clear();
@@ -855,6 +869,8 @@ export class MuseumScene {
       yawRad: Math.atan2(benchDirection.x, benchDirection.z),
     });
     this.paper.render(snapshot);
+    this.caseTitleInk.render(snapshot.flow.title);
+    this.arrivalFile.render(snapshot);
     this.authorGlass.render(
       snapshot.flow.mode === "author" ? snapshot.authorView : undefined,
       snapshot.flow.mode === "author" ? snapshot.author?.draft : undefined,
@@ -1041,10 +1057,12 @@ export class MuseumScene {
       canCompare ? detective?.comparison : undefined,
       detective
         ? {
-            tick,
+            // Keep the same fractional playback phase when changing only the
+            // visible approved version between authoritative integer ticks.
+            tick: comparisonPoseTick(tick,detective.playing,board,previousComparison),
             witnessId: detective.source,
             selectedIds: detective.glass.map((item) => item.id),
-            versionIndex: 0,
+            versionIndex: this.casePresentation?.versionIndex ?? 0,
             verdictKey: detective.verdict?.scope,
           }
         : undefined,
@@ -1066,6 +1084,8 @@ export class MuseumScene {
     this.hall.applyCaseView(
       presentation?.comparison ? presentation : undefined,
     );
+    if(presentation?.comparison && this.hall.snapshot()?.versionIndex !== (presentation.versionIndex??0))
+      this.hall.setVersion(presentation.versionIndex??0);
     if (!presentation) {
       transform.setLocalPosition(this.museumTransform.position);
       transform.setLocalRotation(this.museumTransform.rotation);
@@ -1173,6 +1193,8 @@ export class MuseumScene {
     this.applyLidPose();
     this.viewHandles.setQualification(undefined);
     this.paper.clear();
+    this.caseTitleInk.clear();
+    this.arrivalFile.clear();
     this.viewHandles.clear();
     this.comparisonActive = false;
     this.poseCache = undefined;
@@ -1214,6 +1236,8 @@ export class MuseumScene {
     for (const camera of this.cameraCopies.values()) camera.destroy();
     this.cameraCopies.clear();
     this.paper.dispose();
+    this.caseTitleInk.dispose();
+    this.arrivalFile.dispose();
     this.benchCameos.dispose();
     this.viewHandles.dispose();
     this.glass.dispose();

@@ -1311,7 +1311,7 @@
     {
       "name": "MuseumMirrorNiche",
       "path": "MuseumMirrorNiche.glb",
-      "bytes": 123796,
+      "bytes": 124876,
       "aabb_cm": [
         61.0,
         308.4,
@@ -1334,10 +1334,10 @@
         "MirrorNicheFinish__brass",
         "MirrorNicheFinish__limestone"
       ],
-      "triangles": 672,
-      "sha256": "9fb3b554e104e8c9cd3368f99faa78cad97a735391aecea40c26511894c6fcd5",
+      "triangles": 682,
+      "sha256": "9b796380d55a6c654e167dff2ec4b5bd0c6da6a0ec74c481015ecbc9f75ba12c",
       "generator": "Tools/TableKit/generate_mirror_niche.py",
-      "generatorSha256": "8ed4f76b0aefc4ccbbe1b4e2f0c2cbc95aba29eb04ae43bc1756e18e85b6617a",
+      "generatorSha256": "cd5ebe2cf2620a3aac0a3a179647f845fb104916729ec9897e85e1d535a1e330",
       "mount": {
         "parent": "MuseumAnchor",
         "localPosition": [

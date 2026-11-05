@@ -59,6 +59,8 @@ export function caseViewHandleSlots(
       placement: offset(base, 0, -14, 0),
       kind: "pull",
     });
+  if(view.mode==="room"&&view.presentation?.comparison)
+    result.push({id:"CaseViewVersion",placement:offset(base,0,-14,0),kind:"tab"});
   return result;
 }
 /** A sighting frame and its attached brass pulls, not an invisible hit-box panel.
@@ -119,8 +121,8 @@ export class CaseViewHandles {
     this.place(this.frame, framePlacement);
     this.bridge.enabled = dynamic;
     if (dynamic) this.place(this.bridge, framePlacement);
-    this.lowerStem.enabled = view.mode === "table";
-    if (view.mode === "table") this.place(this.lowerStem, framePlacement);
+    this.lowerStem.enabled = view.mode === "table" || (view.mode === "room" && !!view.presentation?.comparison);
+    if (this.lowerStem.enabled) this.place(this.lowerStem, framePlacement);
     for (const slot of caseViewHandleSlots(view, bench)) {
       if (slot.kind === "frame") continue;
       let piece = this.pieces.get(slot.id);
@@ -190,6 +192,14 @@ export class CaseViewHandles {
     if (kind === "tab") {
       this.box(node, "Foot", [0, -4, 0], [8, 7, 1.2], this.brass);
       this.box(node, "SeatedTab", [0, 0, 0], [12, 1.6, 5], this.wood);
+      if(id==="CaseViewVersion") {
+        const ink=global.scene.createSceneObject("VersionTabEngraving");
+        ink.setParent(node);ink.getTransform().setLocalPosition(new vec3(0,.83,0));
+        ink.getTransform().setLocalRotation(quat.fromEulerAngles(-Math.PI/2,0,0));
+        const text=ink.createComponent("Component.Text");text.text="Version";text.size=18;text.depthTest=true;
+        text.horizontalAlignment=HorizontalAlignment.Center;text.verticalAlignment=VerticalAlignment.Center;
+        text.layoutRect=Rect.create(-5.5,5.5,-2,2);
+      }
     } else if (kind === "pull") {
       for (const x of [-5, 5])
         this.box(node, "ReturnPost", [x, 0, 0], [1.4, 5, 2], this.brass);

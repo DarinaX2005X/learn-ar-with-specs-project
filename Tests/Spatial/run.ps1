@@ -13,4 +13,6 @@ try {
  if ($LASTEXITCODE -ne 0) { throw 'Native case view handles compilation failed' }
  node Tests/Spatial/CaseViewRouting/handles.cjs
  if ($LASTEXITCODE -ne 0) { throw 'Native case view grip slot checks failed' }
+ node Tests/Spatial/CaseViewRouting/room-pair.cjs
+ if ($LASTEXITCODE -ne 0) { throw 'Full-size approved pair regression failed' }
 } finally { Pop-Location }

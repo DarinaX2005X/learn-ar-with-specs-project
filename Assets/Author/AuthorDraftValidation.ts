@@ -19,6 +19,13 @@ export function blockingAuthorEditErrors(
     "PATH_BLOCKED",
   ]);
   return errors.filter((error) => {
+    // Construction can retain tray figures, but an event cannot use one.
+    if (error.code === "ACTOR_UNPLACED") {
+      if (edit.kind !== "setEvent") return false;
+      const e = edit.event;
+      return e.kind === "Pass" ? e.from === error.object || e.to === error.object
+        : e.kind === "Stash" ? e.carrier === error.object : e.track === error.object;
+    }
     if (error.code === "FIELDS" && draft.fields?.length === 0) return false;
     if (error.code === "WITNESSES" && draft.witnesses.length === 0)
       return false;

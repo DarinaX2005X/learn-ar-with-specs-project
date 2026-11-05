@@ -255,6 +255,8 @@ new Function(
 new Function("require", "module", "exports", js)(
   (id) => {
     if (id.includes("Interactable")) return { Interactable: Input };
+    if(id.endsWith("/Domain/types"))return require("./build/Domain/types");
+    if(id.endsWith("/Shelf/CaseTitles"))return require("./build/Shelf/CaseTitles");
     if (id.includes("ObservationContacts")) return contactModule.exports;
     if (id.includes("AuthorPropsHandles"))
       return { AuthorPropsHandles: UnrelatedPropsStub };

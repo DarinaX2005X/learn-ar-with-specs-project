@@ -28,6 +28,7 @@ import {
   Key,
   Vec3,
   FrameClue,
+  isTrackPlaced,
 } from "../Domain/types";
 import {
   recordedPaneViews,
@@ -56,6 +57,8 @@ export interface CaseTargetView {
 
 /** Public investigation data only. A vault never crosses this presentation port. */
 export interface PlayTableSnapshot {
+  /** First ordinary launch only. No case or author data is attached. */
+  arrivalHelp?: boolean;
   reveal?: RevealPlayback;
   flow: FlowState;
   author?: AuthorSnapshot;
@@ -186,7 +189,7 @@ export class PlayTable {
     this.state = snapshot;
     this.epoch = snapshot.flow.inputEpoch;
     const viewIdentity = snapshot.view
-      ? [snapshot.view.mode, snapshot.view.caseId, snapshot.view.rev].join("|")
+      ? [snapshot.view.mode, snapshot.view.caseId, snapshot.view.rev, snapshot.view.generation].join("|")
       : "museum";
     const authorViewIdentity = snapshot.authorView
       ? [snapshot.authorView.enabled, snapshot.authorView.generation].join("/")
@@ -822,7 +825,10 @@ export class PlayTable {
           ][index] as [number, number, number]),
         ),
         index === 1 ? [4, 3, 7] : [7, 3, 7],
-        () => itemAtSlot()?.spine ?? "",
+        () => {
+          const item = itemAtSlot();
+          return item ? item.spine + "\n" + item.state : "";
+        },
         () => {
           const item = itemAtSlot();
           if (!item || capturedCase !== item.id + "/" + item.rev) return;
@@ -1283,6 +1289,7 @@ export class PlayTable {
       [35, 60, 35],
       () => "Select " + this.state.author.draft.casting[track],
       () => this.author({ kind: "select", id: track }),
+      () => isTrackPlaced(this.state.author.draft, track),
     );
     const head = this.bindObject(
       "ActorCasting" + track,
@@ -1300,6 +1307,7 @@ export class PlayTable {
           },
         });
       },
+      () => isTrackPlaced(this.state.author.draft, track),
     );
     let origin: Key,
       dx = 0,
@@ -1382,7 +1390,9 @@ export class PlayTable {
               },
             });
         },
-        () => !!this.selectedTrack() && this.selectedTrack() !== track,
+        () => !!this.selectedTrack() && this.selectedTrack() !== track &&
+          isTrackPlaced(this.state.author.draft, track) &&
+          isTrackPlaced(this.state.author.draft, this.selectedTrack()!),
       );
   }
 
@@ -1788,6 +1798,7 @@ export class PlayTable {
       CaseViewStanding: this.offset(bench, 13, 7, -15),
       CaseViewClose: this.offset(bench, 0, 7, 3),
       CaseViewBack: this.offset(bench, -14, 7, -15),
+      CaseViewVersion: this.offset(bench, 0, -7, -15),
     };
     for (const id of Object.keys(positions)) {
       const control = () =>
@@ -1834,7 +1845,9 @@ export class PlayTable {
       const dynamic =
         this.state.view?.mode === "room" || this.state.view?.mode === "table";
       const size: Point = dynamic
-        ? slot.id === "CaseViewStanding"
+        ? slot.id === "CaseViewVersion"
+          ? [18, 8, 8]
+          : slot.id === "CaseViewStanding"
           ? [24, 10, 8]
           : [22, 10, 8]
         : slot.id === "CaseViewHandle"

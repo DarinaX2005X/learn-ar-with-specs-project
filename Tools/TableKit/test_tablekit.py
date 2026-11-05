@@ -13,6 +13,8 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import ast
+import struct
 
 TOOLS = Path(__file__).resolve().parent
 PROJECT = TOOLS.parents[1]
@@ -48,6 +50,38 @@ def main():
         if (reproduction / shipped.name).read_bytes() != shipped.read_bytes():
             raise RuntimeError("Mirror niche reproduction differs from shipped GLB")
         print("PASS niche reproduces byte-for-byte outside project working directory")
+        # Exercise the same production geometric gate directly, so the old
+        # 672-triangle negative is rejected for its cap conflict, not count/hash.
+        validator_tree = ast.parse((TOOLS / "verify_assets.py").read_text(encoding="utf-8"))
+        cap_functions = [node for node in validator_tree.body
+                         if isinstance(node, ast.FunctionDef)
+                         and node.name in ["require", "validate_niche_return_caps"]]
+        if len(cap_functions) != 2:
+            raise RuntimeError("Missing production niche cap validation functions")
+        cap_namespace = {"np": __import__("numpy"), "json": json, "struct": struct}
+        exec(compile(ast.Module(body=cap_functions, type_ignores=[]),
+                     str(TOOLS / "verify_assets.py"), "exec"), cap_namespace)
+        cap_namespace["validate_niche_return_caps"](shipped.read_bytes())
+        negative_source = (TOOLS / "generate_mirror_niche.py").read_text(encoding="utf-8")
+        trim_call = "\ntrim_exposed_return_caps(m)\n"
+        if negative_source.count(trim_call) != 1:
+            raise RuntimeError("Niche negative fixture must bypass exactly one cap trim call")
+        negative_generator = Path(temp) / "untrimmed-niche-generator.py"
+        negative_generator.write_text(negative_source.replace(trim_call, "\n"), encoding="utf-8")
+        negative_models = Path(temp) / "untrimmed-niche"
+        run([sys.executable, str(negative_generator), "--tools", str(TOOLS),
+             "--output", str(negative_models), "--asset-only"], cwd=temp)
+        negative_bytes = (negative_models / "MuseumMirrorNiche.glb").read_bytes()
+        if hashlib.sha256(negative_bytes).hexdigest() != "9fb3b554e104e8c9cd3368f99faa78cad97a735391aecea40c26511894c6fcd5":
+            raise RuntimeError("Niche negative fixture differs from the actual old asset")
+        try:
+            cap_namespace["validate_niche_return_caps"](negative_bytes)
+        except ValueError as error:
+            if "coplanar plaster/" not in str(error) or "return X=7.0" not in str(error):
+                raise
+        else:
+            raise RuntimeError("Niche cap gate accepted the old overlapping geometry")
+        print("PASS actual X=7 return cap gate accepts repaired asset and rejects untrimmed old geometry")
         # Rebuild the wall-cap repair in an isolated clone, never inside Assets.
         building_project = Path(temp) / "building-reproduction"
         building_tools = building_project / "Tools" / "TableKit"

@@ -5,7 +5,7 @@
     - !<own> 0005641c-028d-459a-0000-000000014b4d
     - !<own> f5d74682-203a-4970-81ea-9fa7b88c96bb
     - !<own> b32855a3-8331-4966-ad04-74443d4ff4c9
-    - !<own> 88e8e17c-77de-4a86-b41c-1f067c339c58
+    - !<own> c96334aa-78a8-4b65-804a-761bca358481
   layers: !<Layers/267ee9a7-aff2-4f9d-9a49-f71214747d03>
     userLayers:
       - id: 1
@@ -6855,6 +6855,21 @@
     - !<own> 1febf8a9-1347-400f-b7d4-fa9752d35482
   Components:
     []
+- !<SceneObject/25863922-1ee6-41cb-a88a-fee458bdd39d>
+  PrefabRemaps:
+    []
+  Name: MirrorNicheFinish__limestone
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> f4bb325a-b90d-4ed0-ad6d-39076a1644f1
 - !<SceneObject/25955380-a46c-4342-8dc2-18a1a1e0b29e>
   PrefabRemaps:
     []
@@ -11275,21 +11290,6 @@
   BlendNormals: false
   BlendShapes:
     {}
-- !<SceneObject/4080b46a-e36a-462c-8a58-eeb3a61a0b36>
-  PrefabRemaps:
-    []
-  Name: MirrorNicheFinish__plaster
-  Enabled: true
-  Layers: 1
-  LocalTransform: !<TransformEntity>
-    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
-    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
-    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
-    HasSegmentScaleCompensation: false
-  Children:
-    []
-  Components:
-    - !<own> 8f31b66d-d7e9-4467-9b5d-524f3f82c57e
 - !<SceneObject/40a80fe9-97cd-45f2-8695-e2acc099b2a1>
   PrefabRemaps:
     []
@@ -11344,6 +11344,26 @@
   Materials:
     - !<reference> 59100e48-0349-4cf7-a8a9-6b3b0939b136
   Mesh: !<reference> 821ab4e2-f153-4bf1-829c-73074041767a
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<RenderMeshVisual/40efb8fb-ae69-4c20-a57a-2c9f17708992>
+  PrefabRemaps:
+    []
+  Name: MirrorNicheFinish__teal
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 6a9888f1-14e3-44c2-baa2-59b45168e804
+  Mesh: !<reference> 8479bece-ada5-47e2-b404-8b68f0ff601e
   Skin: !<reference> 00000000-0000-0000-0000-000000000000
   BlendShapesEnabled: true
   BlendNormals: false
@@ -11585,6 +11605,26 @@
     []
   Components:
     - !<own> 296e5331-89db-4c97-9892-d635d4034678
+- !<RenderMeshVisual/42932435-7c48-4459-83cd-a8273ecbeb66>
+  PrefabRemaps:
+    []
+  Name: MirrorNicheFinish__brass
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> d4080fc1-3248-4965-af6b-9c0837aa8339
+  Mesh: !<reference> 80eb4997-95f5-45b9-aece-48db4342f24b
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
 - !<RenderMeshVisual/42a178e1-5044-4040-b79c-864ab3e28be1>
   PrefabRemaps:
     []
@@ -11720,26 +11760,6 @@
     []
   Components:
     - !<own> e394f6fa-fa1d-4a79-a4f8-be030b8244fc
-- !<RenderMeshVisual/43df7644-ba97-482d-9bca-a22271f5d110>
-  PrefabRemaps:
-    []
-  Name: MirrorNicheFinish__teal
-  Enabled: true
-  RenderOrder: 0
-  StretchMode: Stretch
-  VerticalAlignment: Center
-  HorizontalAlignment: Center
-  MeshShadowMode: None
-  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
-  ShadowDensity: 1.000000
-  Materials:
-    - !<reference> 6a9888f1-14e3-44c2-baa2-59b45168e804
-  Mesh: !<reference> 8479bece-ada5-47e2-b404-8b68f0ff601e
-  Skin: !<reference> 00000000-0000-0000-0000-000000000000
-  BlendShapesEnabled: true
-  BlendNormals: false
-  BlendShapes:
-    {}
 - !<SceneObject/43e00132-2c12-46a1-8245-7be9ec4d2250>
   PrefabRemaps:
     []
@@ -17549,6 +17569,22 @@
   BlendNormals: false
   BlendShapes:
     {}
+- !<ScriptComponent/68237d10-1c9d-409c-bbd9-3d878fd001e2>
+  PrefabRemaps:
+    []
+  Name: MessagingBridge
+  Enabled: true
+  ScriptAsset: !<reference> 9aa407db-2872-4afc-a162-cf7faf2a0f29
+  ScriptInputsDefault:
+    {}
+  ScriptTypesDefault:
+    {}
+  ScriptInputs:
+    "":
+      {}
+  ScriptTypes:
+    "":
+      {}
 - !<SceneObject/6837638e-efb6-44a1-932c-b0961588e7b1>
   PrefabRemaps:
     []
@@ -20333,24 +20369,6 @@
     []
   Components:
     - !<own> 5a41a48e-0e36-434b-8c95-9c497de77395
-- !<SceneObject/77372f91-5cb4-4134-8b8a-0edac96160da>
-  PrefabRemaps:
-    []
-  Name: MuseumMirrorNiche
-  Enabled: true
-  Layers: 1
-  LocalTransform: !<TransformEntity>
-    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
-    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
-    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
-    HasSegmentScaleCompensation: false
-  Children:
-    - !<own> 4080b46a-e36a-462c-8a58-eeb3a61a0b36
-    - !<own> b0deb2ab-67d5-4db9-8421-cee512763361
-    - !<own> ca789a20-a86f-4c7c-b933-8dbf6df9610a
-    - !<own> 91f5ea96-b903-4b5c-b4ba-167afbe4bd45
-  Components:
-    []
 - !<SceneObject/774923d4-7cd9-4697-a832-d1a61c3f1dd0>
   PrefabRemaps:
     []
@@ -21144,6 +21162,32 @@
     - !<own> 96665ba4-b15c-4ce7-acf1-374f7b089e8b
     - !<own> c4acdcc4-3987-465b-bff4-659fcb50a5fc
     - !<own> 9a127cee-fcb1-450a-94ec-11a2f37e5b47
+  Components:
+    []
+- !<SceneObject/7dd2c57a-331b-4540-af43-a6120fb1a9bd>
+  PrefabRemaps:
+    - 25863922-1ee6-41cb-a88a-fee458bdd39d: dcb4d192-65ef-4627-6a18-5e8e69f13556
+    - 40efb8fb-ae69-4c20-a57a-2c9f17708992: d7c0b2d3-d03d-4542-6f60-f3a4b86b7844
+    - 42932435-7c48-4459-83cd-a8273ecbeb66: c58585f2-2fd1-433b-69db-eeccc373b6d4
+    - 7dd2c57a-331b-4540-af43-a6120fb1a9bd: f3f72658-9b13-49e6-6011-c11e94a7c7b8
+    - 8bbe1041-b32d-4159-9b61-bd9d78bb0f14: d26973b8-be1e-49ad-6a66-572a57cd85a4
+    - 945f3d3d-ff22-44ee-a17d-ba296604cc90: daabdeb4-4fa6-474b-4928-74fd18180e8f
+    - a2fcafb0-0135-434f-ba8c-ae350b7844ec: 09d4cd2d-4499-48eb-719c-1582bfa382fd
+    - bbb73449-fc49-4093-b40a-34af1c0568a4: a853b08a-3714-428c-58f3-eff5c83e4e1f
+    - ca2a16b7-1936-439c-a54a-b9669d52e696: bb49865d-d60c-4151-66c6-4cc2f45584c7
+    - d2df7401-7a6e-4f89-a85a-6d1ee9580032: 58d2b1ca-2a0e-4a0e-4f0f-333cb9089811
+    - f4bb325a-b90d-4ed0-ad6d-39076a1644f1: 098bcf7a-044c-45fe-4e4c-d3f841312603
+    - fa90c210-2465-478e-980e-12c787afc8d5: b297ed5e-6dcc-4542-7054-e96e77362053
+  Name: MuseumMirrorNiche
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 100.000000, y: 100.000000, z: 100.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    - !<own> 945f3d3d-ff22-44ee-a17d-ba296604cc90
   Components:
     []
 - !<SceneObject/7ddda997-141a-4dd8-b850-ff16da3ba340>
@@ -22986,32 +23030,6 @@
   BlendNormals: false
   BlendShapes:
     {}
-- !<SceneObject/876ec46d-4803-49bf-9d55-94761a35b551>
-  PrefabRemaps:
-    - 4080b46a-e36a-462c-8a58-eeb3a61a0b36: b297ed5e-6dcc-4542-7054-e96e77362053
-    - 43df7644-ba97-482d-9bca-a22271f5d110: d7c0b2d3-d03d-4542-6f60-f3a4b86b7844
-    - 77372f91-5cb4-4134-8b8a-0edac96160da: d26973b8-be1e-49ad-6a66-572a57cd85a4
-    - 876ec46d-4803-49bf-9d55-94761a35b551: f3f72658-9b13-49e6-6011-c11e94a7c7b8
-    - 8e2f4c97-6db6-4ce3-93aa-45971ec38000: a853b08a-3714-428c-58f3-eff5c83e4e1f
-    - 8f31b66d-d7e9-4467-9b5d-524f3f82c57e: bb49865d-d60c-4151-66c6-4cc2f45584c7
-    - 91f5ea96-b903-4b5c-b4ba-167afbe4bd45: dcb4d192-65ef-4627-6a18-5e8e69f13556
-    - b0deb2ab-67d5-4db9-8421-cee512763361: 58d2b1ca-2a0e-4a0e-4f0f-333cb9089811
-    - bc752247-bc10-4bd1-b670-a63feeddc6f8: 098bcf7a-044c-45fe-4e4c-d3f841312603
-    - c27b0a9f-ef29-42fe-b31c-ac6f38493992: daabdeb4-4fa6-474b-4928-74fd18180e8f
-    - ca789a20-a86f-4c7c-b933-8dbf6df9610a: 09d4cd2d-4499-48eb-719c-1582bfa382fd
-    - fafa879f-b89e-4ffc-93ba-087bb9798d97: c58585f2-2fd1-433b-69db-eeccc373b6d4
-  Name: MuseumMirrorNiche
-  Enabled: true
-  Layers: 1
-  LocalTransform: !<TransformEntity>
-    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
-    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
-    Scale: {x: 100.000000, y: 100.000000, z: 100.000000}
-    HasSegmentScaleCompensation: false
-  Children:
-    - !<own> c27b0a9f-ef29-42fe-b31c-ac6f38493992
-  Components:
-    []
 - !<SceneObject/87873422-3e74-4511-be0d-156a0b922d6a>
   PrefabRemaps:
     - 00a509f6-2b48-459c-8226-461d53575446: f8651b54-8603-440c-40b4-dc930f118d9f
@@ -23567,21 +23585,6 @@
   BlendNormals: false
   BlendShapes:
     {}
-- !<SceneObject/88e8e17c-77de-4a86-b41c-1f067c339c58>
-  PrefabRemaps:
-    []
-  Name: LEAF Plugin Bridge
-  Enabled: true
-  Layers: 1
-  LocalTransform: !<TransformEntity>
-    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
-    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
-    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
-    HasSegmentScaleCompensation: false
-  Children:
-    []
-  Components:
-    - !<own> f92b652f-ba1d-4331-9042-5217d588021c
 - !<SceneObject/89089ac4-0cdc-47cf-9308-522167e490a0>
   PrefabRemaps:
     []
@@ -24039,6 +24042,24 @@
   BlendNormals: false
   BlendShapes:
     {}
+- !<SceneObject/8bbe1041-b32d-4159-9b61-bd9d78bb0f14>
+  PrefabRemaps:
+    []
+  Name: MuseumMirrorNiche
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    - !<own> fa90c210-2465-478e-980e-12c787afc8d5
+    - !<own> d2df7401-7a6e-4f89-a85a-6d1ee9580032
+    - !<own> a2fcafb0-0135-434f-ba8c-ae350b7844ec
+    - !<own> 25863922-1ee6-41cb-a88a-fee458bdd39d
+  Components:
+    []
 - !<RenderMeshVisual/8c3be019-7b67-4fb9-8158-1262f117b8e1>
   PrefabRemaps:
     []
@@ -24448,21 +24469,6 @@
   BlendNormals: false
   BlendShapes:
     {}
-- !<SceneObject/8e2f4c97-6db6-4ce3-93aa-45971ec38000>
-  PrefabRemaps:
-    []
-  Name: Scene0
-  Enabled: true
-  Layers: 1
-  LocalTransform: !<TransformEntity>
-    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
-    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
-    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
-    HasSegmentScaleCompensation: false
-  Children:
-    - !<own> 77372f91-5cb4-4134-8b8a-0edac96160da
-  Components:
-    []
 - !<SceneObject/8e6ab343-2d6a-4dfe-9036-2449bc92a536>
   PrefabRemaps:
     []
@@ -24598,26 +24604,6 @@
   Materials:
     - !<reference> 59100e48-0349-4cf7-a8a9-6b3b0939b136
   Mesh: !<reference> 278761bc-6031-4782-a2fb-5d53316664de
-  Skin: !<reference> 00000000-0000-0000-0000-000000000000
-  BlendShapesEnabled: true
-  BlendNormals: false
-  BlendShapes:
-    {}
-- !<RenderMeshVisual/8f31b66d-d7e9-4467-9b5d-524f3f82c57e>
-  PrefabRemaps:
-    []
-  Name: MirrorNicheFinish__plaster
-  Enabled: true
-  RenderOrder: 0
-  StretchMode: Stretch
-  VerticalAlignment: Center
-  HorizontalAlignment: Center
-  MeshShadowMode: None
-  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
-  ShadowDensity: 1.000000
-  Materials:
-    - !<reference> 28dee82a-4262-437a-922f-23204cb4835d
-  Mesh: !<reference> 1e259a06-3231-4cd6-bda8-b36998de506d
   Skin: !<reference> 00000000-0000-0000-0000-000000000000
   BlendShapesEnabled: true
   BlendNormals: false
@@ -25049,21 +25035,6 @@
     []
   Components:
     []
-- !<SceneObject/91f5ea96-b903-4b5c-b4ba-167afbe4bd45>
-  PrefabRemaps:
-    []
-  Name: MirrorNicheFinish__limestone
-  Enabled: true
-  Layers: 1
-  LocalTransform: !<TransformEntity>
-    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
-    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
-    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
-    HasSegmentScaleCompensation: false
-  Children:
-    []
-  Components:
-    - !<own> bc752247-bc10-4bd1-b670-a63feeddc6f8
 - !<SceneObject/91fbbf28-f5a5-4489-b3fe-e208a1e8b00d>
   PrefabRemaps:
     []
@@ -25366,6 +25337,21 @@
     []
   Components:
     - !<own> 1b5ac4f5-75a6-45cf-a683-ce9b68960c01
+- !<SceneObject/945f3d3d-ff22-44ee-a17d-ba296604cc90>
+  PrefabRemaps:
+    []
+  Name: Scenes
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    - !<own> bbb73449-fc49-4093-b40a-34af1c0568a4
+  Components:
+    []
 - !<SceneObject/9468c53c-f76f-49b7-8a49-b5ec6af1c5a3>
   PrefabRemaps:
     []
@@ -27915,6 +27901,21 @@
   BlendNormals: false
   BlendShapes:
     {}
+- !<SceneObject/a2fcafb0-0135-434f-ba8c-ae350b7844ec>
+  PrefabRemaps:
+    []
+  Name: MirrorNicheFinish__brass
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 42932435-7c48-4459-83cd-a8273ecbeb66
 - !<SceneObject/a32a69f4-d378-40c8-ad15-36ac591a1a1c>
   PrefabRemaps:
     []
@@ -30124,21 +30125,6 @@
     - !<own> f56cdd61-ba36-42e8-960b-f83638c81f0c
   Components:
     []
-- !<SceneObject/b0deb2ab-67d5-4db9-8421-cee512763361>
-  PrefabRemaps:
-    []
-  Name: MirrorNicheFinish__teal
-  Enabled: true
-  Layers: 1
-  LocalTransform: !<TransformEntity>
-    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
-    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
-    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
-    HasSegmentScaleCompensation: false
-  Children:
-    []
-  Components:
-    - !<own> 43df7644-ba97-482d-9bca-a22271f5d110
 - !<SceneObject/b0e452cb-568e-4693-aa0a-66456849328f>
   PrefabRemaps:
     []
@@ -30586,8 +30572,8 @@
     - !<own> 17844fd4-6719-4f83-81c4-b7fad53fc4c2
     - !<own> 50c3c6f6-0257-4671-9a97-99f04f29ce0b
     - !<own> 9ce7ebb4-1b2c-488b-a6ea-8faeaa568241
-    - !<own> 876ec46d-4803-49bf-9d55-94761a35b551
     - !<own> 2104b885-3685-4635-85a5-9ccd0b6d2fe9
+    - !<own> 7dd2c57a-331b-4540-af43-a6120fb1a9bd
   Components:
     []
 - !<SceneObject/b329dfdb-db1f-4288-9b7e-035c3b7ff26f>
@@ -32151,6 +32137,21 @@
     []
   Components:
     - !<own> 3d4626e4-9766-498f-98e5-4268c56ac8b8
+- !<SceneObject/bbb73449-fc49-4093-b40a-34af1c0568a4>
+  PrefabRemaps:
+    []
+  Name: Scene0
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    - !<own> 8bbe1041-b32d-4159-9b61-bd9d78bb0f14
+  Components:
+    []
 - !<RenderMeshVisual/bbba295e-bb33-4044-a1b4-4b754c1f2d04>
   PrefabRemaps:
     []
@@ -32371,26 +32372,6 @@
   Materials:
     - !<reference> d562fde1-3411-44e8-840e-6953a923f141
   Mesh: !<reference> 3d6907bc-b6d8-435e-b48d-5c5a1ad5be7f
-  Skin: !<reference> 00000000-0000-0000-0000-000000000000
-  BlendShapesEnabled: true
-  BlendNormals: false
-  BlendShapes:
-    {}
-- !<RenderMeshVisual/bc752247-bc10-4bd1-b670-a63feeddc6f8>
-  PrefabRemaps:
-    []
-  Name: MirrorNicheFinish__limestone
-  Enabled: true
-  RenderOrder: 0
-  StretchMode: Stretch
-  VerticalAlignment: Center
-  HorizontalAlignment: Center
-  MeshShadowMode: None
-  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
-  ShadowDensity: 1.000000
-  Materials:
-    - !<reference> 3f16c9d8-6016-4991-84d4-08cf995fae89
-  Mesh: !<reference> 18db0c0b-20d6-47ae-a046-457c8dfcf770
   Skin: !<reference> 00000000-0000-0000-0000-000000000000
   BlendShapesEnabled: true
   BlendNormals: false
@@ -33315,21 +33296,6 @@
     []
   Components:
     - !<own> efce20e6-7b0b-4c77-a212-6763b5aabfc7
-- !<SceneObject/c27b0a9f-ef29-42fe-b31c-ac6f38493992>
-  PrefabRemaps:
-    []
-  Name: Scenes
-  Enabled: true
-  Layers: 1
-  LocalTransform: !<TransformEntity>
-    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
-    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
-    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
-    HasSegmentScaleCompensation: false
-  Children:
-    - !<own> 8e2f4c97-6db6-4ce3-93aa-45971ec38000
-  Components:
-    []
 - !<SceneObject/c2824f1c-e028-4b12-87d0-3af430188977>
   PrefabRemaps:
     []
@@ -34287,6 +34253,21 @@
   BlendNormals: false
   BlendShapes:
     {}
+- !<SceneObject/c96334aa-78a8-4b65-804a-761bca358481>
+  PrefabRemaps:
+    []
+  Name: LEAF Plugin Bridge
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 68237d10-1c9d-409c-bbd9-3d878fd001e2
 - !<SceneObject/c982811c-a1bb-4e4a-8e95-01d57e03cec8>
   PrefabRemaps:
     []
@@ -34378,6 +34359,26 @@
     - !<own> c8b9685f-35d5-4f3d-940a-0005597f7c42
   Components:
     []
+- !<RenderMeshVisual/ca2a16b7-1936-439c-a54a-b9669d52e696>
+  PrefabRemaps:
+    []
+  Name: MirrorNicheFinish__plaster
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 28dee82a-4262-437a-922f-23204cb4835d
+  Mesh: !<reference> 1e259a06-3231-4cd6-bda8-b36998de506d
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
 - !<RenderMeshVisual/ca34026d-3a48-468c-9a90-16928b3dbe54>
   PrefabRemaps:
     []
@@ -34468,21 +34469,6 @@
   BlendNormals: false
   BlendShapes:
     {}
-- !<SceneObject/ca789a20-a86f-4c7c-b933-8dbf6df9610a>
-  PrefabRemaps:
-    []
-  Name: MirrorNicheFinish__brass
-  Enabled: true
-  Layers: 1
-  LocalTransform: !<TransformEntity>
-    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
-    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
-    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
-    HasSegmentScaleCompensation: false
-  Children:
-    []
-  Components:
-    - !<own> fafa879f-b89e-4ffc-93ba-087bb9798d97
 - !<SceneObject/caec107e-a0d1-4cad-9de8-bedfd688f32a>
   PrefabRemaps:
     []
@@ -35849,6 +35835,21 @@
   BlendNormals: false
   BlendShapes:
     {}
+- !<SceneObject/d2df7401-7a6e-4f89-a85a-6d1ee9580032>
+  PrefabRemaps:
+    []
+  Name: MirrorNicheFinish__teal
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 40efb8fb-ae69-4c20-a57a-2c9f17708992
 - !<SceneObject/d2fcf73f-03c8-49e3-874b-687a90503e46>
   PrefabRemaps:
     []
@@ -41590,6 +41591,26 @@
     - !<own> a4b3e2f4-3d85-4f25-ba7a-d4b6504ae06a
   Components:
     []
+- !<RenderMeshVisual/f4bb325a-b90d-4ed0-ad6d-39076a1644f1>
+  PrefabRemaps:
+    []
+  Name: MirrorNicheFinish__limestone
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 3f16c9d8-6016-4991-84d4-08cf995fae89
+  Mesh: !<reference> 18db0c0b-20d6-47ae-a046-457c8dfcf770
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
 - !<RenderMeshVisual/f4e273bb-28ce-4711-919a-e6b4649dc06d>
   PrefabRemaps:
     []
@@ -42466,22 +42487,6 @@
     - !<own> 65db9db0-debc-48c4-9f5a-0a13dca3b661
   Components:
     []
-- !<ScriptComponent/f92b652f-ba1d-4331-9042-5217d588021c>
-  PrefabRemaps:
-    []
-  Name: MessagingBridge
-  Enabled: true
-  ScriptAsset: !<reference> 9aa407db-2872-4afc-a162-cf7faf2a0f29
-  ScriptInputsDefault:
-    {}
-  ScriptTypesDefault:
-    {}
-  ScriptInputs:
-    "":
-      {}
-  ScriptTypes:
-    "":
-      {}
 - !<RenderMeshVisual/f963353e-3953-40a6-bb12-b10a86267db2>
   PrefabRemaps:
     []
@@ -42752,6 +42757,21 @@
     []
   Components:
     - !<own> a34cf64b-60ca-41bf-abb4-94cf9ee207e7
+- !<SceneObject/fa90c210-2465-478e-980e-12c787afc8d5>
+  PrefabRemaps:
+    []
+  Name: MirrorNicheFinish__plaster
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> ca2a16b7-1936-439c-a54a-b9669d52e696
 - !<SceneObject/faf664f4-9534-4d9e-8f61-982dc1728944>
   PrefabRemaps:
     []
@@ -42767,26 +42787,6 @@
     []
   Components:
     - !<own> 8b4b57c4-5f89-41d5-a77b-c6ebabdc249d
-- !<RenderMeshVisual/fafa879f-b89e-4ffc-93ba-087bb9798d97>
-  PrefabRemaps:
-    []
-  Name: MirrorNicheFinish__brass
-  Enabled: true
-  RenderOrder: 0
-  StretchMode: Stretch
-  VerticalAlignment: Center
-  HorizontalAlignment: Center
-  MeshShadowMode: None
-  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
-  ShadowDensity: 1.000000
-  Materials:
-    - !<reference> d4080fc1-3248-4965-af6b-9c0837aa8339
-  Mesh: !<reference> 80eb4997-95f5-45b9-aece-48db4342f24b
-  Skin: !<reference> 00000000-0000-0000-0000-000000000000
-  BlendShapesEnabled: true
-  BlendNormals: false
-  BlendShapes:
-    {}
 - !<SceneObject/fb10ddcd-6720-42d2-8283-9323b1da59ce>
   PrefabRemaps:
     []

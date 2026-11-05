@@ -1,5 +1,5 @@
 import type { Interactable } from "SpectaclesInteractionKit.lspkg/Components/Interaction/Interactable/Interactable";
-import type { TrackId, Vec3 } from "../Domain/types";
+import { TrackId, Vec3, isTrackPlaced } from "../Domain/types";
 import {
   AuthorPropsController,
   AuthorPropsPorts,
@@ -199,7 +199,8 @@ export class AuthorPropsHandles {
       add(
         "PropFigure" + track,
         10 + i * 20,
-        () => "Place " + (ports.read()?.draft.casting[track] ?? roles[i]),
+        () => (ports.read() && isTrackPlaced(ports.read()!.draft, track) ? "Move " : "Place ") +
+          (ports.read()?.draft.casting[track] ?? roles[i]),
         () => this.controller.chooseActor(track),
       );
     }
@@ -388,8 +389,12 @@ export class AuthorPropsHandles {
       ["PropScreen", "MuseumPartitionShortTemplate"],
     ])
       this.icon(id, name);
-    for (const track of ["A", "B", "C"] as TrackId[])
+    for (const track of ["A", "B", "C"] as TrackId[]) {
       this.icon("PropFigure" + track, a.draft.casting[track]);
+      // A placed figure leaves its pocket; its one floor instance remains movable.
+      const figure = this.icons.get("PropFigure" + track);
+      if (figure) figure.model.enabled = !isTrackPlaced(a.draft, track);
+    }
     for (const [id, position] of this.positions) {
       const p = position(),
         action = this.actions.get(id);

@@ -1,5 +1,5 @@
 import { NativeMuseumFoley } from '../Scripts/TableKit/NativeMuseumFoley';
-import { LensFoleyVoice } from '../Scripts/TableKit/LensFoleyVoice';
+import { LensFoleyVoice, captureFoleyOrigin } from '../Scripts/TableKit/LensFoleyVoice';
 import { MuseumGame } from "./MuseumGame";
 import { MuseumScene } from "./MuseumScene";
 
@@ -28,7 +28,7 @@ export class CountercaseRuntime extends BaseScriptComponent {
   @input enablePhysicalMirror: boolean = false;
   private foley: NativeMuseumFoley;
   private foleyVoices: LensFoleyVoice[] = [];
-  private foleyAnchor: SceneObject;
+  private foleyAnchor: vec3 | undefined;
   setMuted(muted: boolean): void { this.foley?.setMuted(muted); }
   private game: MuseumGame;
   private presentation: MuseumScene;
@@ -49,7 +49,7 @@ export class CountercaseRuntime extends BaseScriptComponent {
   }
 
   private mount(): void {
-    this.foleyAnchor=this.sceneObject;
+    this.foleyAnchor=undefined;
     const clips: Record<string,AudioTrackAsset>={museum_pin_01:this.museum_pin_01,museum_pin_02:this.museum_pin_02,museum_clock_01:this.museum_clock_01,museum_clock_02:this.museum_clock_02,museum_paper_01:this.museum_paper_01,museum_paper_02:this.museum_paper_02,museum_glass:this.museum_glass,museum_cloth:this.museum_cloth,museum_latch:this.museum_latch,museum_stamp:this.museum_stamp};
     const makeVoice=()=>{const node=global.scene.createSceneObject('MuseumFoleyVoice');node.setParent(this.sceneObject);return new LensFoleyVoice(node,clips,()=>this.foleyAnchor);};
     const v1=makeVoice(),v2=makeVoice();this.foleyVoices=[v1,v2];
@@ -61,7 +61,7 @@ export class CountercaseRuntime extends BaseScriptComponent {
     });
     this.game = new MuseumGame(this.sceneObject, {
       foley: this.foley,
-      soundAnchor: object => { this.foleyAnchor=object; },
+      soundAnchor: object => { this.foleyAnchor=captureFoleyOrigin(object); },
       renderScene: (state, reveal) => this.presentation.render(state, reveal),
       clearScene: () => this.presentation.clear(),
       setLid: (closed) => this.presentation.setLid(closed),
