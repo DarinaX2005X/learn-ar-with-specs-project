@@ -38,12 +38,8 @@ require(
     f"Expected 18 TableKit models; missing={expected_models-found_models}; unexpected={found_models-expected_models}",
 )
 audio_directory = root / "Assets" / "Audio" / "TableKit"
-expected_audio = {"cloth", "engage", "latch"}
-found_audio = {file.stem for file in audio_directory.glob("*.wav")}
-require(
-    found_audio == expected_audio,
-    f"Expected 3 TableKit WAVs; missing={expected_audio-found_audio}; unexpected={found_audio-expected_audio}",
-)
+from verify_tablekit_audio import validate_audio
+validate_audio(audio_directory)
 manifest = json.loads((models / "manifest.json").read_text(encoding="utf-8"))
 records = {record["name"]: record for record in manifest["resources"]}
 require(
@@ -468,32 +464,6 @@ for file in models.glob("*.glb"):
         file.name + ": manifest triangle count differs",
     )
     print(file.name, "VALID", count, "triangles")
-for file in (root / "Assets" / "Audio" / "TableKit").glob("*.wav"):
-    with wave.open(str(file), "rb") as wav:
-        require(
-            wav.getframerate() == 44100 and wav.getsampwidth() == 2,
-            file.name + ": WAV must be 44.1 kHz 16-bit PCM",
-        )
-        require(wav.getnframes() > 0, file.name + ": WAV has no samples")
-        a = np.frombuffer(wav.readframes(wav.getnframes()), dtype="<i2") / 32768
-        require(
-            np.max(abs(a)) < 0.5 and abs(a.mean()) < 0.01,
-            file.name + ": WAV exceeds peak headroom or DC offset limits",
-        )
-        require(
-            np.max(abs(a[-min(100, len(a)) :])) < 0.025,
-            file.name + ": WAV tail is not faded sufficiently",
-        )
-        print(
-            file.name,
-            "VALID",
-            "peak",
-            round(float(np.max(abs(a))), 4),
-            "DC",
-            round(float(a.mean()), 6),
-        )
-
-
 # Native vitrine contract: contact is the gemstone bottom, never its centre.
 def vitrine_geometry(filename):
     blob = (models / filename).read_bytes()

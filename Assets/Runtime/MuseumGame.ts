@@ -1,3 +1,4 @@
+import { NativeMuseumFoley, PublicMechanisms } from '../Scripts/TableKit/NativeMuseumFoley';
 import {
   AuthorController,
   AuthorCommand,
@@ -39,6 +40,8 @@ export interface MuseumAuthorController {
   detach(): void;
 }
 export interface MuseumGamePorts {
+  foley?: NativeMuseumFoley;
+  soundAnchor?(object: SceneObject): void;
   caseView?: Omit<CaseViewPorts, "readSession">;
   /** Fractional poses only; observations and controls still use integer ticks. */
   presentPose?(tick: number): void;
@@ -81,7 +84,7 @@ export class MuseumGame {
     if (this.flow || this.disposed) return;
     this.table = this.ports.createTable
       ? this.ports.createTable(this.root, (a, p) => this.dispatch(a, p))
-      : new PlayTable(this.root, { dispatch: (a, p) => this.dispatch(a, p) });
+      : new PlayTable(this.root, { dispatch: (a, p) => this.dispatch(a, p), soundAnchor: object => this.ports.soundAnchor?.(object), cancelSound: () => this.ports.foley?.cancel() });
     if (this.ports.createAuthorController)
       this.controller = this.ports.createAuthorController(this.root);
     else {
@@ -318,6 +321,7 @@ export class MuseumGame {
     this.caseView?.sync();
     if (this.caseView)
       this.state = { ...this.state, view: this.caseView.snapshot() };
+    this.ports.foley?.observe(this.mechanismState().identity);
     this.ports.renderScene(this.state, this.revealed);
     this.table?.render(this.state);
   }
@@ -370,7 +374,21 @@ export class MuseumGame {
     if (poseTick !== undefined) this.ports.presentPose?.(poseTick);
     this.caseView?.update(seconds);
   }
+  private mechanismState(): PublicMechanisms {
+    const s=this.state, d=s?.detective, a=s?.author;
+    return { identity: [s?.flow.mode,s?.flow.inputEpoch,d?.caseId ?? a?.draft.id,d?.rev ?? "author-edit",!!s?.reveal].join('|'),
+      playing: s?.reveal?.playing ?? d?.playing ?? a?.playing ?? false,
+      pins: d?.glass.map(g=>g.id).join('|') ?? '', page: d?.glassPage ?? 0,
+      completed: d?.completed ?? false, checking: d?.checking ?? false, aperture: a?.draft.room.mirror?.aperture };
+  }
   dispatch(action: string, payload?: unknown): boolean {
+    const before=this.mechanismState();
+    const accepted=this.dispatchCore(action,payload);
+    const type=payload && typeof payload==='object' ? String((payload as {type?:string;kind?:string}).type ?? (payload as {kind?:string}).kind ?? '') : '';
+    this.ports.foley?.accepted(action,type,accepted,before,this.mechanismState());
+    return accepted;
+  }
+  private dispatchCore(action: string, payload?: unknown): boolean {
     if (this.disposed || !this.flow) return false;
     if (action === "reveal") {
       if (!this.revealed || !this.revealClock || !payload) return false;

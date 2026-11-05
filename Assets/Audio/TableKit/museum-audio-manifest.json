@@ -1,0 +1,86 @@
+{
+  "provenance": "Original local algorithmic foley, official CLAD build-sfx engine; no recordings",
+  "triggerPolicy": "Explicit visible player mechanisms only; no actor/role/pickup timeline sounds",
+  "resources": [
+    {
+      "name": "museum_pin_01",
+      "bytes": 7100,
+      "duration": 0.08,
+      "peak": 0.2,
+      "channels": 1,
+      "sampleRate": 44100
+    },
+    {
+      "name": "museum_pin_02",
+      "bytes": 7100,
+      "duration": 0.08,
+      "peak": 0.2,
+      "channels": 1,
+      "sampleRate": 44100
+    },
+    {
+      "name": "museum_clock_01",
+      "bytes": 7100,
+      "duration": 0.08,
+      "peak": 0.12,
+      "channels": 1,
+      "sampleRate": 44100
+    },
+    {
+      "name": "museum_clock_02",
+      "bytes": 7100,
+      "duration": 0.08,
+      "peak": 0.12,
+      "channels": 1,
+      "sampleRate": 44100
+    },
+    {
+      "name": "museum_paper_01",
+      "bytes": 28268,
+      "duration": 0.32,
+      "peak": 0.23,
+      "channels": 1,
+      "sampleRate": 44100
+    },
+    {
+      "name": "museum_paper_02",
+      "bytes": 28268,
+      "duration": 0.32,
+      "peak": 0.23,
+      "channels": 1,
+      "sampleRate": 44100
+    },
+    {
+      "name": "museum_cloth",
+      "bytes": 38852,
+      "duration": 0.44,
+      "peak": 0.22,
+      "channels": 1,
+      "sampleRate": 44100
+    },
+    {
+      "name": "museum_latch",
+      "bytes": 30034,
+      "duration": 0.34002267573696143,
+      "peak": 0.28,
+      "channels": 1,
+      "sampleRate": 44100
+    },
+    {
+      "name": "museum_stamp",
+      "bytes": 25622,
+      "duration": 0.29,
+      "peak": 0.26,
+      "channels": 1,
+      "sampleRate": 44100
+    },
+    {
+      "name": "museum_glass",
+      "bytes": 24740,
+      "duration": 0.28,
+      "peak": 0.17,
+      "channels": 1,
+      "sampleRate": 44100
+    }
+  ]
+}

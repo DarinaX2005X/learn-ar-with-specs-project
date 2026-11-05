@@ -97,6 +97,8 @@ export type PlayTableCommand =
   | { action: "reveal"; payload: RevealAction }
   | { action: "view"; payload: CaseViewAction };
 export interface PlayTablePorts {
+  soundAnchor?(object: SceneObject): void;
+  cancelSound?(): void;
   propMaterial?: Material;
   dispatch(action: string, payload?: unknown): void;
 }
@@ -448,6 +450,8 @@ export class PlayTable {
 
   private send(action: string, payload: unknown, epoch = this.epoch): void {
     if (this.disposed || epoch !== this.state.flow.inputEpoch) return;
+    const receiver = this.lastUsed ? this.actions.get(this.lastUsed)?.object : undefined;
+    if (receiver) this.ports.soundAnchor?.(receiver);
     this.ports.dispatch(action, payload);
   }
   private flow(type: FlowAction, extra: object = {}): void {
@@ -591,6 +595,7 @@ export class PlayTable {
       capturedEpoch = -1;
     });
     const cancel = () => {
+      this.ports.cancelSound?.();
       capturedEpoch = -1;
       inscription.getTransform().setLocalScale(new vec3(1, 1, 1));
     };
@@ -1987,10 +1992,12 @@ export class PlayTable {
       this.dragging = false;
     });
     input.onTriggerCanceled.add(() => {
+      this.ports.cancelSound?.();
       cancel();
       this.dragging = false;
     });
     input.onTriggerEndOutside.add(() => {
+      this.ports.cancelSound?.();
       cancel();
       this.dragging = false;
     });

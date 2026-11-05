@@ -5,7 +5,7 @@
     - !<own> 0005641c-028d-459a-0000-000000014b4d
     - !<own> f5d74682-203a-4970-81ea-9fa7b88c96bb
     - !<own> b32855a3-8331-4966-ad04-74443d4ff4c9
-    - !<own> a011297c-8518-4176-8dc4-0eecb8e280b8
+    - !<own> 01c934df-7062-4bba-90ce-a88429b06711
   layers: !<Layers/267ee9a7-aff2-4f9d-9a49-f71214747d03>
     userLayers:
       - id: 1
@@ -506,6 +506,21 @@
   BlendNormals: false
   BlendShapes:
     {}
+- !<SceneObject/01c934df-7062-4bba-90ce-a88429b06711>
+  PrefabRemaps:
+    []
+  Name: LEAF Plugin Bridge
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 0ede5b9e-8a3f-4bd2-9e49-e5470cadf564
 - !<RenderMeshVisual/01e03e29-459c-4aa2-9736-cc651ad55d9d>
   PrefabRemaps:
     []
@@ -2661,6 +2676,22 @@
     []
   Components:
     - !<own> 40e1a477-1699-4ba8-9ae2-388ca8273586
+- !<ScriptComponent/0ede5b9e-8a3f-4bd2-9e49-e5470cadf564>
+  PrefabRemaps:
+    []
+  Name: MessagingBridge
+  Enabled: true
+  ScriptAsset: !<reference> 9aa407db-2872-4afc-a162-cf7faf2a0f29
+  ScriptInputsDefault:
+    {}
+  ScriptTypesDefault:
+    {}
+  ScriptInputs:
+    "":
+      {}
+  ScriptTypes:
+    "":
+      {}
 - !<RenderMeshVisual/0ee9c28f-b13a-48ff-86d5-1aa10bc79597>
   PrefabRemaps:
     []
@@ -6232,7 +6263,9 @@
   Enabled: true
   ScriptAsset: !<reference> c0ae53e3-aaf5-4f6a-8115-da51b70c891a
   ScriptInputsDefault:
-    {}
+    rubyKeyLight: true
+    enableFacetFinish: true
+    enablePhysicalMirror: true
   ScriptTypesDefault:
     {}
   ScriptInputs:
@@ -6241,6 +6274,19 @@
       cloth: !<reference.AudioTrackAsset> e1699c83-535e-43fc-9966-f1bcca7be1f0
       engage: !<reference.AudioTrackAsset> bbb1ef55-2625-4188-b54f-bb3a6011339d
       latch: !<reference.AudioTrackAsset> 7a77f5e0-7e57-43c7-aeca-37f3fb40c41d
+      museum_pin_01: !<reference.AudioTrackAsset> 55e8ce58-a2d9-4f01-83e3-435a31e0d74e
+      museum_pin_02: !<reference.AudioTrackAsset> b17a01e7-5e9b-4abf-bd08-9d8a2b039cf6
+      museum_clock_01: !<reference.AudioTrackAsset> 70bbd44a-34bf-4c01-8087-cc08a885e0a8
+      museum_clock_02: !<reference.AudioTrackAsset> 5bf0794f-751d-4bf2-aed9-476c882e2207
+      museum_paper_01: !<reference.AudioTrackAsset> a1681701-3ad5-4259-b173-6fa34534ec6d
+      museum_paper_02: !<reference.AudioTrackAsset> c1d85f29-84b6-41bd-ac90-12ec4029ab13
+      museum_glass: !<reference.AudioTrackAsset> 7c995e8e-d51e-4dfe-9fbb-55cd0a90abfa
+      museum_cloth: !<reference.AudioTrackAsset> 5fc821e9-e515-4c76-ae06-981384947f8f
+      museum_latch: !<reference.AudioTrackAsset> a046592a-ff00-4c5e-9917-5d13a43afe91
+      museum_stamp: !<reference.AudioTrackAsset> ed8fcd9b-83e6-4e4f-835e-b0b27975d864
+      rubyKeyLight: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      enableFacetFinish: false
+      enablePhysicalMirror: false
   ScriptTypes:
     "":
       {}
@@ -27038,21 +27084,6 @@
     []
   Components:
     - !<own> d8182d82-00a2-471d-8421-9d862361c9d0
-- !<SceneObject/a011297c-8518-4176-8dc4-0eecb8e280b8>
-  PrefabRemaps:
-    []
-  Name: LEAF Plugin Bridge
-  Enabled: true
-  Layers: 1
-  LocalTransform: !<TransformEntity>
-    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
-    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
-    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
-    HasSegmentScaleCompensation: false
-  Children:
-    []
-  Components:
-    - !<own> a22877c4-da3f-4621-9621-f1500aeb02c3
 - !<SceneObject/a02fe49b-45df-4b35-bb3e-7a3fc334a282>
   PrefabRemaps:
     []
@@ -27355,22 +27386,6 @@
   BlendNormals: false
   BlendShapes:
     {}
-- !<ScriptComponent/a22877c4-da3f-4621-9621-f1500aeb02c3>
-  PrefabRemaps:
-    []
-  Name: MessagingBridge
-  Enabled: true
-  ScriptAsset: !<reference> 9aa407db-2872-4afc-a162-cf7faf2a0f29
-  ScriptInputsDefault:
-    {}
-  ScriptTypesDefault:
-    {}
-  ScriptInputs:
-    "":
-      {}
-  ScriptTypes:
-    "":
-      {}
 - !<SceneObject/a25c6744-e607-4781-92ad-108478fd83d3>
   PrefabRemaps:
     []

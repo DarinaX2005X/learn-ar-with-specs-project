@@ -1,0 +1,38 @@
+{
+  "Guard": {
+    "glbSHA256": "89416b1dcbe04bc221be7ea3335a59998b9a81e87c4278fae19617234d738a76",
+    "nodes": 41,
+    "sourceTriangles": 5968,
+    "lodTriangles": 578
+  },
+  "Courier": {
+    "glbSHA256": "8d477e1ff003ff66fb7a7c5df4aa9e96da96cd78c057b3d93b76db56b9c66ec8",
+    "nodes": 40,
+    "sourceTriangles": 5976,
+    "lodTriangles": 594
+  },
+  "Conservator": {
+    "glbSHA256": "72e2eb06213b6632b3a9beaec1d64296f9a8f9ab8981d6fa6f14fb3277a964cc",
+    "nodes": 45,
+    "sourceTriangles": 6748,
+    "lodTriangles": 706
+  },
+  "AnonymousTrack": {
+    "glbSHA256": "5c2f763665234f39b6dca0e2ef557abf7968c8159e2d20871fb3bde80ea785c2",
+    "nodes": 28,
+    "sourceTriangles": 3886,
+    "lodTriangles": 1294
+  },
+  "DisplayCase": {
+    "glbSHA256": "7a95584551934a57f23a1ee511d230605591f2f72bb1a1ef983f471358f113d3",
+    "nodes": 19,
+    "sourceTriangles": 2784,
+    "lodTriangles": 192
+  },
+  "Ruby": {
+    "glbSHA256": "637cae6188947bb0a48424fce74a0d7701110e0a894a85d07e4be4f654f6ec2c",
+    "nodes": 2,
+    "sourceTriangles": 66,
+    "lodTriangles": 66
+  }
+}

@@ -170,15 +170,6 @@ export class AuthorGlass {
       this.camera.key = "";
       this.camera.root.enabled = false;
     }
-    if (view.mode !== "change") {
-      this.before.glass.clear();
-      this.after.glass.clear();
-      this.before.key = "";
-      this.after.key = "";
-      this.before.root.enabled = false;
-      this.after.root.enabled = false;
-      return;
-    }
     const bench = this.global("Anchor_ConservationBench");
     if (!bench) {
       this.before.root.enabled = false;
@@ -199,13 +190,25 @@ export class AuthorGlass {
               transform.getWorldRotation().multiplyVec3(new vec3(x, 6.85, -42)),
             ),
         );
-      pane.root
-        .getTransform()
-        .setWorldRotation(
-          transform
-            .getWorldRotation()
-            .multiply(quat.fromEulerAngles(-Math.PI / 2, 0, 0)).multiply(quat.fromEulerAngles(0, 0, Math.PI)),
-        );
+      pane.root.getTransform().setWorldRotation(
+        transform
+          .getWorldRotation()
+          .multiply(quat.fromEulerAngles(-Math.PI / 2, 0, 0))
+          .multiply(quat.fromEulerAngles(0, 0, Math.PI)),
+      );
+    }
+    if (view.mode !== "change") {
+      this.show(
+        this.before,
+        recording,
+        recording?.errors[0]?.message ??
+          view.source + " \u00b7 " + (view.tick / 2).toFixed(1) + " s",
+      );
+      this.after.glass.clear();
+      this.after.key = "";
+      this.after.caption.text = "";
+      this.after.root.enabled = false;
+      return;
     }
     this.show(
       this.before,

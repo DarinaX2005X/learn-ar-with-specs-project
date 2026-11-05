@@ -29,9 +29,22 @@
   PackagePolicy: CanBeUnpacked
   ScriptInputsHidden:
     cloth: false
+    enableFacetFinish: false
+    enablePhysicalMirror: false
     engage: false
     latch: false
+    museum_clock_01: false
+    museum_clock_02: false
+    museum_cloth: false
+    museum_glass: false
+    museum_latch: false
+    museum_paper_01: false
+    museum_paper_02: false
+    museum_pin_01: false
+    museum_pin_02: false
+    museum_stamp: false
     recordingMaterial: false
+    rubyKeyLight: false
   ScriptTypesHidden:
     {}
   ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
@@ -45,6 +58,19 @@
       cloth: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
       engage: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
       latch: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
+      museum_pin_01: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
+      museum_pin_02: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
+      museum_clock_01: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
+      museum_clock_02: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
+      museum_paper_01: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
+      museum_paper_02: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
+      museum_glass: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
+      museum_cloth: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
+      museum_latch: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
+      museum_stamp: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
+      rubyKeyLight: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      enableFacetFinish: false
+      enablePhysicalMirror: false
   ScriptTypes:
     -
       {}
@@ -53,3 +79,16 @@
     - // @input Asset.AudioTrackAsset cloth
     - // @input Asset.AudioTrackAsset engage
     - // @input Asset.AudioTrackAsset latch
+    - // @input Asset.AudioTrackAsset museum_pin_01
+    - // @input Asset.AudioTrackAsset museum_pin_02
+    - // @input Asset.AudioTrackAsset museum_clock_01
+    - // @input Asset.AudioTrackAsset museum_clock_02
+    - // @input Asset.AudioTrackAsset museum_paper_01
+    - // @input Asset.AudioTrackAsset museum_paper_02
+    - // @input Asset.AudioTrackAsset museum_glass
+    - // @input Asset.AudioTrackAsset museum_cloth
+    - // @input Asset.AudioTrackAsset museum_latch
+    - // @input Asset.AudioTrackAsset museum_stamp
+    - // @input SceneObject rubyKeyLight
+    - // @input bool enableFacetFinish
+    - // @input bool enablePhysicalMirror

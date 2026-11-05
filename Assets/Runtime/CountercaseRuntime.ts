@@ -1,3 +1,5 @@
+import { NativeMuseumFoley } from '../Scripts/TableKit/NativeMuseumFoley';
+import { LensFoleyVoice } from '../Scripts/TableKit/LensFoleyVoice';
 import { MuseumGame } from "./MuseumGame";
 import { MuseumScene } from "./MuseumScene";
 
@@ -9,6 +11,25 @@ export class CountercaseRuntime extends BaseScriptComponent {
   @input engage: AudioTrackAsset;
   @input latch: AudioTrackAsset;
 
+  @input museum_pin_01: AudioTrackAsset;
+  @input museum_pin_02: AudioTrackAsset;
+  @input museum_clock_01: AudioTrackAsset;
+  @input museum_clock_02: AudioTrackAsset;
+  @input museum_paper_01: AudioTrackAsset;
+  @input museum_paper_02: AudioTrackAsset;
+  @input museum_glass: AudioTrackAsset;
+  @input museum_cloth: AudioTrackAsset;
+  @input museum_latch: AudioTrackAsset;
+  @input museum_stamp: AudioTrackAsset;
+  @input
+  @allowUndefined
+  rubyKeyLight?: SceneObject;
+  @input enableFacetFinish: boolean = false;
+  @input enablePhysicalMirror: boolean = false;
+  private foley: NativeMuseumFoley;
+  private foleyVoices: LensFoleyVoice[] = [];
+  private foleyAnchor: SceneObject;
+  setMuted(muted: boolean): void { this.foley?.setMuted(muted); }
   private game: MuseumGame;
   private presentation: MuseumScene;
 
@@ -16,33 +37,44 @@ export class CountercaseRuntime extends BaseScriptComponent {
     this.createEvent("OnStartEvent").bind(() => this.mount());
     this.createEvent("UpdateEvent").bind(() => {
       if (this.game) this.game.update(getDeltaTime());
+      if(this.presentation)this.presentation.updateNativeFinish(this.rubyKeyLight,this.enableFacetFinish,this.enablePhysicalMirror);
     });
+    this.createEvent("OnDisableEvent").bind(() => this.foley?.cancel());
     this.createEvent("OnDestroyEvent").bind(() => {
+      this.foley?.cancel();
+      this.foleyVoices.forEach(v=>v.dispose());
       if (this.game) this.game.dispose();
       if (this.presentation) this.presentation.dispose();
     });
   }
 
   private mount(): void {
+    this.foleyAnchor=this.sceneObject;
+    const clips: Record<string,AudioTrackAsset>={museum_pin_01:this.museum_pin_01,museum_pin_02:this.museum_pin_02,museum_clock_01:this.museum_clock_01,museum_clock_02:this.museum_clock_02,museum_paper_01:this.museum_paper_01,museum_paper_02:this.museum_paper_02,museum_glass:this.museum_glass,museum_cloth:this.museum_cloth,museum_latch:this.museum_latch,museum_stamp:this.museum_stamp};
+    const makeVoice=()=>{const node=global.scene.createSceneObject('MuseumFoleyVoice');node.setParent(this.sceneObject);return new LensFoleyVoice(node,clips,()=>this.foleyAnchor);};
+    const v1=makeVoice(),v2=makeVoice();this.foleyVoices=[v1,v2];
+    this.foley=new NativeMuseumFoley([v1,v2],()=>getTime());
     this.presentation = new MuseumScene(this.sceneObject, this.recordingMaterial, {
       cloth: this.cloth,
       engage: this.engage,
       latch: this.latch,
     });
     this.game = new MuseumGame(this.sceneObject, {
+      foley: this.foley,
+      soundAnchor: object => { this.foleyAnchor=object; },
       renderScene: (state, reveal) => this.presentation.render(state, reveal),
       clearScene: () => this.presentation.clear(),
       setLid: (closed) => this.presentation.setLid(closed),
-      cancelInput: () => this.presentation.cancelInput(),
+      cancelInput: () => { this.foley?.cancel(); this.presentation.cancelInput(); },
       presentPose: (tick) => this.presentation.presentPose(tick),
       caseView: {
         readViewer: () => this.presentation.readCaseViewViewer(),
-        finishTimeDrag: () => this.presentation.cancelInput(),
+        finishTimeDrag: () => { this.foley?.cancel(); this.presentation.cancelInput(); },
         setPresentation: (view) => this.presentation.applyCaseView(view),
         setFrameCovered: (covered) => this.presentation.setCaseViewCovered(covered),
         setSecondaryLabelsVisible: (visible) =>
           this.presentation.setCaseViewSecondaryLabelsVisible(visible),
-        stopSound: () => this.presentation.cancelInput(),
+        stopSound: () => { this.foley?.cancel(); this.presentation.cancelInput(); },
       },
     });
     this.game.mount();
@@ -101,6 +133,7 @@ export class CountercaseRuntime extends BaseScriptComponent {
       message: detective?.message ?? "",
       verdictScope: detective?.verdict?.scope,
       comparison: display.comparison,
+      nativeMirror: display.nativeMirror,
       articulationBindings: display.articulationBindings,
       view: state?.view,
     };

@@ -1,3 +1,6 @@
+import { NativeMirrorBridge } from '../Scripts/TableKit/NativeMirrorBridge';
+import { RubyFacetFinish } from '../Scripts/TableKit/RubyFacetFinish';
+import {mirrorCurtainPlacement} from "../Scripts/TableKit/MirrorFramePose";
 import {
   Board,
   CaseDraft,
@@ -84,6 +87,26 @@ export class MuseumScene {
   private authorGlass: AuthorGlass;
   private benchCaseParked = false;
   private ruby: SceneObject | undefined;
+  private facetFinish: RubyFacetFinish;
+  private liveFinish: NativeMirrorBridge;
+  private finishMirrorMode:'author'|'reveal'|'public'='public';
+  /** Final renderer-owned visibility and poses are already settled when called. */
+  updateNativeFinish(keyLight:SceneObject|undefined, enabled:boolean, mirrorEnabled:boolean):void {
+    if(this.disposed)return;
+    const source=keyLight?.getComponent('Component.LightSource') as LightSource | undefined;
+    const light=keyLight?.enabled && source?.enabled && source.lightType===LightType.Point && source.intensity>0
+      ? keyLight.getTransform().getWorldPosition() : undefined;
+    const viewer=this.readCaseViewViewer();
+    this.facetFinish.update(viewer.eyeCm,enabled && light ? [light.x,light.y,light.z] : undefined);
+    const cache=this.poseCache,board=cache?.board,authorized=this.finishMirrorMode!=='public';
+    this.liveFinish.update({enabled:mirrorEnabled,authorized,mode:this.finishMirrorMode,
+      frameKey:board ? [board.caseId,board.rev,board.room.mirror?.id].join('|') : '',
+      visible:!!cache?.visible && !this.covered && !this.lidClosed && !this.comparisonActive && this.theatre.enabled,
+      actors:authorized ? Array.from(this.actors.values()) : [],
+      props:authorized ? [this.fixedProp('DisplayCase',this.theatre),this.ruby].filter((p):p is SceneObject=>!!p) : [],
+      mirror:board?.room.mirror,walls:board?.room.walls ?? [],exhibit:board?.room.exhibit.position,
+      eyeWorld:viewer.eyeCm,viewForwardWorld:viewer.forward});
+  }
   private anonymousTemplate: SceneObject | undefined;
   private comparisonRoot: SceneObject | undefined;
   private jointCache = new WeakMap<
@@ -123,6 +146,8 @@ export class MuseumScene {
     if (!theatre) throw new Error("Museum Theatre is missing");
     this.theatre = theatre;
     this.ruby = this.find("Ruby", theatre);
+    this.facetFinish=new RubyFacetFinish(this.ruby);
+    this.liveFinish=new NativeMirrorBridge(theatre);
     this.anonymousTemplate = this.findGlobal("MuseumAnonymousTemplate");
     if (this.anonymousTemplate)
       for (const name of [
@@ -771,7 +796,7 @@ export class MuseumScene {
     if (ruby)
       ruby.enabled =
         !this.lidClosed && sample.present && this.hasExhibit(board);
-    if (sample.alarm) this.audio.get("latch")?.play(1);
+    // Passive recorded alarm samples never trigger mechanism foley.
   }
   presentPose(tick: number): void {
     if (this.disposed) return;
@@ -808,6 +833,8 @@ export class MuseumScene {
   ): void {
     if (this.disposed) return;
     this.lastPoseTick = undefined;
+    this.finishMirrorMode=snapshot.flow.mode==='author' ? 'author' : reveal ? 'reveal' : 'public';
+    if(this.finishMirrorMode==='public')this.liveFinish.clear();
     const bench = this.fixedProp("Anchor_ConservationBench");
     const benchPoint =
       bench?.getTransform().getWorldPosition() ??
@@ -904,19 +931,7 @@ export class MuseumScene {
     if (board) {
       this.renderWalls(board);
       const aperture = board.room.mirror?.aperture;
-      if (
-        snapshot.flow.mode === "author" &&
-        !snapshot.author?.playing &&
-        aperture !== undefined &&
-        this.aperture !== undefined &&
-        aperture !== this.aperture &&
-        getTime() - this.soundAt > 0.3
-      ) {
-        this.audio
-          .get(aperture === 0 || aperture === 1 ? "latch" : "cloth")
-          ?.play(1);
-        this.soundAt = getTime();
-      }
+      // Aperture rendering is silent; accepted explicit author events own foley.
       this.aperture = aperture;
       const exhibit = board.room.exhibit.position;
       const display = this.fixedProp("DisplayCase", this.theatre);
@@ -933,14 +948,11 @@ export class MuseumScene {
       }
       if (mirror) {
         const yaw = Math.atan2(-mirror.normal.x, -mirror.normal.z);
+        const physicalCurtain = mirrorCurtainPlacement(mirror);
         for (const name of ["MirrorHousing", "Curtain"]) {
           const object = this.fixedProp(name, this.theatre);
           if (!object) continue;
-          this.point(object, [
-            mirror.origin.x * 100,
-            mirror.origin.y * 100 - mirror.height * 60,
-            mirror.origin.z * 100,
-          ]);
+          this.point(object, name === "Curtain" ? physicalCurtain.rootStoryCm : [mirror.origin.x * 100, mirror.origin.y * 100 - mirror.height * 60, mirror.origin.z * 100]);
           object
             .getTransform()
             .setLocalRotation(quat.fromEulerAngles(0, yaw, 0));
@@ -963,18 +975,17 @@ export class MuseumScene {
               if (!node) continue;
               const transform = node.getTransform(),
                 p = transform.getLocalPosition();
-              transform.setLocalPosition(
-                new vec3(visual.foldXCm[i] * 0.01, p.y, p.z),
-              );
-              if (prefix === "Fold_")
-                transform.setLocalScale(new vec3(visual.foldScaleX, 1, 1));
+              const physical = physicalCurtain.folds[i];
+              const position = prefix === "Fold_" ? physical.foldPosition : physical.ringPosition;
+              transform.setLocalPosition(new vec3(position[0], p.y, position[2]));
+              if (prefix === "Fold_") transform.setLocalScale(new vec3(...physical.foldScale));
             }
         const handle = curtain && this.fixedProp("Handle", curtain);
         if (handle) {
           const p = handle.getTransform().getLocalPosition();
           handle
             .getTransform()
-            .setLocalPosition(new vec3(visual.handleXCm * 0.01, p.y, p.z));
+            .setLocalPosition(new vec3(physicalCurtain.handleLocal[0], p.y, p.z));
           const target = this.fixedProp("CurtainHandle", this.theatre);
           if (target)
             target
@@ -1134,6 +1145,7 @@ export class MuseumScene {
       paper: this.paper.read(),
       publicCradle: this.cradle.read(),
       authorRecording: this.authorGlass.read(),
+      nativeMirror: this.liveFinish.snapshotMetrics(),
       articulationBindings: {
         named: Object.fromEntries(this.digitBindings),
         anonymousTemplate: this.anonymousTemplateDigits,
@@ -1161,6 +1173,9 @@ export class MuseumScene {
     this.viewHandles.clear();
     this.comparisonActive = false;
     this.poseCache = undefined;
+    this.facetFinish.clear();
+    this.finishMirrorMode='public';
+    this.liveFinish.clear();
     this.cradle.clear();
     this.covered = false;
     this.labelsVisible = true;
@@ -1183,13 +1198,14 @@ export class MuseumScene {
     this.applyLidPose();
     if (this.lid) this.lid.enabled = true;
     if (closed) this.clear();
-    if (changed && this.initializedLid)
-      this.audio.get(closed ? "latch" : "engage")?.play(1);
+    // Passive lid/reset changes stay silent.
     this.initializedLid = true;
   }
   dispose(): void {
     if (this.disposed) return;
     this.clear();
+    this.facetFinish.dispose();
+    this.liveFinish.dispose();
     this.hall.dispose();
     this.authorGlass.dispose();
     for (const camera of this.cameraCopies.values()) camera.destroy();

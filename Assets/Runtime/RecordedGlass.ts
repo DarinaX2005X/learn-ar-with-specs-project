@@ -13,6 +13,55 @@ import {
   WitnessBackgroundPlate,
   getWitnessBackground,
 } from "../Spatial/WitnessBackground";
+type InkPoint = readonly [number, number];
+
+/** Same convex half-space clipping used by the source projection, applied after
+ * the fixed optical mapping to the physical inner glass rectangle. */
+function clipPane(triangles: readonly (readonly InkPoint[])[]): InkPoint[][] {
+  const result: InkPoint[][] = [];
+  const planes = [
+    (p: InkPoint) => p[0] + 16,
+    (p: InkPoint) => 16 - p[0],
+    (p: InkPoint) => p[1] + 8,
+    (p: InkPoint) => 8 - p[1],
+  ];
+  for (const triangle of triangles) {
+    if (
+      triangle.length !== 3 ||
+      triangle.some((p) => !p.every(Number.isFinite))
+    )
+      continue;
+    let polygon: readonly InkPoint[] = triangle;
+    for (const plane of planes) {
+      const next: InkPoint[] = [];
+      for (let i = 0; i < polygon.length; i++) {
+        const a = polygon[i],
+          b = polygon[(i + 1) % polygon.length];
+        const da = plane(a),
+          db = plane(b);
+        const insideA = da >= 0,
+          insideB = db >= 0;
+        if (insideA) next.push(a);
+        if (insideA !== insideB) {
+          const t = da / (da - db);
+          next.push([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]);
+        }
+      }
+      polygon = next;
+      if (polygon.length < 3) break;
+    }
+    for (let i = 1; i + 1 < polygon.length; i++) {
+      const a = polygon[0],
+        b = polygon[i],
+        c = polygon[i + 1];
+      const area =
+        (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]);
+      if (Math.abs(area) > 1e-10) result.push([a, b, c]);
+    }
+  }
+  return result;
+}
+
 export interface RecordedSurface {
   observationId: string;
   kind: "fragment" | "hand" | "action" | "exhibit";
@@ -232,12 +281,13 @@ export class RecordedGlass {
       const art = fragment.role ? RECORDED_HEAD_ART[fragment.role] : undefined;
       const base: RGB = art?.base ?? [0.24, 0.29, 0.28];
       const projected = triangles.map((triangle) => triangle.map(map));
-      const allProjected = [
+      const allProjected = clipPane([
         ...projected,
         ...torso.flatMap((patch) =>
           patch.triangles.map((triangle) => triangle.map(map)),
         ),
-      ];
+      ]);
+      if (!allProjected.length) continue;
       const xs = allProjected.flatMap((triangle) => triangle.map((p) => p[0])),
         ys = allProjected.flatMap((triangle) => triangle.map((p) => p[1]));
       const minX = Math.min(...xs),
@@ -358,12 +408,11 @@ export class RecordedGlass {
               [width * 0.32, -height * 0.42],
               [-width * 0.2, -height * 0.5],
             ];
-      const triangles = projectVisibleSurface(
-        board,
-        frame.witness,
-        fragment,
-        outline,
-      ).map((tri) => tri.map(map));
+      const triangles = clipPane(
+        projectVisibleSurface(board, frame.witness, fragment, outline).map(
+          (tri) => tri.map(map),
+        ),
+      );
       if (!triangles.length) return;
       const xs = triangles.flatMap((tri) => tri.map((p) => p[0])),
         ys = triangles.flatMap((tri) => tri.map((p) => p[1]));
@@ -546,7 +595,8 @@ export class RecordedGlass {
     selectedColor: RGB = color,
     observationId?: string,
   ): void {
-    if (!triangles.length) return;
+    const clipped = clipPane(triangles);
+    if (!clipped.length) return;
     const builder = new MeshBuilder([
       { name: "position", components: 3 },
       { name: "normal", components: 3 },
@@ -556,7 +606,7 @@ export class RecordedGlass {
     builder.indexType = MeshIndexType.UInt16;
     const vertices: number[] = [],
       indices: number[] = [];
-    for (const triangle of triangles) {
+    for (const triangle of clipped) {
       if (triangle.length !== 3) continue;
       const start = vertices.length / 8;
       for (const p of triangle) vertices.push(p[0], p[1], z, 0, 0, 1, 0, 0);
@@ -644,7 +694,8 @@ export class RecordedGlass {
     }
     if (info?.kind === "action") {
       const action = clue?.payload.actions[0] as
-        { via?: Fragment["via"] } | undefined;
+        | { via?: Fragment["via"] }
+        | undefined;
       if (action?.via)
         surface = { segment: "action_" + info.index, via: action.via };
     }

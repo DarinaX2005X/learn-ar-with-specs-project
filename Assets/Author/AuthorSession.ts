@@ -128,8 +128,11 @@ export class AuthorSession {
   }
   recordPoint(point: { x: number; z: number; yaw: number }): boolean {
     if (!this.recording) return false;
-    if (!this.previewEdit({ kind: "setPathKey", track: this.recording, key: { tick: this.tick, ...point } })) return false;
-    this.recordingPoint = { ...point }; return true;
+    // SIK can pass a loaded Key object. Its extra tick must never replace the
+    // authoritative recording clock, either now or on later sampled frames.
+    const sample = { x: point.x, z: point.z, yaw: point.yaw };
+    if (!this.previewEdit({ kind: "setPathKey", track: this.recording, key: { tick: this.tick, ...sample } })) return false;
+    this.recordingPoint = sample; return true;
   }
   cancelGesture(): void {
     if (!this.preview) return;

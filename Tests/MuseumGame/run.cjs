@@ -409,3 +409,10 @@ assert.equal(interrupted.snapshot().detective.tick, 5);
 assert.equal(interrupted.snapshot().detective.playing, false);
 interrupted.dispose();
 console.log("MuseumGame real-controller route checks passed");
+
+require("./recording.cjs")({
+  AuthorSession,
+  AuthorController: load(path.join(assets, "Author/AuthorController.ts")).AuthorController,
+  createMuseumTheft,
+  events,
+});
