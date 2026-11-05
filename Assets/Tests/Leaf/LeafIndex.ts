@@ -4,6 +4,9 @@ import {CurtainRevisionScenario} from "./CurtainRevisionScenario"
 import {CurtainReachScenario} from "./CurtainReachScenario"
 import {CurtainCancelScenario} from "./CurtainCancelScenario"
 import {PublicRecordingScenario} from "./PublicRecordingScenario"
+import {ClosedPairScenario} from "./ClosedPairScenario"
+import {PackingPartialScenario} from "./PackingPartialScenario"
+import {OriginalViewScenario} from "./OriginalViewScenario"
 
 @component
 export class LeafIndex extends BaseScriptComponent {
@@ -13,5 +16,8 @@ export class LeafIndex extends BaseScriptComponent {
     {id: "countercase-curtain-revision", typename: CurtainRevisionScenario.getTypeName(), parameters: {__leaf__timeout_secs: "120"}},
     {id: "countercase-curtain-reach", typename: CurtainReachScenario.getTypeName(), parameters: {__leaf__timeout_secs: "60"}},
     {id: "countercase-curtain-cancel", typename: CurtainCancelScenario.getTypeName(), parameters: {__leaf__timeout_secs: "60"}},
+    {id: "countercase-closed-pair", typename: ClosedPairScenario.getTypeName(), parameters: {__leaf__timeout_secs: "120"}},
+    {id: "countercase-packing-partial", typename: PackingPartialScenario.getTypeName(), parameters: {__leaf__timeout_secs: "120"}},
+    {id: "countercase-original-view", typename: OriginalViewScenario.getTypeName(), parameters: {__leaf__timeout_secs: "120"}},
   ]
 }

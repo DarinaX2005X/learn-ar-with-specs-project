@@ -392,7 +392,7 @@ export class DetectiveSession {
     }
     this.emit();
   }
-  /** At most two 32-work solver slices per frame. Never run proof in render. */
+  /** At most two bounded solver slices per frame. Never run proof in render. */
   update(seconds: number): void {
     if (this.disposed) return;
     if (this.state.playing && Number.isFinite(seconds) && seconds > 0) {
@@ -548,6 +548,10 @@ export class DetectiveSession {
     this.state.claim = copy(claim);
     this.taskGeneration = this.generation;
     const generation = this.generation;
+    const fullRecording =
+      claim === "Underdetermined" ||
+      (typeof claim === "object" &&
+        Object.values(claim).includes("Underdetermined"));
     this.task = proveSteps(
       this.sealed.board,
       this.sealed.clues,
@@ -555,6 +559,9 @@ export class DetectiveSession {
       claim,
       {
         maxHistories: this.workLimit,
+        // Unknown findings need exhaustive compatible histories, not repeated
+        // minimisation of grounds for a different, already excluded person.
+        minimizeReasons: !fullRecording,
         cancelled: () => this.disposed || generation !== this.generation,
       },
     );

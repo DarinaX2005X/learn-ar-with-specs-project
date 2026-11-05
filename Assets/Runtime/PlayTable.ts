@@ -24,6 +24,15 @@ import {
   caseViewControls,
 } from "../Spatial/CaseViewRouting";
 import { caseViewHandleSlots } from "./CaseViewHandles";
+import { ShelfItem } from "../Shelf/SessionShelf";
+
+export interface CaseTargetView {
+  readonly targetName: string;
+  readonly id: string;
+  readonly caseId: string;
+  readonly rev: number;
+  readonly state: ShelfItem["state"];
+}
 
 /** Public investigation data only. A vault never crosses this presentation port. */
 export interface PlayTableSnapshot {
@@ -189,19 +198,8 @@ export class PlayTable {
     this.dragging = false;
   }
 
-  readCaseTargets(): {
-    targetName: string;
-    caseId: string;
-    rev: number;
-    state: string;
-  }[] {
-    const targets: {
-      targetName: string;
-      id: string;
-      caseId: string;
-      rev: number;
-      state: string;
-    }[] = [];
+  readCaseTargets(): readonly CaseTargetView[] {
+    const targets: CaseTargetView[] = [];
     if (!this.state) return targets;
     for (let index = 0; index < 3; index++) {
       const item = this.state.flow.shelf[this.rackPage * 3 + index],

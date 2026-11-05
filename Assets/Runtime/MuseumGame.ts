@@ -11,7 +11,7 @@ import {
 } from "../Detective/DetectiveSession";
 import { VaultEntry } from "../Domain/types";
 import { SessionShelf } from "../Shelf/SessionShelf";
-import { PlayTable, PlayTableSnapshot } from "./PlayTable";
+import { PlayTable, PlayTableSnapshot, CaseTargetView } from "./PlayTable";
 import {
   CaseViewAction,
   CaseViewPorts,
@@ -20,6 +20,7 @@ import {
 } from "../Spatial/CaseViewRouting";
 
 export interface MuseumTable {
+  readCaseTargets?(): readonly CaseTargetView[];
   finishTimeDrag?(): void;
   render(snapshot: PlayTableSnapshot): void;
   dispose(): void;
@@ -228,6 +229,11 @@ export class MuseumGame {
     return (
       this.table?.readObservationTargets?.().map((target) => ({ ...target })) ??
       []
+    );
+  }
+  readCaseTargets(): readonly CaseTargetView[] {
+    return (
+      this.table?.readCaseTargets?.().map((target) => ({ ...target })) ?? []
     );
   }
   update(seconds: number): void {

@@ -1,7 +1,12 @@
 const assert = require("node:assert/strict");
 const { compileCase } = require("./build/Domain/compile");
-const { getObservations } = require("./build/Domain/observe");
-const { createMirrorCase, createPackingCase } = require("./build/Domain/cases");
+const { getObservations, observe } = require("./build/Domain/observe");
+const { prove } = require("./build/Domain/prove");
+const {
+  createMirrorCase,
+  createPackingCase,
+  createMuseumTheft,
+} = require("./build/Domain/cases");
 const { DetectiveSession } = require("./build/Detective/DetectiveSession");
 const { detectiveControls } = require("./build/Detective/DetectiveControls");
 function sealed(draft) {
@@ -250,7 +255,10 @@ click(session, "compare-versions");
 state = session.snapshot();
 assert.equal(state.comparison.scope, "all");
 assert.equal(state.comparison.field, "recipient");
-assert.equal(JSON.stringify(state.comparison.tape), JSON.stringify(chain.clues));
+assert.equal(
+  JSON.stringify(state.comparison.tape),
+  JSON.stringify(chain.clues),
+);
 const recipientOf = (h) => (h.pass ? h.casting[h.pass.to] : "None");
 assert.notEqual(
   recipientOf(state.comparison.pair[0]),
@@ -364,3 +372,73 @@ assert.equal(smoothPlayback.isCompleted(), false);
 smoothPlayback.dispatch({ type: "seek", tick: 24 });
 assert.equal(smoothPlayback.presentationTick(), 24);
 
+// A full-tape unknown finding must not spend render frames minimising an
+// unrelated excluded suspect. Its counterexamples still fit every observation.
+const closedMuseum = sealed(createMuseumTheft(false));
+const unknownSession = mount(closedMuseum).session;
+const courierOnly = getObservations(closedMuseum.clues, "entrance", 12).find(
+  (c) => c.payload.fragments[0]?.role === "Courier",
+);
+pin(unknownSession, closedMuseum, [courierOnly.id]);
+unknownSession.dispatch({
+  type: "claimField",
+  field: "taker",
+  value: "Underdetermined",
+});
+unknownSession.dispatch({ type: "check" });
+let proofFrames = 0;
+while (unknownSession.snapshot().checking && proofFrames < 13) {
+  unknownSession.update(0);
+  proofFrames++;
+}
+assert.ok(
+  proofFrames <= 12 && !unknownSession.snapshot().checking,
+  "Whole-recording alternatives must finish within12 scheduler frames",
+);
+const alternatives = unknownSession.snapshot().verdict;
+assert.equal(alternatives.status, "ambiguous");
+assert.equal(alternatives.scope, "all");
+const reference = prove(
+  closedMuseum.board,
+  closedMuseum.clues,
+  [courierOnly.id],
+  { taker: "Underdetermined" },
+  { minimizeReasons: true },
+);
+assert.equal(alternatives.historyCount, reference.historyCount);
+assert.deepEqual(alternatives.possibleCulprits, reference.possibleCulprits);
+assert.deepEqual(alternatives.fieldValues, reference.fieldValues);
+for (const role of alternatives.possibleCulprits) {
+  const history = alternatives.examplesByCulprit[role];
+  assert.equal(history.casting[history.take], role);
+  assert.equal(
+    JSON.stringify(observe(closedMuseum.board, history)),
+    JSON.stringify(closedMuseum.clues),
+  );
+}
+const openMuseum = sealed(createMuseumTheft());
+const selectedSession = mount(openMuseum).session;
+const namedMarks = getObservations(openMuseum.clues, "entrance", 12).filter(
+  (c) => c.observation.kind === "fragment",
+);
+pin(
+  selectedSession,
+  openMuseum,
+  namedMarks.map((c) => c.id),
+);
+selectedSession.dispatch({ type: "claim", claim: "Conservator" });
+selectedSession.dispatch({ type: "check" });
+const selectedGrounds = drain(selectedSession).verdict;
+assert.equal(selectedGrounds.status, "proved");
+assert.equal(selectedGrounds.scope, "selected");
+for (const role of ["Courier", "Guard"]) {
+  const mark = namedMarks.find((c) => c.payload.fragments[0].role === role);
+  assert.deepEqual(
+    selectedGrounds.exclusions[role],
+    [mark.id],
+    "Concrete accusation retains inclusion-minimal public grounds",
+  );
+}
+console.log(
+  "Whole-recording counterexamples finish promptly and selected proof grounds stay minimal",
+);

@@ -8,7 +8,7 @@ Six seconds into **The Missing Ruby**, the entrance camera sees the courier. Loo
 
 ## Play in Lens Studio
 
-1. Download or clone the whole repository. Open **Countercase.esproj** from its root in **Lens Studio 5.23.2** and let asset import and TypeScript compilation finish. [Lens Studio 5.23.2](https://ar.snap.com/download/v5-23-2)
+1. Install Git LFS and run `git lfs install`. Clone this repository with `git clone` and its HTTPS URL. The museum models and Snap packages use LFS. If your checkout contains pointer files, run `git lfs pull` from the repository root. Open **Countercase.esproj** there in **Lens Studio 5.23.2** and let asset import and TypeScript compilation finish. [Lens Studio 5.23.2](https://ar.snap.com/download/v5-23-2)
 2. Open **Window → Preview** and choose **Interactive** in the preview-source picker. The first case begins in the foyer. Look for the clock and the case file on the wooden desk.
 3. Focus the Preview. Use **W/A/S/D** to walk and **right-drag** to look around. Move the pointer over the clock until its inscription appears, then click. Click again to pause. Drag the clock control or use its step controls to return to **6.0 s**. Object controls also accept a simulated point and pinch. [Interactive Preview controls](https://developers.snap.com/lens-studio/lens-studio-workflow/previewing-your-lens#interactive-preview-mode)
 4. Inspect the **entrance camera** in the hall. At the evidence bench, pin what the camera saw, choose a suspect and use **Check accusation**. An accusation can fit the evidence while a second explanation still fits. Return to the recording to look for the missing alibi.
@@ -42,7 +42,9 @@ These checks run from the repository root in PowerShell with Node.js and npm.
 .\Tests\MuseumGame\run.ps1
 ```
 
-The first run needs npm access for the pinned TypeScript compiler. The domain checks exercise the mirror and alternative histories. The other suites exercise pinning, accusation, changing a case and handing it over. The project also includes [LEAF scenarios for Lens Studio](Assets/Tests/Leaf/). The museum walkthrough was captured in **Lens Studio Interactive Preview**. Physical SPECS testing remains open.
+The first run needs npm access for the pinned TypeScript compiler. The domain checks exercise the mirror and alternative histories. The other suites exercise pinning, accusation, changing a case and handing it over.
+
+In **Lens Studio Interactive Preview**, the public-recording LEAF scenario pinned the courier first and the guard second. It checked that an accusation changed from two possible suspects to one, then removed and restored the courier pin to check the result both ways. The museum walkthrough was captured in Preview. Physical SPECS testing remains open. [LEAF scenarios for Lens Studio](Assets/Tests/Leaf/)
 
 ## Materials
 

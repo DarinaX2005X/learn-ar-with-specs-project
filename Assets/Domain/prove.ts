@@ -353,7 +353,7 @@ export function* proveSteps(
   for (const role of ROLES)
     if (!out.possibleCulprits.includes(role)) {
       let reasons = [...clues];
-      for (const c of [...reasons]) {
+      for (const c of options.minimizeReasons === false ? [] : [...reasons]) {
         const trial = reasons.filter((x) => x.id !== c.id);
         const r = yield* searchSteps(board, trial, options);
         if (options.cancelled?.()) {

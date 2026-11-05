@@ -244,7 +244,11 @@ export class AuthorSession {
     const result = compileCase(this.draft); this.invalidate();
     if (result.ok === false) { this.errors = result.errors; this.emit(); return false; }
     this.errors = []; this.tested = result; this.proofRev = this.draft.rev;
-    this.proof = proveSteps(result.sealed.board, result.sealed.clues, [], "Underdetermined");
+    // The gate needs every compatible history, not a minimized explanation for
+    // each excluded person. Keep complete public grounds and yield each work unit.
+    this.proof = proveSteps(result.sealed.board, result.sealed.clues, [], "Underdetermined", {
+      minimizeReasons: false, batchSize: 1,
+    });
     this.emit(); return true;
   }
   advanceProof(budget = 4): void {

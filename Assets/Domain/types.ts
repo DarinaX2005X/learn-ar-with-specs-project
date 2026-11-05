@@ -194,6 +194,8 @@ export type Claim =
   | "Underdetermined"
   | Partial<Record<Field, AnswerValue | "Underdetermined">>;
 export interface ProofOptions {
+  /** Keep false for a complete result with sufficient, unminimized public grounds. */
+  minimizeReasons?: boolean;
   maxHistories?: number;
   /** Search candidates per progress yield. Smaller batches suit a render loop. */
   batchSize?: number;

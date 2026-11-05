@@ -329,6 +329,10 @@ require("./presentation.cjs")({
   draft,
   sealed: compiled.sealed,
 });
+require("./proof-equivalence.cjs")({
+  prove:load(path.join(assets,"Domain/prove.ts")).prove,
+  compileCase,createMuseumTheft,
+});
 const interrupted = new MuseumGame(node(), {
   renderScene() {},
   clearScene() {},

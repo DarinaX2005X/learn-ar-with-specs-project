@@ -1,25 +1,62 @@
-# Museum integration scenarios
+# Museum LEAF checks
 
-Status: source reconciled with the normal inhabited museum entry. The first native `countercase-public-recording` run failed: `DefaultLeafScenarioManager [2.364s] FAILED: countercase-public-recording - Error: Exception in HostFunction: Object is null` (14:15:34.663, after RUNS at 14:15:32.299). There is no pass. Lookup/trigger step labels were added afterward to localize any recurrence. After the physical-control lifecycle repair, the aggregate-frame version passed natively at 14:36:38.099: `DefaultLeafScenarioManager [5.945s] PASSED: countercase-public-recording`. The current independent-fragment revision has not yet run; that earlier pass does not validate the changed pin policy. Previous tabletop runs do not validate these scenarios. An earlier panel attempt stopped before RUNS with `Widget is not initialized`; that separate plugin readiness problem did not establish a game failure.
+The native independent-fragment public journey passed through the official optional ScenarioClient:
 
-The normal start is public detective mode with the canonical mirror open. Tests never mount a special scene, assign game state, invoke game commands directly or call the compiler. The read-only `countercaseLeaf.read()` contract is declared in `CountercaseLeafProbe.ts` and copies values out of the runtime. Displayed roles must come from the real recording renderer, independently from the domain frame.
+`15:32:16.181 RUNS: countercase-public-recording`
 
-Registered scenarios:
+`15:32:55.065 [DefaultLeafScenarioManager] [38.885s] PASSED: countercase-public-recording`
 
-- `countercase-public-recording`: inspect the alarm through the fixed source, choose the Courier mark on its actual physical recording surface, pin it, check a repeated pin is idempotent, step away and return to the same full frame, remove and re-pin it. A Conservator claim with Courier alone must need another clue and admit two suspects. Select and pin the separate Guard reflection: the same claim must then be proved with one possible taker. Use the normal evidence replay, remove the first pinned Courier mark to reopen the finding, then undo the removal and check the restored proof. The same case, revision, tick and exact clue IDs must survive this correction route.
-- `countercase-curtain-revision`: use the physical staging file to create a copy; close its curtain; test with the case lid; explicitly confirm ambiguity, pass and open the sealed case. At the same alarm tick the new public recording contains only Courier and author testing admitted Guard/Conservator. Create a second copy, open via the alternate curtain endpoint and repeat the real test/handoff: the public recording contains Courier/Guard and testing admitted only Conservator. Each handed-over recording is pinned and checked by the public player through the real suspect and check targets, independently of author testing. Case IDs distinguish copies; each edit increments its own revision once.
-- `countercase-curtain-cancel`: enter staging normally, begin a SIK drag, make the test interactor unavailable, verify SIK cancellation restores the committed aperture without a revision, and recover with normal curtain actions. This simulates input loss; it does not prove device tracking.
-- `countercase-curtain-reach`: enter staging using the normal file, then use direct IK for the real curtain and alternate open endpoint. **The Preview viewer must stand within arm reach of the mirror before running this isolated reach check.** This test does not teleport the viewer or manufacture reachability. Failure at the default distant entry viewpoint is an unmet precondition, not evidence of a defective mirror handle.
+Source of truth: Lens Studio native log `LensStudioLog-2026-11-05-13-00-46-686-e4a04.txt`, not the client completion print or plugin UI. The run used the ordinary initialized public museum and real LEAF/SIK interactions. No game state setter, special fixture scene, compiler call, direct game dispatch or direct archive write was invoked by the test.
 
-Stable target names come from PlayTable's `Use_` prefix: `Use_StagingFile`, `Use_CaseLid`, `Use_CurtainHandle`, `Use_CurtainOpen`, `Use_EntryClock`, `Use_EntryClockPrevious`, `Use_EntryClockNext`, `Use_Sourceentrance`, `Use_PinGlass`, `Use_RemoveEvidence`, `Use_SuspectGuard`, `Use_SuspectConservator`, `Use_CheckStamp`, `Use_ReplayGlass`, `Use_Evidence0`, `Use_UndoEvidence`. The interaction owner confirmed both endpoint controls in PlayTable.bindCurtain; their inputEpoch guards match the handle. Physical fragment selectors are resolved from read-only `observationTargets` mappings to public revision-bound observation IDs; tests never assume a surface slot index means a particular role. Lookups require exactly one enabled Interactable; inactive modes are not bypassed.
+The passing journey physically selects Courier, pins/re-pins it without duplication, seeks away and returns, removes/re-pins it, and checks Conservator: `needClue`, two possible takers. It separately selects and pins Guard in the mirror: `proved`, one taker. The normal ReplayGlass route retains the same case/revision/tick and exact observation IDs; removing Courier reopens the finding, and UndoEvidence restores the proof. Test duration is native run time, not a human usability measurement.
 
-Use official LEAF 2.0 from the [pinned Specs sample](https://github.com/specs-devs/samples/blob/110a145b6572a17fa94d86f18b76047278014729/AI%20Music%20Gen/Packages/Leaf.lspkg), SHA256 `c877d77b8af24b079c4d1d9384afe3dc45e80d321d1a71f680379e5cc73a8fea`, compatible with SIK 2.0 and Studio 5.22. Do not install LEAF 4.0, which requires InteractionKit 4.0. The IK factory defaults to a scripted fallback: the reach test explicitly sets diagnostic `fail-fast` and rejects indirect routing. LEAF2 has no `eventTimeoutMs`; registered scenario budgets and bounded snapshot waits provide limits.
+## Native result ledger
 
-Offline validation: the owned files compile with TypeScript 5.9.3 against the actual pinned LEAF source, installed generated SIK source and Lens SDK declarations in SDK non-strict mode. Strict mode's eight errors are within LEAF vendor code. This is source/type evidence, not native Lens build or runtime evidence.
+| Scenario | Current evidence |
+| --- | --- |
+| countercase-public-recording | Native PASSED 38.885 s, independent marks plus normal replay/remove/undo |
+| countercase-curtain-revision | Native PASSED 41.952 s at 15:49:45.523, RUNS 15:49:03.572; both real copies, opposite curtain states, lid test/handoff and changed public recordings/verdicts completed. |
+| countercase-curtain-reach | Not run; isolated viewer-near-mirror precondition |
+| countercase-curtain-cancel | Not run |
+| countercase-closed-pair | Native PASSED 79.723 s at 16:11:40.310, RUNS 16:10:20.588; actual two-wing hall, full-tape scope, shared clock ticks 0–24 and return |
+| countercase-packing-partial | Native PASSED 58.192 s at 16:15:06.778; partial taker proof, physical empty/occupied box search, cache proof and honest recipient alternatives |
+| countercase-original-view | Native PASSED 45.488 s at 16:01:52.324, RUNS 16:01:06.837; actual shelf reopen, original IDs/time, native scales and unchanged world-camera pose |
 
-The editor owner attaches LeafIndex through MCP, opens the native LEAF panel and runs one scenario at a time. Start with public-recording. Record authoritative scenario-manager RUNS/PASSED/FAILED lines. Panel timeouts or plugin UI messages do not establish a pass. Do not run a private bootstrap in place of normal entry.
+Earlier evidence stays separate: public-recording first failed at 14:15:34.663 after 2.364 s with `Exception in HostFunction: Object is null`. Source review found a synchronous target-destruction bug; physical control lifetimes were made stable before the affected native recheck. The earlier aggregate-frame version passed at 14:36:38.099 after 5.945 s; it does not establish the later independent-mark behavior.
 
-Unverified: native execution of the new journeys, visual readability, public geometry leakage, stereo views, human comprehension and physical-device comfort. Repeated release input is checked; duplicated low-level SIK events are not forged. Full playback of an old archived case is outside these scenarios.
+The curtain journey previously failed at 15:39:45.595 after 42.743 s: its closed-copy route completed, but the second open-copy author proof remained testing at the nominal 5 s poll budget. The author proof implementation was repaired to use full sufficient grounds without the expensive minimal-ground search; the existing test wait stayed unchanged. Only the later authoritative 41.952 s pass establishes the complete two-copy curtain journey.
+
+The closed-pair journey first failed at 15:58:58.600 after 36.296 s, before comparison was mounted: the full-tape unknown check had not produced its verdict within the unchanged poll budget. Measurement found 270 generator yields and 136 controller updates spent minimizing exclusion reasons. The bounded repair skips that extra minimization only for full-scope unknown claims, retaining exhaustive counterexamples and preserving concrete selected-clue minimal grounds. The later 79.723 s native pass is the affected recheck.
+
+Visual acceptance remains separate: the closed-pair final native shot was rejected because the old upright folio/stamp occluded the studies. Functional two-wing/time/tape assertions passed, but that shot did not pass composition or readability review. The art repair and fresh native capture still require their own pixel inspection; no functional pass establishes physical tracking, comfort or human comprehension.
+
+## Why ScenarioClient was used
+
+The installed native LEAF panel repeatedly timed out before any new scenario-manager RUNS line. Read-only inspection of its `dist/main.js` found `runScenarioById` awaiting `reset()`, while `reset()` calls asynchronous `resetPreview()` without awaiting completion and immediately requests a scenario list. A still-live old bridge can answer that list; ScenarioStartRequest is then sent before the reset/new runtime finishes. Native logs showed Loaded/Running preceding the next reset and runtime initialization. The enabled MessagingBridge existed; this was not a missing component. Separate native MessageEvent queue-cap warnings occurred while Preview TypeScript was not compiled.
+
+The official CLAD LEAF reference documents an optional ScenarioClient. `CountercaseScenarioClient.ts` uses that API unchanged: one scenario ID input, read-only wait for an initialized public session, actual registered scenario defaults, and `DefaultScenarioManager.startScenario`. It never resets or initializes the game. Keep it a standalone optional test asset. Attach exactly one client through Lens Studio MCP, never run panel and client concurrently, and remove its scene attachment before a normal player checkpoint or capture. Do not edit LEAF or plugin code to hide this panel problem.
+
+## Journeys and scope
+
+- Public recording is the smallest normal player gate described above.
+- Curtain revision uses the physical staging file to create an author copy, changes the real handle, uses the normal lid test/ambiguity confirmation/pass/open route, and inspects the newly rendered public recording and verdict. A second copy uses the alternate endpoint to reopen the mirror. Every edit increments its own revision once.
+- Cancellation drives an actual SIK selection/drag, makes the LEAF test interactor unavailable, verifies cancellation restores the committed aperture without a revision, and checks recovery. This models input loss, not physical hand tracking.
+- Reach uses direct IK, fails fast instead of the factory's scripted fallback, and requires the Preview viewer already within arm reach of the museum mirror. It never teleports the viewer.
+- Closed pair uses the real comparison file and physical clock over all 25 finite ticks. Actual ComparisonHall telemetry must report two visible wings, the shared tick, full-tape scope and no validation issue. Distinguishing the rendered takers and assessing movement still require pixels.
+- Packing Room proves the visible taker while completion stays false, checks the empty canvas search is insufficient for a brass-cache claim, physically searches brass, then accepts honest recipient ambiguity and mounts the public alternatives.
+- Original/view changes a separate draft, reopens the original through its actual shelf mapping and preserves case/revision/time/exact IDs. It checks disabled author controls, actual Theatre world scales and unchanged actual world-camera position/quaternion through compact/human/back/close. The operator must leave the viewer stationary during that isolated test.
+
+## Runtime contract and execution
+
+`countercaseLeaf.read()` is read-only. Its core contract is in `CountercaseLeafProbe.ts`; additional public fields for the final three checks are in `RemainingProbe.ts`. Observation selectors and shelf spines resolve through actual enabled target mappings; indices never imply identities. Rendered role telemetry comes from the actual recording renderer. No vault or private author history is required.
+
+Scenario budgets are 60 s or 120 s. Snapshot waits use 100 polls requesting 50 ms each (nominal 5 s); native frame scheduling can stretch their elapsed time, so the failure text is not a measured proof latency. Run serially and retain exact manager RUNS/PASSED/FAILED lines. A plugin timeout with no RUNS is not a passed or failed game scenario. Lookups and triggers preserve target-specific failure labels.
+
+Pin official LEAF 2 from the [Specs sample](https://github.com/specs-devs/samples/blob/110a145b6572a17fa94d86f18b76047278014729/AI%20Music%20Gen/Packages/Leaf.lspkg), SHA256 `c877d77b8af24b079c4d1d9384afe3dc45e80d321d1a71f680379e5cc73a8fea`, compatible with SIK 2 and Studio 5.22. Latest LEAF 4 requires InteractionKit 4 and is unsuitable for this project. Offline TypeScript 5.9.3 validation uses actual pinned LEAF source, generated installed SIK source and Lens SDK declarations. That type evidence does not replace native runs.
+
+Unverified beyond each explicit ledger row: actual mouse interaction, physical tracking, comfort, visual readability, stereo/rear leakage and measured player comprehension. No Preview pass establishes those. Packing camera/cache author variations and reverse mark order require further focused journeys.
+
+
 
 
 

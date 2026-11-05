@@ -48,6 +48,6 @@ export class CountercaseRuntime extends BaseScriptComponent {
    testing:a?.testing??false,testedRev:a?.testedRev??null,canSeal:a?.canSeal??false,
    needsAmbiguityConfirmation:a?.needsAmbiguityConfirmation??false,evidenceIds:d?.glass.map(g=>g.id)??[],
    observations:(d?.observations??[]).filter(c=>c.observation?.kind==='fragment').map(c=>({id:c.id,roles:c.payload.fragments.filter(f=>f.role).map(f=>f.role)})),observationTargets:this.game.readObservationTargets(),focusedObservationId:d?.focusedObservation?.id??null,verdictStatus:d?.verdict?.status??null,errors:a?.errors??[],inputEpoch:state?.flow.inputEpoch??0,
-   shelf:state?.flow.shelf??[],objects:d?.objects??[],boxes:b?.room.boxes??[],fields:d?.fields??{},completed:d?.completed??false,verdictScope:d?.verdict?.scope,comparison:display.comparison,view:state?.view};
+   shelf:state?.flow.shelf??[],caseTargets:this.game.readCaseTargets(),objects:d?.objects??[],boxes:b?.room.boxes??[],fields:d?.fields??{},completed:d?.completed??false,checking:d?.checking??false,message:d?.message??'',verdictScope:d?.verdict?.scope,comparison:display.comparison,view:state?.view};
  }
 }
