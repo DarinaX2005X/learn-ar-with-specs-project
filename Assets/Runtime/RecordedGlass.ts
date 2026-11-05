@@ -3,13 +3,16 @@ import {
   FrameClue,
   Fragment,
   projectVisibleSurface,
+  getObservations,
 } from "../Domain/index";
 import { roleSilhouette } from "../Scripts/TableKit/RoleSilhouette";
 import { RECORDED_HEAD_ART } from "./MuseumScene/RecordedHeadArt";
 import { RECORDED_TORSO_ART } from "./MuseumScene/RecordedTorsoArt";
 import { stableRecordingOptics } from "./MuseumScene/RecordedOptics";
-import { getWitnessBackground } from "../Spatial/WitnessBackground";
+import { WitnessBackgroundPlate, getWitnessBackground } from "../Spatial/WitnessBackground";
 export interface RecordedSurface {
+  observationId: string;
+  kind: "fragment" | "hand" | "action" | "exhibit";
   segment: string;
   via: "direct" | "mirror";
   centerCm: readonly [number, number, number];
@@ -36,9 +39,14 @@ type RGB = readonly number[];
 /** Fixed-witness public art; every material patch uses the same clipping as its observed surface. */
 export class RecordedGlass {
   private objects: SceneObject[] = [];
+  private backgroundObjects: SceneObject[] = [];
+  private backgroundPlate: WitnessBackgroundPlate | undefined;
+  private backgroundBoard: Board | undefined;
+  private backgroundTransform: string | undefined;
   private roles: string[] = [];
   private bounds: RecordedSurface[] = [];
   private inks: {
+    observationId?: string;
     segment: string;
     via: "direct" | "mirror";
     material: Material;
@@ -70,7 +78,12 @@ export class RecordedGlass {
     this.clearGeometry();
     const board = this.board,
       frame = this.frame;
-    if (!board || !frame) return;
+    if (!board || !frame) { this.clearBackground(); return; }
+    const observations = getObservations({caseId: board.caseId, rev: board.rev, clues: [frame]}, frame.witness, frame.tick);
+    const observationId = (kind: string, segment?: string, index?: number): string | undefined => observations.find(item => {
+      const info = item.observation;
+      return info?.kind === kind && (kind === "fragment" || kind === "hand" ? (info as {segment?:string}).segment === segment : kind === "action" ? (info as {index?:number}).index === index : true);
+    })?.id;
     const observed = frame.payload.fragments
       .map((fragment) => ({
         fragment,
@@ -99,13 +112,29 @@ export class RecordedGlass {
       this.opticalDetail && this.detail
         ? observed.filter((item) => this.key(item.fragment) === this.detail)
         : [];
-    const visible = selected.length ? selected : observed;
+    const detailRequested = !!(this.opticalDetail && this.detail);
+    const visible = detailRequested ? selected : observed;
     const points = visible.flatMap((item) =>
       [
         ...item.triangles,
         ...item.torso.flatMap((patch) => patch.triangles),
       ].flatMap((triangle) => triangle.map((point) => this.point(point))),
     );
+    if (detailRequested && !selected.length && this.focusedId) {
+      const clue = observations.find(item=>item.id === this.focusedId);
+      const payload = frame.payload as typeof frame.payload & {palms?: (Fragment & {present:boolean})[];exhibitSurface?:Fragment};
+      const info = clue?.observation;
+      let surface: Fragment | undefined;
+      if(info?.kind === "hand") surface = payload.palms?.find(item=>idForPalm(item.segment) === this.focusedId);
+      if(info?.kind === "exhibit") surface=payload.exhibitSurface;
+      if(info?.kind === "action") {
+        const action=frame.payload.actions[info.index] as typeof frame.payload.actions[number] & Partial<Fragment> & {contacts?:Fragment["position"][]};
+        if(action?.contacts?.[0] && action.surfaceRight && action.via && action.projection) surface={position:action.contacts[0],surfaceRight:action.surfaceRight,via:action.via,projection:action.projection,segment:"action_"+info.index};
+      }
+      if(surface) points.push(...projectVisibleSurface(board,frame.witness,surface,[[-.065,-.045],[-.065,.045],[.065,.045],[.065,-.045]]).flatMap(tri=>tri.map(point=>this.point(point))));
+      function idForPalm(segment:string) { return observationId("hand",segment); }
+    }
+    const selectedCrop = detailRequested && points.length > 0;
     const fixed = stableRecordingOptics(board, frame.witness);
     const left = points.length ? Math.min(...points.map((p) => p[0])) : 0,
       right = points.length ? Math.max(...points.map((p) => p[0])) : 0;
@@ -114,7 +143,7 @@ export class RecordedGlass {
     // Common glass has one public fixed optical calibration for the whole case.
     // Only an explicitly toggled, selected physical loupe changes its crop.
     const gain = this.zoom
-      ? selected.length
+      ? selectedCrop
         ? Math.min(
             1200,
             32 / Math.max(0.001, right - left),
@@ -123,12 +152,12 @@ export class RecordedGlass {
         : fixed.gain
       : 12 / Math.tan(Math.PI / 3);
     const centerX = this.zoom
-      ? selected.length
+      ? selectedCrop
         ? (left + right) / 2
         : fixed.centerX
       : 0;
     const centerY = this.zoom
-      ? selected.length
+      ? selectedCrop
         ? (bottom + top) / 2
         : fixed.centerY
       : 0;
@@ -163,6 +192,8 @@ export class RecordedGlass {
         minY = Math.min(...ys),
         maxY = Math.max(...ys);
       this.bounds.push({
+        observationId: observationId("fragment", fragment.segment)!,
+        kind: "fragment",
         segment: fragment.segment,
         via: fragment.via,
         centerCm: [(minX + maxX) / 2, (minY + maxY) / 2, 0],
@@ -210,7 +241,49 @@ export class RecordedGlass {
         }
       if (fragment.role) this.roles.push(fragment.role);
     }
+    this.drawContacts(board, frame, observationId, map);
     this.paintFocus();
+  }
+  private drawContacts(
+    board: Board, frame: FrameClue,
+    idFor: (kind:string, segment?:string, index?:number)=>string|undefined,
+    map: (point:{horizontal:number;vertical:number})=>readonly [number,number],
+  ): void {
+    // Geometry is admitted only with current positive surface provenance. Old
+    // frames and a missing palm never manufacture an empty-hand observation.
+    type Surface = {position: Fragment["position"];surfaceRight:Fragment["surfaceRight"];projection:Fragment["projection"];via:Fragment["via"]};
+    const payload = frame.payload as typeof frame.payload & {
+      palms?: (Surface & {segment:string;present:boolean})[];
+      exhibitSurface?: Surface;
+    };
+    const draw = (surface:Surface, kind:RecordedSurface["kind"], id:string|undefined, segment:string, gem:boolean, width:number,height:number):void => {
+      if (!id || (this.opticalDetail && this.detail && this.focusedId !== id)) return;
+      const fragment:Fragment = {...surface,segment};
+      const outline:readonly (readonly [number,number])[] = gem
+        ? [[-width/2,0],[-width*.3,height*.42],[width*.3,height*.42],[width/2,0],[0,-height*.42]]
+        : kind === "exhibit"
+          ? [[-width/2,-height/2],[-width/2,height/2],[width/2,height/2],[width/2,-height/2]]
+          : [[-width*.45,-height*.2],[-width*.5,height*.16],[-width*.2,height*.5],[width*.23,height*.5],[width*.5,height*.1],[width*.32,-height*.42],[-width*.2,-height*.5]];
+      const triangles = projectVisibleSurface(board,frame.witness,fragment,outline).map(tri=>tri.map(map));
+      if (!triangles.length) return;
+      const xs=triangles.flatMap(tri=>tri.map(p=>p[0])),ys=triangles.flatMap(tri=>tri.map(p=>p[1]));
+      const a=Math.min(...xs),b=Math.max(...xs),c=Math.min(...ys),d=Math.max(...ys);
+      if (!(b>a && d>c)) return;
+      this.bounds.push({observationId:id,kind,segment,via:surface.via,centerCm:[(a+b)/2,(c+d)/2,0],widthCm:b-a,heightCm:d-c});
+      const color:RGB = gem ? [0.7,.035,.045] : kind === "exhibit" ? [.16,.12,.055] : [.57,.36,.22];
+      this.mesh(fragment,kind,triangles,color,.72,gem ? [.83,.12,.055] : [.7,.45,.12],id);
+      if(gem) {
+        const facet = projectVisibleSurface(board,frame.witness,fragment,[[0,0],[-width*.3,height*.42],[width*.3,height*.42]]).map(tri=>tri.map(map));
+        this.mesh(fragment,kind+"_Facet",facet,[.92,.22,.16],.74,[.92,.22,.16],id);
+      }
+    };
+    for(const palm of payload.palms??[]) draw(palm,"hand",idFor("hand",palm.segment),palm.segment,palm.present,.07,.055);
+    frame.payload.actions.forEach((action,index)=>{
+      const a=action as typeof action & Partial<Surface> & {contacts?:Fragment["position"][]};
+      if(!a.contacts?.[0] || !a.surfaceRight || !a.projection || !a.via) return;
+      draw({position:a.contacts[0],surfaceRight:a.surfaceRight,projection:a.projection,via:a.via},"action",idFor("action",undefined,index),"action_"+index,action.kind!=="BrushRim",.065,.05);
+    });
+    if(payload.exhibitSurface && frame.payload.exhibit!==undefined) draw(payload.exhibitSurface,"exhibit",idFor("exhibit"),"exhibit",frame.payload.exhibit,.11,.065);
   }
   private background(
     board: Board,
@@ -234,6 +307,10 @@ export class RecordedGlass {
       64,
       40,
     );
+    const transform = [centerX, centerY, gain, gainY].join("|");
+    if (this.backgroundBoard === board && this.backgroundPlate === plate && this.backgroundTransform === transform) return;
+    this.clearBackground();
+    this.backgroundBoard = board; this.backgroundPlate = plate; this.backgroundTransform = transform;
     for (const batch of plate.batches) {
       const builder = new MeshBuilder([
         { name: "position", components: 3 },
@@ -272,7 +349,7 @@ export class RecordedGlass {
       );
       material.mainPass.twoSided = true;
       visual.mainMaterial = material;
-      this.objects.push(object);
+      this.backgroundObjects.push(object);
     }
   }
   private key(fragment: Pick<Fragment, "segment" | "via">): string {
@@ -292,6 +369,7 @@ export class RecordedGlass {
     color: RGB,
     z: number,
     selectedColor: RGB = color,
+    observationId?: string,
   ): void {
     if (!triangles.length) return;
     const builder = new MeshBuilder([
@@ -328,6 +406,7 @@ export class RecordedGlass {
     visual.mainMaterial = material;
     this.objects.push(object);
     this.inks.push({
+      observationId: observationId ?? this.bounds.find(bound=>bound.kind === "fragment" && bound.segment===fragment.segment && bound.via===fragment.via)?.observationId,
       segment: fragment.segment,
       via: fragment.via,
       material,
@@ -353,10 +432,16 @@ export class RecordedGlass {
     }
     this.paintFocus();
   }
+  private focusedId: string | undefined;
+  selectObservation(id: string | undefined): void {
+    this.focusedId = id;
+    const surface = this.bounds.find(item=>item.observationId===id);
+    this.select(surface?.segment, surface?.via);
+  }
   private paintFocus(): void {
     for (const ink of this.inks) {
       const color =
-        ink.segment + "|" + ink.via === this.focused
+        (this.focusedId ? ink.observationId === this.focusedId : ink.segment + "|" + ink.via === this.focused)
           ? ink.selected
           : ink.normal;
       ink.material.mainPass.baseColor = new vec4(
@@ -391,12 +476,18 @@ export class RecordedGlass {
     this.bounds = [];
     this.inks = [];
   }
+  private clearBackground(): void {
+    for (const object of this.backgroundObjects) object.destroy();
+    this.backgroundObjects=[]; this.backgroundPlate=undefined; this.backgroundBoard=undefined; this.backgroundTransform=undefined;
+  }
   clear(): void {
+    this.clearBackground();
     this.clearGeometry();
     this.board = undefined;
     this.frame = undefined;
     this.detail = undefined;
     this.focused = undefined;
+    this.focusedId = undefined;
     this.detailActive = false;
   }
   dispose(): void {

@@ -5,3 +5,4 @@ export * from "./observe";
 export * from "./prove";
 export * from "./cases";
 export * from "./projectSurface";
+export * from "./ContactPose";

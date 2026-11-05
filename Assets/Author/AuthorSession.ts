@@ -1,3 +1,4 @@
+import {blockingAuthorEditErrors} from "./AuthorDraftValidation";
 import { CaseDraft, CompileResult, DomainError, Event, Field, Key, Role, TrackId, Vec3, Verdict, Wall, Witness } from "../Domain/types";
 import { clone, compileCase, freeze } from "../Domain/compile";
 import { proveSteps } from "../Domain/prove";
@@ -211,14 +212,7 @@ export class AuthorSession {
     const errors = this.validate(d);
     // Geometry may invalidate an existing event. Keep that visible and editable.
     // A newly offered transfer itself must already be physically possible.
-    const blocking = errors.filter(e =>
-      !["TAKE_COUNT", "TAKE_REACH", "BRUSH_REACH", "PASS_REACH", "STASH_REACH", "CHAIN_COUNT"].includes(e.code) ||
-      (edit.kind === "setEvent" && (
-        (edit.event.kind === "Take" && ["TAKE_REACH", "TAKE_COUNT"].includes(e.code)) ||
-        (edit.event.kind === "BrushRim" && e.code === "BRUSH_REACH") ||
-        (edit.event.kind === "Pass" && ["PASS_REACH", "CHAIN_COUNT"].includes(e.code)) ||
-        (edit.event.kind === "Stash" && ["STASH_REACH", "CHAIN_COUNT"].includes(e.code))
-      )));
+    const blocking = blockingAuthorEditErrors(d, edit, errors);
     if (blocking.length) { this.errors = blocking; this.emit(); return false; }
     return true;
   }

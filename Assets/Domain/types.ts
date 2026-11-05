@@ -120,13 +120,33 @@ export interface Fragment {
 }
 export interface FramePayload {
   fragments: Fragment[];
-  hands: { position: Vec3; via: "direct" | "mirror" }[];
+  hands: { position: Vec3; via: "direct" | "mirror"; segment?: string }[];
+  /** Positive visibility of an entire palm/gem-sized region. Missing means
+   * unobserved, never an empty-hand assertion. No actor/track identifier. */
+  palms?: PalmRegion[];
   actions: {
     kind: "Take" | "BrushRim" | "Pass" | "Stash";
     positions: Vec3[];
     box?: string;
+    /** Actual visible contact; positions above are only already-visible public
+     * participant anchors. Legacy slices may lack this geometric provenance. */
+    contacts?: Vec3[];
+    via?: "direct" | "mirror";
+    projection?: { horizontal: number; vertical: number };
+    surfaceRight?: Vec3;
   }[];
   exhibit?: boolean;
+  exhibitSurface?: ObservedSurface;
+}
+export interface ObservedSurface {
+  position: Vec3;
+  surfaceRight: Vec3;
+  projection: { horizontal: number; vertical: number };
+  via: "direct" | "mirror";
+}
+export interface PalmRegion extends ObservedSurface {
+  segment: string;
+  present: boolean;
 }
 export interface FrameClue {
   id: string;
@@ -147,6 +167,8 @@ export interface FrameClue {
         position: Vec3;
         via: "direct" | "mirror";
         present: boolean;
+        /** New visibility-backed channel. Absent retains legacy slice parsing. */
+        segment?: string;
       }
     | { kind: "action"; index: number }
     | { kind: "exhibit" }

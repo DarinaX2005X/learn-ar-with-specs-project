@@ -8,8 +8,64 @@ import {
   TrackId,
   Vec3,
   WitnessTape,
+  Witness,
 } from "./types";
-import { add, poseAt, project, sight } from "./geometry";
+import { add, poseAt, project, sight, distance } from "./geometry";
+import { sampleContactPose } from "./ContactPose";
+type ContactSamples = ReturnType<typeof sampleContactPose>[];
+const geometryCache = new WeakMap<
+  Board,
+  {
+    sights: Map<string, Vec3 | undefined>;
+    samples: Map<string, ContactSamples>;
+    sightHits: number;
+    sightComputations: number;
+    sampleHits: number;
+  }
+>();
+function cacheFor(board: Board) {
+  // Tests/tools may mutate an unsealed board. Only immutable compiled geometry
+  // may reuse visibility, so a real geometry edit cannot retain old evidence.
+  if (!Object.isFrozen(board)) return;
+  let cache = geometryCache.get(board);
+  if (!cache) {
+    cache = {
+      sights: new Map(),
+      samples: new Map(),
+      sightHits: 0,
+      sightComputations: 0,
+      sampleHits: 0,
+    };
+    geometryCache.set(board, cache);
+  }
+  return cache;
+}
+function seen(board: Board, w: Witness, p: Vec3, via: "direct" | "mirror") {
+  const cache = cacheFor(board);
+  if (!cache) return sight(board, w, p, via);
+  const key = [w.id, via, p.x, p.y, p.z].join("|");
+  if (cache.sights.has(key)) {
+    cache.sightHits++;
+    return cache.sights.get(key);
+  }
+  cache.sightComputations++;
+  const q = sight(board, w, p, via);
+  if (cache.sights.size < 8192) cache.sights.set(key, q);
+  return q;
+}
+/** Bounded counters for integration/performance tests; no identity or history. */
+export function observationWork(board: Board) {
+  const c = geometryCache.get(board);
+  return c
+    ? {
+        sightHits: c.sightHits,
+        sightComputations: c.sightComputations,
+        sampleHits: c.sampleHits,
+        sampleEntries: c.samples.size,
+        sightEntries: c.sights.size,
+      }
+    : undefined;
+}
 export function carrierAt(
   board: Board,
   h: History,
@@ -39,21 +95,65 @@ export function answer(
   }
 }
 /** Fragment identity is local to one uninterrupted visible segment, never an actor ID. */
-export function observe(board: Board, h: History): WitnessTape {
+export function observe(
+  board: Board,
+  h: History,
+  legacyRecorder = false,
+): WitnessTape {
   const clues: Clue[] = [];
+  // Pose sampling is shared with Spatial, not a second hand-coordinate formula.
+  const cache = cacheFor(board),
+    sampleKey = JSON.stringify([h.take, h.brushes, h.pass, h.stash]);
+  let samples = cache?.samples.get(sampleKey);
+  if (samples) cache!.sampleHits++;
+  else {
+    samples = Array.from({ length: 25 }, (_, tick) =>
+      sampleContactPose(board, h, tick),
+    );
+    if (cache && cache.samples.size < 256)
+      cache.samples.set(sampleKey, samples);
+  }
   for (const w of board.witnesses) {
     const starts: Record<string, number> = {};
     for (let tick = 0; tick <= 24; tick++) {
-      const payload: FramePayload = { fragments: [], hands: [], actions: [] };
-      const visible = (p: Vec3) =>
-        sight(board, w, p, "direct") || sight(board, w, p, "mirror");
+      const payload: FramePayload = legacyRecorder
+        ? { fragments: [], hands: [], actions: [] }
+        : { fragments: [], hands: [], actions: [], palms: [] };
+      const sample = samples[tick];
+      const fragments = new Map<string, string>();
+      const surface = (
+        p: Vec3,
+        right: Vec3,
+        via: "direct" | "mirror",
+        radius = 0.025,
+      ) => {
+        const q = seen(board, w, p, via);
+        if (!q) return;
+        for (const x of [-radius, radius])
+          for (const y of [-radius, radius])
+            if (
+              !seen(
+                board,
+                w,
+                add(p, { x: right.x * x, y, z: right.z * x }),
+                via,
+              )
+            )
+              return;
+        return {
+          position: { ...p },
+          surfaceRight: right,
+          projection: project(w, q),
+          via,
+        };
+      };
       for (const track of board.tracks) {
-        const pose = poseAt(track, tick),
+        const pose = sample.positions.get(track.id)!,
           p = { x: pose.x, y: pose.y, z: pose.z };
         const right = { x: Math.cos(pose.yaw), y: 0, z: -Math.sin(pose.yaw) };
         for (const via of ["direct", "mirror"] as const) {
           const key = track.id + via,
-            q = sight(board, w, p, via);
+            q = seen(board, w, p, via);
           if (!q) {
             delete starts[key];
             continue;
@@ -67,55 +167,135 @@ export function observe(board: Board, h: History): WitnessTape {
             [hw, -hh],
             [hw, hh],
           ].map(([x, y]) => add(p, { x: right.x * x, y, z: right.z * x }));
-          const recognizable = corners.every((c) => !!sight(board, w, c, via));
+          const recognizable = corners.every((c) => !!seen(board, w, c, via));
+          const segment = `${w.id}:${via}:${board.tracks.indexOf(track)}:${starts[key]}`;
           payload.fragments.push({
             position: p,
             surfaceRight: right,
             projection: project(w, q),
             via,
-            segment: `${w.id}:${via}:${board.tracks.indexOf(track)}:${starts[key]}`,
+            segment,
             ...(recognizable ? { role: h.casting[track.id] } : {}),
           });
-          if (carrierAt(board, h, tick) === track.id)
+          fragments.set(key, segment);
+          if (legacyRecorder && carrierAt(board, h, tick) === track.id)
             payload.hands.push({ position: p, via });
         }
+        if (legacyRecorder) continue;
+        for (const via of ["direct", "mirror"] as const) {
+          const key = track.id + "palm" + via,
+            region = surface(sample.hands.get(track.id)!, right, via);
+          if (!region) {
+            delete starts[key];
+            continue;
+          }
+          // Coincident palms at a transfer do not reveal which one owns the
+          // shared gem. Record the visible contact event, never a guessed
+          // receiver-full/donor-empty pair from the private carrier variable.
+          if (
+            board.tracks.some(
+              (other) =>
+                other.id !== track.id &&
+                distance(sample.hands.get(other.id)!, region.position) < 0.06,
+            )
+          ) {
+            delete starts[key];
+            if (sample.carrier === track.id)
+              payload.hands.push({ position: region.position, via });
+            continue;
+          }
+          if (starts[key] === undefined) starts[key] = tick;
+          const segment =
+            fragments.get(track.id + via) ??
+            `${w.id}:${via}:palm:${board.tracks.indexOf(track)}:${starts[key]}`;
+          const present = sample.carrier === track.id;
+          payload.palms!.push({ ...region, segment, present });
+          if (present)
+            payload.hands.push({ position: region.position, via, segment });
+        }
       }
-      const point = (id: TrackId) => {
-        const p = poseAt(board.tracks.find((t) => t.id === id)!, tick);
-        return { x: p.x, y: p.y, z: p.z };
-      };
       const exhibit = board.room.exhibit.position;
-      if (visible(exhibit)) payload.exhibit = tick < board.alarmTick;
-      if (
-        tick === board.alarmTick &&
-        visible(point(h.take)) &&
-        visible(exhibit)
-      )
-        payload.actions.push({ kind: "Take", positions: [point(h.take)] });
-      for (const b of h.brushes)
-        if (b.tick === tick && visible(point(b.track)) && visible(exhibit))
+      if (legacyRecorder) {
+        // Exact v1 projection for an already-sealed v1 tape only. Do not attach
+        // v2 palm provenance or offer these legacy assumptions as new evidence.
+        const visible = (p: Vec3) =>
+          seen(board, w, p, "direct") || seen(board, w, p, "mirror");
+        const point = (id: TrackId) => {
+          const p = sample.positions.get(id)!;
+          return { x: p.x, y: p.y, z: p.z };
+        };
+        if (visible(exhibit)) payload.exhibit = tick < board.alarmTick;
+        if (
+          tick === board.alarmTick &&
+          visible(point(h.take)) &&
+          visible(exhibit)
+        )
+          payload.actions.push({ kind: "Take", positions: [point(h.take)] });
+        for (const brush of h.brushes)
+          if (
+            brush.tick === tick &&
+            visible(point(brush.track)) &&
+            visible(exhibit)
+          )
+            payload.actions.push({
+              kind: "BrushRim",
+              positions: [point(brush.track)],
+            });
+        if (
+          h.pass &&
+          h.pass.tick === tick &&
+          visible(point(h.pass.from)) &&
+          visible(point(h.pass.to))
+        )
           payload.actions.push({
-            kind: "BrushRim",
-            positions: [point(b.track)],
+            kind: "Pass",
+            positions: [point(h.pass.from), point(h.pass.to)],
           });
-      if (
-        h.pass &&
-        h.pass.tick === tick &&
-        visible(point(h.pass.from)) &&
-        visible(point(h.pass.to))
-      )
-        payload.actions.push({
-          kind: "Pass",
-          positions: [point(h.pass.from), point(h.pass.to)],
-        });
-      if (h.stash && h.stash.tick === tick) {
-        const box = board.room.boxes!.find((b) => b.id === h.stash!.box)!;
-        if (visible(point(h.stash.carrier)) && visible(box.position))
-          payload.actions.push({
-            kind: "Stash",
-            positions: [point(h.stash.carrier), box.position],
-            box: box.id,
-          });
+        if (h.stash && h.stash.tick === tick) {
+          const box = board.room.boxes!.find((b) => b.id === h.stash!.box)!;
+          if (visible(point(h.stash.carrier)) && visible(box.position))
+            payload.actions.push({
+              kind: "Stash",
+              positions: [point(h.stash.carrier), box.position],
+              box: box.id,
+            });
+        }
+      } else {
+        for (const via of ["direct", "mirror"] as const) {
+          const right = { x: Math.cos(w.yaw), y: 0, z: -Math.sin(w.yaw) },
+            region = surface(exhibit, right, via, 0.04);
+          // A palm covering the socket is a gap, not proof of an empty socket.
+          if (
+            region &&
+            !Array.from(sample.hands.values()).some(
+              (p) => distance(p, exhibit) < 0.06,
+            )
+          ) {
+            payload.exhibit = tick < board.alarmTick;
+            payload.exhibitSurface = region;
+            break;
+          }
+        }
+        for (const event of sample.contacts)
+          for (const via of ["direct", "mirror"] as const) {
+            const pose = sample.positions.get(event.tracks[0])!,
+              right = { x: Math.cos(pose.yaw), y: 0, z: -Math.sin(pose.yaw) };
+            const contact = surface(event.position, right, via);
+            const positions = event.tracks.map((id) => {
+              const p = sample.positions.get(id)!;
+              return { x: p.x, y: p.y, z: p.z };
+            });
+            if (contact && positions.every((p) => !!seen(board, w, p, via)))
+              payload.actions.push({
+                kind: event.kind,
+                positions,
+                contacts: [contact.position],
+                via,
+                projection: contact.projection,
+                surfaceRight: right,
+                ...(event.box ? { box: event.box } : {}),
+              });
+          }
       }
       payload.actions.sort((a, b) =>
         JSON.stringify(a).localeCompare(JSON.stringify(b)),
@@ -191,25 +371,51 @@ export function getObservations(
         { ...base, kind: "fragment", segment: fragment.segment },
       ),
     );
+    if (frame.payload.palms === undefined) {
+      const hand = frame.payload.hands.find(
+        (hand) =>
+          hand.via === fragment.via &&
+          JSON.stringify(hand.position) === JSON.stringify(fragment.position),
+      );
+      result.push(
+        view(
+          "hand:" + encodeURIComponent(fragment.segment),
+          {
+            fragments: [],
+            hands: hand ? [JSON.parse(JSON.stringify(hand))] : [],
+            actions: [],
+          },
+          {
+            ...base,
+            kind: "hand",
+            position: JSON.parse(JSON.stringify(fragment.position)),
+            via: fragment.via,
+            present: !!hand,
+          },
+        ),
+      );
+    }
+  }
+  for (const palm of frame.payload.palms ?? []) {
     const hand = frame.payload.hands.find(
-      (hand) =>
-        hand.via === fragment.via &&
-        JSON.stringify(hand.position) === JSON.stringify(fragment.position),
+      (h) => h.segment === palm.segment && h.via === palm.via,
     );
     result.push(
       view(
-        "hand:" + encodeURIComponent(fragment.segment),
+        "hand:" + encodeURIComponent(palm.segment),
         {
           fragments: [],
-          hands: hand ? [JSON.parse(JSON.stringify(hand))] : [],
+          hands: palm.present && hand ? [JSON.parse(JSON.stringify(hand))] : [],
           actions: [],
+          palms: [JSON.parse(JSON.stringify(palm))],
         },
         {
           ...base,
           kind: "hand",
-          position: JSON.parse(JSON.stringify(fragment.position)),
-          via: fragment.via,
-          present: !!hand,
+          position: JSON.parse(JSON.stringify(palm.position)),
+          via: palm.via,
+          present: palm.present,
+          segment: palm.segment,
         },
       ),
     );
@@ -236,6 +442,13 @@ export function getObservations(
           hands: [],
           actions: [],
           exhibit: frame.payload.exhibit,
+          ...(frame.payload.exhibitSurface
+            ? {
+                exhibitSurface: JSON.parse(
+                  JSON.stringify(frame.payload.exhibitSurface),
+                ),
+              }
+            : {}),
         },
         { ...base, kind: "exhibit" },
       ),
@@ -285,6 +498,16 @@ export function matchesObservation(
         )
       );
     if (selected.kind === "hand") {
+      if (selected.segment !== undefined) {
+        if (ignoreBrush) return true;
+        const expectedPalm = expected.payload.palms?.[0];
+        return (
+          !!expectedPalm &&
+          !!actualRoot.payload.palms?.some(
+            (palm) => JSON.stringify(palm) === JSON.stringify(expectedPalm),
+          )
+        );
+      }
       const atPosition = (candidate: {
         position: Vec3;
         via: "direct" | "mirror";
@@ -292,6 +515,16 @@ export function matchesObservation(
         candidate.via === selected.via &&
         JSON.stringify(candidate.position) ===
           JSON.stringify(selected.position);
+      if (actualRoot.payload.palms !== undefined) {
+        if (ignoreBrush) return true;
+        const fragment = actualRoot.payload.fragments.find(atPosition);
+        const palm =
+          fragment &&
+          actualRoot.payload.palms.find(
+            (p) => p.segment === fragment.segment && p.via === selected.via,
+          );
+        return !!palm && palm.present === selected.present;
+      }
       return (
         actualRoot.payload.fragments.some(atPosition) &&
         actualRoot.payload.hands.some(atPosition) === selected.present
@@ -302,14 +535,31 @@ export function matchesObservation(
         return true;
       return (
         expected.payload.actions.length === 1 &&
-        actualRoot.payload.actions.some(
-          (action) =>
-            JSON.stringify(action) ===
-            JSON.stringify(expected.payload.actions[0]),
+        actualRoot.payload.actions.some((action) =>
+          (ignoreBrush && expected.payload.actions[0].contacts) ||
+          (!expected.payload.actions[0].contacts && !!action.contacts)
+            ? JSON.stringify({
+                kind: action.kind,
+                positions: action.positions,
+                box: action.box,
+              }) ===
+              JSON.stringify({
+                kind: expected.payload.actions[0].kind,
+                positions: expected.payload.actions[0].positions,
+                box: expected.payload.actions[0].box,
+              })
+            : JSON.stringify(action) ===
+              JSON.stringify(expected.payload.actions[0]),
         )
       );
     }
-    return actualRoot.payload.exhibit === expected.payload.exhibit;
+    if (ignoreBrush && expected.payload.exhibitSurface) return true;
+    return (
+      actualRoot.payload.exhibit === expected.payload.exhibit &&
+      (!expected.payload.exhibitSurface ||
+        JSON.stringify(actualRoot.payload.exhibitSurface) ===
+          JSON.stringify(expected.payload.exhibitSurface))
+    );
   }
   const cleaned = (clue: Clue) =>
     clue.kind === "Frame" && ignoreBrush
@@ -317,9 +567,28 @@ export function matchesObservation(
           ...clue,
           payload: {
             ...clue.payload,
-            actions: clue.payload.actions.filter(
-              (action) => action.kind !== "BrushRim",
-            ),
+            actions: clue.payload.actions
+              .filter((action) => action.kind !== "BrushRim")
+              .map((action) =>
+                clue.payload.palms !== undefined
+                  ? {
+                      kind: action.kind,
+                      positions: action.positions,
+                      ...(action.box ? { box: action.box } : {}),
+                    }
+                  : action,
+              ),
+            // Brush choreography can move a visible empty palm and can move a
+            // gem held by that same hand. Only the relaxed solver prefilter may
+            // ignore it; exact merged matching below restores every channel.
+            ...(clue.payload.palms !== undefined
+              ? {
+                  palms: [],
+                  hands: [],
+                  exhibit: undefined,
+                  exhibitSurface: undefined,
+                }
+              : {}),
           },
         }
       : clue;

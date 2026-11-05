@@ -1,0 +1,23 @@
+const fs=require('fs'),path=require('path'),vm=require('vm'),assert=require('node:assert/strict');
+const bin=process.env.PATH.split(path.delimiter).find(p=>fs.existsSync(path.resolve(p,'../typescript/lib/typescript.js')));
+assert(bin,'Run using npm exec --package=typescript@6.0.2 -- node');
+const ts=require(path.resolve(bin,'../typescript/lib/typescript.js')),cache=new Map(),assets=path.resolve(__dirname,'../../Assets');
+class MeshBuilder{appendVerticesInterleaved(v){this.vertices=v;}appendIndices(v){this.indices=v;}updateMesh(){}getMesh(){return this;}}
+const material=()=>({mainPass:{},clone:material});
+const meshes=[];const scene={getRootObjectsCount:()=>1,getRootObject:()=>bench,createSceneObject(name){const object={name,enabled:true,getTransform:()=>({setLocalScale(){},setLocalPosition(){},setWorldPosition(){},setWorldRotation(){},getWorldPosition:()=>new V(0,94,0),getWorldRotation:()=>new Q(),getWorldTransform:()=>({multiplyPoint:p=>p})}),getChildrenCount:()=>0,setParent(parent){this.parent=parent;},createComponent(){return this.visual={textFill:{}};},destroy(){this.destroyed=true;}};meshes.push(object);return object;}};
+function load(file){file=path.resolve(file);if(cache.has(file))return cache.get(file).exports;const module={exports:{}};cache.set(file,module);const js=ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2021}}).outputText;vm.runInNewContext(js,{module,exports:module.exports,require:p=>load(path.resolve(path.dirname(file),p+'.ts')),MeshBuilder,MeshTopology:{Triangles:0},MeshIndexType:{UInt16:0},global:{scene},vec3:V,quat:Q,Rect:{create:()=>({})},HorizontalAlignment:{Center:0},VerticalAlignment:{Center:0},HorizontalOverflow:{Wrap:0},VerticalOverflow:{Shrink:0},vec4:class{constructor(x,y,z,w){Object.assign(this,{x,y,z,w});}}},{filename:file});return module.exports;}
+
+class V { constructor(x,y,z){Object.assign(this,{x,y,z});}add(v){return new V(this.x+v.x,this.y+v.y,this.z+v.z);} }
+class Q { static fromEulerAngles(){return new Q();}multiply(){return this;}multiplyVec3(v){return v;} }
+const bench={name:'Anchor_ConservationBench',getChildrenCount:()=>0,getTransform:()=>({getWorldPosition:()=>new V(0,94,0),getWorldRotation:()=>new Q()})};
+const parent={name:'Countercase',getTransform:()=>({getWorldTransform:()=>({multiplyPoint:p=>p}),getWorldRotation:()=>new Q()})};
+const D=load(path.join(assets,'Domain/index.ts')),R=load(path.join(assets,'Runtime/RecordedGlass.ts')),A=load(path.join(assets,'Runtime/MuseumScene/AuthorGlass.ts')).AuthorGlass;
+const open=D.compileCase(D.createMuseumTheft(true)),closed=D.compileCase(D.createMuseumTheft(false));assert(open.ok&&closed.ok);
+function recording(result){const sealed=result.sealed;return{board:sealed.board,frame:D.frameAt(sealed.clues,sealed.board.witnesses[0].id,12),tick:12,source:sealed.board.witnesses[0].id,errors:[],verdict:D.prove(sealed.board,sealed.clues,sealed.clues.clues.map(c=>c.id),'Underdetermined')};}
+const before=recording(open),after=recording(closed),glass=new A(parent,material());
+const base={enabled:true,watching:true,generation:1,mode:'recording',source:before.source,tick:12,recording:before,comparing:false};
+glass.render(base);assert.equal(glass.read().camera.roles.length,2);assert(!glass.read().camera.caption.includes('Taker'),'Single camera never presents solver conclusions');
+glass.render({...base,mode:'change',before,after});const pair=glass.read();assert.equal(pair.before.roles.length,2);assert.equal(pair.after.roles.length,1);assert(pair.before.caption.includes('Whole recording'));assert(!pair.before.caption.includes(':'),'No explanatory colon');assert(pair.before.caption.includes('Conservator'));assert(pair.after.caption.includes('Guard or Conservator')||pair.after.caption.includes('Conservator or Guard'));assert.equal(before.verdict.possibleCulprits.length,1);assert.equal(after.verdict.possibleCulprits.length,2);
+glass.render({...base,recording:{...before,board:undefined,frame:undefined,errors:[{message:'Place a camera'}]}},D.createMuseumTheft(true));assert.equal(glass.read().camera.roles.length,0);assert.equal(R.getRecordingSurfaces('AuthorCameraGlass').length,0);assert.equal(glass.read().camera.caption,'Place a camera');
+glass.render(undefined);assert.equal(glass.read().camera,undefined);assert.equal(glass.read().before,undefined);assert.equal(glass.read().after,undefined);assert(R.recordedPaneViews().every(p=>p.surfaces.length===0));glass.dispose();assert.equal(R.recordedPaneViews().length,0);
+console.log('PASS real AuthorGlass own-board same12 source open2/closed1 observed marks; full proof1/2 asked answers; single camera no proof; invalid/role clear; disposal');

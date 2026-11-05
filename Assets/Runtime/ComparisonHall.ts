@@ -1,3 +1,6 @@
+import { ComparisonFocus, comparisonFocusWindow, insideComparisonWindow, clipComparisonWall } from "./ComparisonFocus";
+import { ComparisonSourceRig } from "./ComparisonSourceRig";
+import { ComparisonFolio } from "./ComparisonFolio";
 import { Board, Field, History, WitnessTape, Vec3 } from "../Domain/types";
 import { answer, compareObservations, observe } from "../Domain/observe";
 import { reconstructionIssue } from "../Detective/Reconstruction";
@@ -27,6 +30,9 @@ export interface ComparisonHallOptions {
   finishTimeDrag?(): void;
   stopSound?(): void;
   reportIssue?(message: string): void;
+  setRoomQualification?(text: string | undefined): void;
+  /** Articulate the existing case lid only; never close the case flow. */
+  setBenchCaseParked?(parked: boolean): void;
 }
 interface NativeWing {
   root: SceneObject;
@@ -38,6 +44,8 @@ interface NativeWing {
   label: SceneObject;
   inscription: Text;
   kit: TableKit;
+  props: Map<string, SceneObject>;
+  sourceProps: Map<string, {position: vec3;scale: vec3}>;
 }
 const ROLES: Role[] = ["Courier", "Guard", "Conservator"];
 const copy = <T>(value: T): T => JSON.parse(JSON.stringify(value));
@@ -63,9 +71,12 @@ export class ComparisonHall {
   private issue?: string;
   private disposed = false;
   private roomMode = false;
-  // Two 70 x 50 cm gallery studies fit the existing 240 x 150 cm workbench.
-  private readonly benchScale = 0.1;
-  private readonly gapCm = 12;
+  private focus?: ComparisonFocus;
+  private folio?: ComparisonFolio;
+  private sourceRig?: ComparisonSourceRig;
+  private benchPosition?: vec3;
+  private benchRotation?: quat;
+  // A single supported folio carries two matched contact cutaways.
 
   constructor(
     private parent: SceneObject,
@@ -207,18 +218,28 @@ export class ComparisonHall {
       scope: this.request?.scope,
       visibleWings: this.wings.filter((wing) => wing.root.enabled).length,
       issue: this.issue,
+      focus: this.focus ? copy(this.focus) : undefined,
+      sourceRig: this.sourceRig?.read(),
     };
   }
 
   /** Destroy every reconstruction and clear all retained history references.
    * The caller restores its own station/clock using the returned entry context.
-   * Persistent museum architecture and the recording have never been moved.
+   * The single original recording rig is restored before temporary roots go away.
    */
   exit(): SpatialContext | undefined {
     const restore = this.entered ? copy(this.entered) : undefined;
     this.stage?.dispose();
     this.stage = undefined;
+    this.sourceRig?.restore();
+    this.sourceRig = undefined;
+    this.options.setRoomQualification?.(undefined);
+    this.options.setBenchCaseParked?.(false);
     this.common?.destroy();
+    this.folio = undefined;
+    this.focus = undefined;
+    this.benchPosition = undefined;
+    this.benchRotation = undefined;
     this.common = undefined;
     this.wings = [];
     this.board = undefined;
@@ -250,9 +271,18 @@ export class ComparisonHall {
     return undefined;
   }
   private findGlobal(name: string): SceneObject | undefined {
-    for (let i = 0; i < global.scene.getRootObjectsCount(); i++) {
-      const found = this.find(name, global.scene.getRootObject(i));
-      if (found) return found;
+    const active = (root: SceneObject): SceneObject | undefined => {
+      if (!root.enabled) return undefined;
+      if (root.name === name) return root;
+      for (let i=0;i<root.getChildrenCount();i++) {
+        const found=active(root.getChild(i));
+        if(found) return found;
+      }
+      return undefined;
+    };
+    for(let i=0;i<global.scene.getRootObjectsCount();i++) {
+      const found=active(global.scene.getRootObject(i));
+      if(found) return found;
     }
     return undefined;
   }
@@ -311,7 +341,38 @@ export class ComparisonHall {
     transform.setWorldPosition(bench.getTransform().getWorldPosition());
     transform.setWorldRotation(bench.getTransform().getWorldRotation());
     transform.setWorldScale(new vec3(1, 1, 1));
+    this.benchPosition = transform.getWorldPosition();
+    this.benchRotation = transform.getWorldRotation();
     this.issue = undefined;
+    this.focus = comparisonFocusWindow(this.board, this.request.pair, this.request.field);
+    this.folio = new ComparisonFolio(this.common, this.material);
+    const building = bench.getParent();
+    const worldAt = (x: number, y: number, z: number): vec3 => {
+      const point = global.scene.createSceneObject("TemporaryComparisonCoordinate");
+      point.setParent(this.common!);
+      point.getTransform().setLocalPosition(new vec3(x,y,z));
+      const world = point.getTransform().getWorldPosition();
+      point.destroy();
+      return world;
+    };
+    const names = ["WorkshopRecording__brass", "WorkshopRecording__recordingDarkGlass",
+      "WorkshopRecording__leather", "WorkshopRecording__wood", "Anchor_PinGlass", "Anchor_PinHandle"];
+    const bindings: SceneObject[] = [];
+    for (const name of names) {
+      const node = this.find(name, building);
+      if (!node) return false;
+      bindings.push(node);
+    }
+    // The pane and existing registered targets belong to the active runtime, not
+    // necessarily the building. No replacement input component is constructed.
+    for (const name of ["PublicRecordedGlass", "Use_PinGlass", "Use_LoupeDetail"]) {
+      const node = this.find(name, this.parent);
+      if (!node) return false;
+      bindings.push(node);
+    }
+    this.sourceRig = new ComparisonSourceRig(this.common,
+      bench.getTransform().getWorldRotation(), worldAt(-3,8.5,-54), worldAt(0,29,-61));
+    if (!this.sourceRig.mount(bindings)) return false;
     for (let index = 0; index < 2; index++)
       this.wings.push(this.createWing(index, templates));
     const silent = new TableKit({
@@ -420,6 +481,8 @@ export class ComparisonHall {
       }
     }
     const ruby = this.cloneVisual(templates.get("Ruby")!, geometry, "Ruby");
+    const props = new Map<string, SceneObject>();
+    const sourceProps = new Map<string, {position: vec3;scale: vec3}>();
     for (const [name, source] of templates) {
       if (ROLES.includes(name as Role) || name === "Ruby") continue;
       const object = this.cloneVisual(source, geometry, name);
@@ -427,16 +490,18 @@ export class ComparisonHall {
       // uncentred public story coordinates, with placement owning the origin.
       const p = source.getTransform().getLocalPosition();
       object.getTransform().setLocalPosition(new vec3(p.x + 21, p.y, p.z + 15));
+      props.set(name, object);
+      sourceProps.set(name, {position: object.getTransform().getLocalPosition(), scale: object.getTransform().getLocalScale()});
     }
     const label = global.scene.createSceneObject("ReconstructionInscription");
     label.setParent(root);
     const inscription = label.createComponent("Component.Text");
-    inscription.size = 20;
+    inscription.size = 12;
     inscription.depthTest = true;
     inscription.horizontalAlignment = HorizontalAlignment.Center;
     inscription.verticalAlignment = VerticalAlignment.Center;
     inscription.horizontalOverflow = HorizontalOverflow.Wrap;
-    inscription.layoutRect = Rect.create(-290, 290, -55, 55);
+    inscription.layoutRect = Rect.create(-70, 70, -18, 18);
     label
       .getTransform()
       .setLocalPosition(new vec3(this.board!.room.width * 50, 12, -65));
@@ -451,7 +516,8 @@ export class ComparisonHall {
       drawActor: (pose) => {
         poses.set(pose.role, { ...pose, yawRad: pose.yawRad + Math.PI });
         const actor = actors.get(pose.role)!;
-        actor.enabled = true;
+        actor.enabled = this.roomMode || !this.focus || insideComparisonWindow(
+          this.focus, pose.positionCm[0] / 100, pose.positionCm[2] / 100);
         actor.getTransform().setLocalPosition(modelPoint(pose.positionCm));
         actor
           .getTransform()
@@ -470,7 +536,8 @@ export class ComparisonHall {
       drawObserved: () => {},
       drawRuby: (position, visible) => {
         ruby.getTransform().setLocalPosition(modelPoint(position));
-        ruby.enabled = visible;
+        ruby.enabled = visible && (this.roomMode || !this.focus || insideComparisonWindow(
+          this.focus, position[0] / 100, position[2] / 100));
       },
       drawCurtain: () => {},
       playAtCurtain: () => {},
@@ -485,62 +552,80 @@ export class ComparisonHall {
       label,
       inscription,
       kit,
+      props,
+      sourceProps,
     };
   }
 
   private placeWing(index: number, placement: Placement): void {
     const wing = this.wings[index];
-    if (!wing || !this.board) return;
+    if (!wing || !this.board || !this.focus) return;
     const presented = this.presentation?.placement;
+    const commonTransform=this.common!.getTransform();
+    if (!this.roomMode && presented) {
+      const scale=.30;
+      const cx=this.board.room.width*50*presented.scale;
+      const cz=this.board.room.depth*50*presented.scale+10*scale;
+      const c=Math.cos(presented.yawRad),s=Math.sin(presented.yawRad);
+      commonTransform.setWorldPosition(new vec3(
+        presented.originCm[0]+cx*c+cz*s,
+        presented.originCm[1]-30.4*scale,
+        presented.originCm[2]+cz*c-cx*s));
+      commonTransform.setWorldRotation(quat.fromEulerAngles(0,presented.yawRad,0));
+      commonTransform.setWorldScale(new vec3(scale,scale,scale));
+    } else {
+      commonTransform.setWorldPosition(this.benchPosition!);
+      commonTransform.setWorldRotation(this.benchRotation!);
+      commonTransform.setWorldScale(new vec3(1,1,1));
+    }
+    this.folio!.root.enabled = !this.roomMode;
+    this.options.setBenchCaseParked?.(!this.roomMode);
+    this.sourceRig?.setDeployed(!this.roomMode);
     if (this.roomMode) {
       const p = presented ?? placement;
       wing.root.getTransform().setWorldPosition(new vec3(...p.originCm));
-      wing.root
-        .getTransform()
-        .setWorldRotation(quat.fromEulerAngles(0, p.yawRad, 0));
-      wing.root
-        .getTransform()
-        .setWorldScale(new vec3(p.scale, p.scale, p.scale));
+      wing.root.getTransform().setWorldRotation(quat.fromEulerAngles(0,p.yawRad,0));
+      wing.root.getTransform().setWorldScale(new vec3(p.scale,p.scale,p.scale));
       wing.label.enabled = false;
-      return;
-    }
-    wing.label.enabled = true;
-    if (presented) {
-      const scale = presented.scale,
-        width = this.board.room.width * 100 * scale;
-      const offset = ((index === 0 ? -1 : 1) * (width + this.gapCm)) / 2;
-      const yaw = presented.yawRad;
-      wing.root
-        .getTransform()
-        .setWorldPosition(
-          new vec3(
-            presented.originCm[0] + offset * Math.cos(yaw),
-            presented.originCm[1],
-            presented.originCm[2] - offset * Math.sin(yaw),
-          ),
-        );
-      wing.root
-        .getTransform()
-        .setWorldRotation(quat.fromEulerAngles(0, yaw, 0));
-      wing.root.getTransform().setWorldScale(new vec3(scale, scale, scale));
     } else {
-      const width = this.board.room.width * 100 * this.benchScale;
-      wing.root
-        .getTransform()
-        .setLocalPosition(
-          new vec3(
-            index === 0 ? -width - this.gapCm / 2 : this.gapCm / 2,
-            3.6,
-            -this.board.room.depth * 50 * this.benchScale,
-          ),
-        );
-      wing.root.getTransform().setLocalRotation(quat.fromEulerAngles(0, 0, 0));
-      wing.root
-        .getTransform()
-        .setLocalScale(
-          new vec3(this.benchScale, this.benchScale, this.benchScale),
-        );
+      // Both matched windows retain the same origin/scale, irrespective of casting.
+      const scale = this.focus.scale;
+      wing.root.getTransform().setLocalPosition(new vec3(
+        (index === 0 ? -30 : 30) - this.focus.centre.x * 100 * scale,
+        30.4, -10 - this.focus.centre.z * 100 * scale));
+      wing.root.getTransform().setLocalRotation(quat.fromEulerAngles(0,0,0));
+      wing.root.getTransform().setLocalScale(new vec3(scale,scale,scale));
+      wing.label.enabled = true;
+      wing.label.getTransform().setLocalPosition(new vec3(
+        this.focus.centre.x * 100, -5.4 / scale,
+        this.focus.centre.z * 100 - 28.6 / scale));
+      wing.label.getTransform().setLocalRotation(quat.fromEulerAngles(0,Math.PI,0));
+      wing.label.getTransform().setLocalScale(new vec3(.2/scale,.2/scale,.2/scale));
     }
+    for (const [name, object] of wing.props) {
+      const source = wing.sourceProps.get(name)!;
+      object.getTransform().setLocalPosition(source.position);
+      object.getTransform().setLocalScale(source.scale);
+      object.enabled = true;
+      if (this.roomMode) continue;
+      if (name.startsWith("PublicWall_")) {
+        const wall = this.board.room.walls.find(w => "PublicWall_" + w.id === name)!;
+        const clipped = clipComparisonWall(this.focus,wall);
+        object.enabled = !!clipped;
+        if (clipped) {
+          const [a,b] = clipped;
+          const ratio = Math.hypot(b.x-a.x,b.z-a.z) / Math.hypot(wall.b.x-wall.a.x,wall.b.z-wall.a.z);
+          object.getTransform().setLocalScale(new vec3(source.scale.x*ratio,source.scale.y,source.scale.z));
+          object.getTransform().setLocalPosition(new vec3((a.x+b.x)*3,source.position.y,(a.z+b.z)*3));
+        }
+      } else {
+        object.enabled = insideComparisonWindow(this.focus,source.position.x/6,source.position.z/6);
+      }
+    }
+    if (this.roomMode) {
+      const scope = this.request?.scope === "all" ? "Fits the full recording" : "Fits your selected clues";
+      this.options.setRoomQualification?.("Possible reconstruction\n" + scope);
+    } else this.options.setRoomQualification?.(undefined);
   }
   private applyHands(index: number, targets: readonly ActionPose[]): void {
     const wing = this.wings[index],
@@ -575,8 +660,7 @@ export class ComparisonHall {
                 : "Ruby could be in " + value
               : "Possible reconstruction";
       wing.inscription.text =
-        title +
-        "\n" +
+        "Possible reconstruction\n" + title + "\n" +
         (this.request!.scope === "all"
           ? "Fits the full recording"
           : "Fits your selected clues");

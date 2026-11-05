@@ -89,7 +89,7 @@ export class CasePaper {
   constructor(private root: SceneObject) {
     this.layer = global.scene.createSceneObject("CasePaperInk");
     this.layer.setParent(root);
-    this.result = this.surface("CheckedFinding", [0, 9.35, -15], 37, 24, 64, true);
+    this.result = this.surface("CheckedFinding", [0, 9.35, -15], 37, 24, 128, true);
     for (let index = 0; index < 3; index++)
       this.evidence.push(this.surface("PinnedEvidenceInk" + index,
         [-24 + 24 * index, 6.85, -42], 17, 14, 56, false));
@@ -116,7 +116,11 @@ export class CasePaper {
     if (!anchor) throw new Error("Case paper requires the conservation bench anchor");
     const transform = anchor.getTransform(), rotation = transform.getWorldRotation();
     object.getTransform().setWorldPosition(transform.getWorldPosition().add(rotation.multiplyVec3(new vec3(...offset))));
-    object.getTransform().setWorldRotation(rotation.multiply(quat.fromEulerAngles(-Math.PI / 2, 0, 0)));
+    // Front visitor stands at story -Z: top of the paper points away, toward +Z.
+    // Rotate within the horizontal plane without turning its +Y ink normal over.
+    object.getTransform().setWorldRotation(rotation
+      .multiply(quat.fromEulerAngles(-Math.PI / 2, 0, 0))
+      .multiply(quat.fromEulerAngles(0, 0, Math.PI)));
     const text = object.createComponent("Component.Text");
     text.text = "";
     text.size = size;

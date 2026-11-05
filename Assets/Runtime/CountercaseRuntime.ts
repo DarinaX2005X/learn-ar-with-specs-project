@@ -77,12 +77,15 @@ export class CountercaseRuntime extends BaseScriptComponent {
       canSeal: author?.canSeal ?? false,
       needsAmbiguityConfirmation: author?.needsAmbiguityConfirmation ?? false,
       evidenceIds: detective?.glass.map((g) => g.id) ?? [],
-      observations: (detective?.observations ?? [])
-        .filter((clue) => clue.observation?.kind === "fragment")
-        .map((clue) => ({
-          id: clue.id,
-          roles: clue.payload.fragments.filter((f) => f.role).map((f) => f.role),
-        })),
+      observations: (detective?.observations ?? []).map((clue) => ({
+        id: clue.id,
+        kind: clue.observation?.kind,
+        role: clue.payload.fragments[0]?.role,
+        roles: clue.payload.fragments.filter((f) => f.role).map((f) => f.role),
+        actionKinds: clue.payload.actions.map((action) => action.kind),
+        handPresent: clue.observation?.kind === "hand" ? clue.observation.present : undefined,
+        exhibit: clue.payload.exhibit,
+      })),
       observationTargets: this.game.readObservationTargets(),
       focusedObservationId: detective?.focusedObservation?.id ?? null,
       verdictStatus: detective?.verdict?.status ?? null,

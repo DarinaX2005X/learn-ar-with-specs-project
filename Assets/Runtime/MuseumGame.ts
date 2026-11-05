@@ -4,6 +4,10 @@ import {
   AuthorPresentationPort,
 } from "../Author/AuthorController";
 import { AuthorSession } from "../Author/AuthorSession";
+import {
+  AuthorViewAction,
+  AuthorViewSession,
+} from "../Author/AuthorViewSession";
 import { CaseFlow, FlowState } from "../Cases/CaseFlow";
 import {
   DetectiveAction,
@@ -11,6 +15,7 @@ import {
 } from "../Detective/DetectiveSession";
 import { VaultEntry } from "../Domain/types";
 import { SessionShelf } from "../Shelf/SessionShelf";
+import { ObservationTargetView } from "./MuseumGame/ObservationContacts";
 import { getObservations } from "../Domain/observe";
 import { PlayTable, PlayTableSnapshot, CaseTargetView } from "./PlayTable";
 import { RevealAction, RevealTransport } from "./MuseumGame/RevealTransport";
@@ -26,10 +31,7 @@ export interface MuseumTable {
   finishTimeDrag?(): void;
   render(snapshot: PlayTableSnapshot): void;
   dispose(): void;
-  readObservationTargets?(): readonly {
-    targetName: string;
-    observationId: string;
-  }[];
+  readObservationTargets?(): readonly ObservationTargetView[];
 }
 export interface MuseumAuthorController {
   mount(session: AuthorSession, port: AuthorPresentationPort): void;
@@ -57,6 +59,8 @@ export class MuseumGame {
   private flow: CaseFlow | undefined;
   private table: MuseumTable | undefined;
   private author: AuthorSession | undefined;
+  private authorView: AuthorViewSession | undefined;
+  private swappingAuthor = false;
   private detective: DetectiveSession | undefined;
   private controller: MuseumAuthorController | undefined;
   private controllerObject: SceneObject | undefined;
@@ -118,21 +122,42 @@ export class MuseumGame {
         mountAuthor: (handle) => {
           const session = handle as AuthorSession;
           this.author = session;
-          this.mounting = true;
-          this.controller!.mount(session, {
-            render: (author) => {
+          this.authorView?.dispose();
+          this.authorView = new AuthorViewSession(session, {
+            isAuthorRole: () =>
+              !this.disposed &&
+              this.state?.flow.mode === "author" &&
+              this.author === session,
+            activate: (active) => this.activateAuthor(active),
+            cancelInput: () => {
+              this.table?.finishTimeDrag?.();
+              this.ports.cancelInput();
+            },
+            present: (authorView) => {
+              if (this.state?.flow.mode === "author")
+                this.state = { ...this.state, authorView };
+            },
+            clear: () => {
               if (this.state) {
-                this.state = { flow: this.state.flow, author };
-                if (!this.mounting) this.render();
+                const { authorView, ...rest } = this.state;
+                this.state = rest;
               }
             },
-            clear: () => this.clearRole(),
           });
-          this.mounting = false;
+          this.activateAuthor(session);
           return {
             detach: () => {
-              this.controller!.detach();
-              this.author = undefined;
+              const previousMounting = this.mounting;
+              this.mounting = true;
+              try {
+                const view = this.authorView;
+                this.authorView = undefined;
+                view?.dispose();
+                this.controller!.detach();
+                this.author = undefined;
+              } finally {
+                this.mounting = previousMounting;
+              }
             },
           };
         },
@@ -194,7 +219,38 @@ export class MuseumGame {
       this.detective.dispatch({ type: "play" });
     }
   }
+  /** Role flow retains the base; ordinary controller input follows only the
+   * current base/trial session. A remount is atomic inside the same author role. */
+  private activateAuthor(session: AuthorSession): void {
+    const previousMounting = this.mounting,
+      previousSwap = this.swappingAuthor;
+    this.mounting = true;
+    this.swappingAuthor = true;
+    try {
+      this.controller!.mount(session, {
+        render: (author) => {
+          if (this.state) {
+            this.state = {
+              flow: this.state.flow,
+              author,
+              authorView: this.authorView?.snapshot(),
+            };
+            if (!this.mounting) this.render();
+          }
+        },
+        clear: () => {
+          if (!this.swappingAuthor) this.clearRole();
+        },
+      });
+    } finally {
+      this.swappingAuthor = previousSwap;
+      this.mounting = previousMounting;
+    }
+  }
   private clearRole(): void {
+    const authorView = this.authorView;
+    this.authorView = undefined;
+    authorView?.dispose();
     this.revealClock?.dispose();
     this.revealClock = undefined;
     this.arrivalAlarm = undefined;
@@ -213,7 +269,11 @@ export class MuseumGame {
       flow,
       ...(readyBoard ? { board: readyBoard } : {}),
       ...(flow.mode === "author" && this.author
-        ? { author: this.author.snapshot() }
+        ? {
+            author: (
+              this.authorView?.activeSession() ?? this.author
+            ).snapshot(),
+          }
         : {}),
       ...((flow.mode === "detective" || flow.mode === "finished") &&
       old?.detective
@@ -254,6 +314,7 @@ export class MuseumGame {
           : {}),
       };
     }
+    this.authorView?.sync();
     this.caseView?.sync();
     if (this.caseView)
       this.state = { ...this.state, view: this.caseView.snapshot() };
@@ -263,7 +324,7 @@ export class MuseumGame {
   snapshot(): PlayTableSnapshot | undefined {
     return this.state ? JSON.parse(JSON.stringify(this.state)) : undefined;
   }
-  readObservationTargets(): { targetName: string; observationId: string }[] {
+  readObservationTargets(): readonly ObservationTargetView[] {
     return (
       this.table?.readObservationTargets?.().map((target) => ({ ...target })) ??
       []
@@ -282,6 +343,7 @@ export class MuseumGame {
       this.caseView?.update(seconds);
       return;
     }
+    if (this.authorView?.update()) this.render();
     const session = this.detective;
     session?.update(seconds);
     if (
@@ -302,7 +364,9 @@ export class MuseumGame {
     )
       this.flow?.markSolved();
     const poseTick =
-      this.author?.presentationTick() ?? this.detective?.presentationTick();
+      this.authorView?.activeSession().presentationTick() ??
+      this.author?.presentationTick() ??
+      this.detective?.presentationTick();
     if (poseTick !== undefined) this.ports.presentPose?.(poseTick);
     this.caseView?.update(seconds);
   }
@@ -328,6 +392,13 @@ export class MuseumGame {
       return accepted;
     }
     const mode = this.flow.snapshot().mode;
+    if (action === "authorView") {
+      if (mode !== "author" || !payload || !this.authorView || this.revealed)
+        return false;
+      const accepted = this.authorView.dispatch(payload as AuthorViewAction);
+      this.render();
+      return accepted;
+    }
     if (action === "author")
       return (
         mode === "author" &&
@@ -428,6 +499,7 @@ export class MuseumGame {
       case "leaveAuthor":
         return this.flow.leaveAuthor();
       case "passCase":
+        if (this.authorView?.snapshot().mode === "change") return false;
         return this.flow.passCase();
       case "cancelHandoff":
         return this.flow.cancelHandoff();
@@ -461,6 +533,8 @@ export class MuseumGame {
   }
   dispose(): void {
     if (this.disposed) return;
+    this.authorView?.dispose();
+    this.authorView = undefined;
     this.caseView?.dispose();
     this.flow?.dispose();
     this.controller?.detach();

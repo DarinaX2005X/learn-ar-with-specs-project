@@ -235,15 +235,23 @@ def wall(model, name, axis, constant, start, end, material="plaster", door=None)
     middle, width = door
     radius = width / 2
     spring = 2.12
-    piece(start, middle - radius, 0, 3.8, "Left")
-    piece(middle + radius, end, 0, 3.8, "Right")
+    # The limestone sets the clear opening. Recess plaster into its 17 cm
+    # surround so the arch soffit and straight jambs have one visible face.
+    plaster_radius = radius + 0.06
+    piece(start, middle - plaster_radius, 0, 3.8, "Left")
+    piece(middle + plaster_radius, end, 0, 3.8, "Right")
     for i in range(18):
         a = math.pi * i / 18
         b = math.pi * (i + 1) / 18
         inner_a = (middle + radius * math.cos(a), spring + radius * math.sin(a))
         inner_b = (middle + radius * math.cos(b), spring + radius * math.sin(b))
-        # Masonry above the arch is closed, the walkable arch itself stays empty.
-        polygon = [inner_b, inner_a, (inner_a[0], 3.8), (inner_b[0], 3.8)]
+        plaster_a = (
+            middle + plaster_radius * math.cos(a), spring + plaster_radius * math.sin(a)
+        )
+        plaster_b = (
+            middle + plaster_radius * math.cos(b), spring + plaster_radius * math.sin(b)
+        )
+        polygon = [plaster_b, plaster_a, (plaster_a[0], 3.8), (plaster_b[0], 3.8)]
         plane_prism(
             model, name + "Spandrel" + str(i), polygon, axis, constant, 0.28, material
         )

@@ -73,6 +73,8 @@ export class CaseViewHandles {
   private readonly brass: Material;
   private readonly wood: Material;
   private disposed = false;
+  private qualification: SceneObject | undefined;
+  private qualificationInk: Text | undefined;
   constructor(parent: SceneObject, material: Material) {
     this.root = global.scene.createSceneObject("CaseViewSightFrame");
     this.root.setParent(parent);
@@ -131,6 +133,40 @@ export class CaseViewHandles {
       const support = this.supports.get(slot.id);
       if (support) support.enabled = !dynamic;
     }
+  }
+  /** Qualification is engraved on an attached extension of the existing lower grip. */
+  setQualification(value: string | undefined): void {
+    if (this.disposed) return;
+    if (!value) {
+      if (this.qualification) this.qualification.enabled = false;
+      return;
+    }
+    if (!this.qualification) {
+      const plate = global.scene.createSceneObject("QualifiedLowerGrip");
+      plate.setParent(this.frame);
+      this.box(
+        plate,
+        "AttachedWood",
+        [0, -8.4, -0.3],
+        [24, 4.8, 2.2],
+        this.wood,
+      );
+      const ink = global.scene.createSceneObject("ReconstructionQualification");
+      ink.setParent(plate);
+      ink.getTransform().setLocalPosition(new vec3(0, -8.4, -1.42));
+      ink.getTransform().setLocalRotation(quat.fromEulerAngles(0, Math.PI, 0));
+      const text = ink.createComponent("Component.Text");
+      text.size = 24;
+      text.depthTest = true;
+      text.horizontalAlignment = HorizontalAlignment.Center;
+      text.verticalAlignment = VerticalAlignment.Center;
+      text.horizontalOverflow = HorizontalOverflow.Wrap;
+      text.layoutRect = Rect.create(-11.5, 11.5, -2.1, 2.1);
+      this.qualification = plate;
+      this.qualificationInk = text;
+    }
+    this.qualificationInk!.text = value;
+    this.qualification.enabled = true;
   }
   private group(name: string): SceneObject {
     const node = global.scene.createSceneObject(name);
@@ -256,6 +292,7 @@ export class CaseViewHandles {
     visual.mainMaterial = material;
   }
   clear(): void {
+    this.setQualification(undefined);
     this.root.enabled = false;
     for (const piece of this.pieces.values()) piece.enabled = false;
   }

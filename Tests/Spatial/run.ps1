@@ -7,7 +7,7 @@ try {
  if ($LASTEXITCODE -ne 0) { throw 'Spatial regression checks failed' }
  node Tests/Spatial/CaseViewRouting/run.cjs
  if ($LASTEXITCODE -ne 0) { throw 'Case view routing checks failed' }
- npx --yes --package typescript@6.0.2 tsc --ignoreConfig --strict --skipLibCheck --target ES2021 --module commonjs --outDir Tests/Spatial/build-handles Support/StudioLib.d.ts Assets/Runtime/CaseViewHandles.ts
+ npx --yes --package typescript@6.0.2 tsc --ignoreConfig --strict --skipLibCheck --lib ES2021 --target ES2021 --module commonjs --outDir Tests/Spatial/build-handles Support/StudioLib.d.ts Assets/Runtime/CaseViewHandles.ts
  if ($LASTEXITCODE -ne 0) { throw 'Native case view handles compilation failed' }
  node Tests/Spatial/CaseViewRouting/handles.cjs
  if ($LASTEXITCODE -ne 0) { throw 'Native case view grip slot checks failed' }

@@ -1,7 +1,23 @@
+import {
+  ObservationContact,
+  ObservationTargetView,
+  observationContacts,
+  nextObservation,
+  observationLabel,
+} from "../Runtime/MuseumGame/ObservationContacts";
+import { AuthorPropsHandles } from "../Author/AuthorPropsHandles";
 import { Interactable } from "SpectaclesInteractionKit.lspkg/Components/Interaction/Interactable/Interactable";
 import { AuthorSnapshot } from "../Author/AuthorSession";
+import {
+  AuthorViewSnapshot,
+  AuthorViewAction,
+  authorViewControls,
+} from "../Author/AuthorViewSession";
 import { AuthorCommand } from "../Author/AuthorController";
-import { DetectiveState, DetectiveAction } from "../Detective/DetectiveSession";
+import {
+  DetectiveState,
+  DetectiveAction,
+} from "../Detective/DetectiveSession";
 import { FlowState } from "../Cases/CaseFlow";
 import {
   Board,
@@ -17,15 +33,18 @@ import {
   recordedPaneViews,
   toggleRecordingDetail,
   recordingDetailEnabled,
-} from "./RecordedGlass";
+} from "../Runtime/RecordedGlass";
 import {
   CaseViewSnapshot,
   CaseViewAction,
   caseViewControls,
 } from "../Spatial/CaseViewRouting";
-import { caseViewHandleSlots } from "./CaseViewHandles";
+import { caseViewHandleSlots } from "../Runtime/CaseViewHandles";
 import { ShelfItem } from "../Shelf/SessionShelf";
-import { RevealAction, RevealPlayback } from "./MuseumGame/RevealTransport";
+import {
+  RevealAction,
+  RevealPlayback,
+} from "../Runtime/MuseumGame/RevealTransport";
 
 export interface CaseTargetView {
   readonly targetName: string;
@@ -40,6 +59,7 @@ export interface PlayTableSnapshot {
   reveal?: RevealPlayback;
   flow: FlowState;
   author?: AuthorSnapshot;
+  authorView?: AuthorViewSnapshot;
   detective?: DetectiveState;
   board?: Board;
   view?: CaseViewSnapshot;
@@ -72,10 +92,12 @@ export type PlayTableCommand =
       };
     }
   | { action: "author"; payload: AuthorCommand }
+  | { action: "authorView"; payload: AuthorViewAction }
   | { action: "detective"; payload: DetectiveAction }
   | { action: "reveal"; payload: RevealAction }
   | { action: "view"; payload: CaseViewAction };
 export interface PlayTablePorts {
+  propMaterial?: Material;
   dispatch(action: string, payload?: unknown): void;
 }
 
@@ -110,16 +132,19 @@ export class PlayTable {
   private registeringPublicStation = false;
   private lifecycle: ScriptComponent;
   private lifecycleUpdate: SceneEvent;
+  private props: AuthorPropsHandles | undefined;
   private disposed = false;
   private dragging = false;
   private inputGeneration = 0;
+  private finishingInput = false;
   private viewIdentity = "";
+  private authorViewIdentity = "";
   private actions = new Map<string, ObjectAction>();
   private sceneObjects = new Map<string, SceneObject>();
   private focus: string | undefined;
   private lastUsed: string | undefined;
   private rackPage = 0;
-  private observationSlots = new Map<string, FrameClue>();
+  private observationSlots = new Map<string, ObservationContact>();
 
   constructor(
     private parent: SceneObject,
@@ -148,18 +173,28 @@ export class PlayTable {
     snapshot = {
       ...snapshot,
       author: snapshot.flow.mode === "author" ? snapshot.author : undefined,
-      detective: !snapshot.reveal && ["detective", "finished"].includes(snapshot.flow.mode)
-        ? snapshot.detective
-        : undefined,
+      authorView:
+        snapshot.flow.mode === "author" ? snapshot.authorView : undefined,
+      detective:
+        !snapshot.reveal &&
+        ["detective", "finished"].includes(snapshot.flow.mode)
+          ? snapshot.detective
+          : undefined,
     };
     this.state = snapshot;
     this.epoch = snapshot.flow.inputEpoch;
     const viewIdentity = snapshot.view
       ? [snapshot.view.mode, snapshot.view.caseId, snapshot.view.rev].join("|")
       : "museum";
-    if (this.viewIdentity && viewIdentity !== this.viewIdentity)
-      this.finishTimeDrag();
+    const authorViewIdentity = snapshot.authorView
+      ? [snapshot.authorView.enabled, snapshot.authorView.generation].join("/")
+      : "closed";
+    const changedView = !!this.viewIdentity && viewIdentity !== this.viewIdentity;
+    const changedAuthor = !!this.authorViewIdentity && authorViewIdentity !== this.authorViewIdentity;
+    // Publish identity before cancellation can synchronously render changed local tools.
     this.viewIdentity = viewIdentity;
+    this.authorViewIdentity = authorViewIdentity;
+    if (changedView || changedAuthor) this.finishTimeDrag();
     // Evidence pages, shelf records, selection and proof results are data changes.
     // They must never replace a native Interactable that is dispatching a release.
     const signature = [
@@ -183,6 +218,7 @@ export class PlayTable {
         this.sceneObjects.clear();
       }
     }
+    this.props?.sync();
     this.updateCaseLidTarget();
     this.updateMovingTargets();
     this.updateObservationTargets();
@@ -198,8 +234,13 @@ export class PlayTable {
   /** Finalize at the already authoritative tick, then ignore the held old input.
    * MuseumGame freezes its session afterwards. No second seek or replay occurs. */
   finishTimeDrag(): void {
-    this.inputGeneration++;
-    this.dragging = false;
+    if (this.finishingInput) return;
+    this.finishingInput = true;
+    try {
+      this.props?.cancel();
+      this.inputGeneration++;
+      this.dragging = false;
+    } finally { this.finishingInput = false; }
   }
 
   readCaseTargets(): readonly CaseTargetView[] {
@@ -220,15 +261,22 @@ export class PlayTable {
     return targets;
   }
 
-  readObservationTargets(): { targetName: string; observationId: string }[] {
-    const targets: { targetName: string; observationId: string }[] = [];
-    for (const [id, observation] of this.observationSlots) {
+  readObservationTargets(): readonly ObservationTargetView[] {
+    const targets: ObservationTargetView[] = [];
+    for (const [id, contact] of this.observationSlots) {
       const action = this.actions.get(id);
-      if (action?.object.enabled && action.active())
+      if (action?.object.enabled && action.active()) {
+        const focused = this.state.detective?.focusedObservation?.id;
+        const selected = contact.observations.find(
+          (view) => view.id === focused,
+        );
         targets.push({
           targetName: action.object.name,
-          observationId: observation.id,
+          observationId: (selected ?? contact.observations[0]).id,
+          observationIds: contact.observations.map((view) => view.id),
+          selectedObservationId: selected?.id,
         });
+      }
     }
     return targets;
   }
@@ -244,9 +292,6 @@ export class PlayTable {
       detective.mode === "reconstruction"
     )
       return;
-    const fragments = detective.observations.filter(
-      (observation) => observation.observation?.kind === "fragment",
-    );
     for (const pane of recordedPaneViews()) {
       if (
         !["PublicRecordedGlass", "EntryRecordedGlass"].includes(
@@ -255,37 +300,24 @@ export class PlayTable {
         !pane.root.isEnabledInHierarchy
       )
         continue;
-      const surfaces = pane.surfaces
-        .map((surface) => ({
-          surface,
-          observation: fragments.find((observation) => {
-            const fragment = observation.payload.fragments[0];
-            return (
-              fragment?.segment === surface.segment &&
-              fragment.via === surface.via
-            );
-          }),
-        }))
-        .filter((item) => !!item.observation);
-      for (let index = 0; index < surfaces.length; index++) {
-        const id = "Observation_" + pane.root.name + "_" + index;
-        const { surface, observation } = surfaces[index];
-        this.observationSlots.set(id, observation);
+      const contacts = observationContacts(
+        pane.surfaces,
+        detective.observations,
+      );
+      for (const contact of contacts) {
+        const id = "Observation_" + pane.root.name + "_" + contact.slot;
+        this.observationSlots.set(id, contact);
         if (!this.actions.has(id)) this.bindObservationTarget(id);
         const action = this.actions.get(id);
-        action.shape.size = new vec3(
-          Math.max(2, surface.widthCm + 1),
-          Math.max(3, surface.heightCm + 1),
-          1.5,
-        );
+        action.shape.size = new vec3(contact.widthCm, contact.heightCm, 1.5);
         const world = pane.root
           .getTransform()
           .getWorldTransform()
           .multiplyPoint(
             new vec3(
-              surface.centerCm[0],
-              surface.centerCm[1],
-              surface.centerCm[2] + 1,
+              contact.centerCm[0],
+              contact.centerCm[1],
+              contact.centerCm[2] + 1,
             ),
           );
         action.object.getTransform().setWorldPosition(world);
@@ -297,7 +329,7 @@ export class PlayTable {
           .setWorldScale(pane.root.getTransform().getWorldScale());
         action.inscription
           .getTransform()
-          .setLocalPosition(new vec3(0, surface.heightCm / 2 + 2, 1));
+          .setLocalPosition(new vec3(0, contact.heightCm / 2 + 2, 1));
         action.inscription
           .getTransform()
           .setLocalRotation(quat.fromEulerAngles(0, 0, 0));
@@ -315,24 +347,24 @@ export class PlayTable {
       [0, 0, 0],
       [2, 3, 1.5],
       () => {
-        const observation = this.observationSlots.get(id);
-        const role = observation?.payload.fragments[0]?.role;
-        const selected =
-          this.state.detective?.focusedObservation?.id === observation?.id;
+        const contact = this.observationSlots.get(id);
+        if (!contact) return "";
+        const focused = this.state.detective?.focusedObservation;
+        const selected = contact.observations.find(
+          (view) => view.id === focused?.id,
+        );
         return selected
-          ? role
-            ? role + " selected"
-            : "Mark selected"
-          : role
-            ? "Select " + role
-            : "Select visible mark";
+          ? observationLabel(selected) +
+              " selected" +
+              (contact.observations.length > 1 ? " / next mark" : "")
+          : "Select " + observationLabel(contact.observations[0]);
       },
       () => {
-        const observation = this.observationSlots.get(id);
+        const contact = this.observationSlots.get(id);
         if (
           capturedEpoch === this.epoch &&
           capturedId &&
-          observation?.id === capturedId
+          contact?.observations.some((view) => view.id === capturedId)
         )
           this.detective({ type: "selectObservation", id: capturedId });
       },
@@ -341,7 +373,11 @@ export class PlayTable {
     this.registeringPublicStation = publicRegistration;
     action.text.size = 18;
     action.input.onTriggerStart.add(() => {
-      capturedId = this.observationSlots.get(id)?.id;
+      const contact = this.observationSlots.get(id);
+      capturedId = contact
+        ? nextObservation(contact, this.state.detective?.focusedObservation?.id)
+            ?.id
+        : undefined;
       capturedEpoch = this.epoch;
     });
   }
@@ -349,8 +385,8 @@ export class PlayTable {
   private pinLabel(): string {
     const detective = this.state.detective;
     if (detective.mode === "reconstruction") return "Back to observations";
-    const role = detective.focusedObservation?.payload.fragments[0]?.role;
-    if (role) return "Pin " + role;
+    if (detective.focusedObservation)
+      return "Pin " + observationLabel(detective.focusedObservation);
     if (
       detective.frame?.kind === "Frame" &&
       detective.observations.length > 1 &&
@@ -424,7 +460,7 @@ export class PlayTable {
     if (this.state.detective) this.send("detective", action);
   }
   private reveal(action: RevealAction): void {
-    if(this.state.reveal)this.send("reveal",action);
+    if (this.state.reveal) this.send("reveal", action);
   }
 
   /** The hit area belongs to an actual object. Its inscription never follows the viewer. */
@@ -546,7 +582,9 @@ export class PlayTable {
         capturedEpoch === this.epoch &&
         capturedGeneration === this.inputGeneration &&
         canUse() &&
-        (!this.dragging || id.startsWith("CaseView")) &&
+        (!this.dragging ||
+          id.startsWith("CaseView") ||
+          id.startsWith("AuthorView")) &&
         !dragged
       )
         invoke();
@@ -576,6 +614,53 @@ export class PlayTable {
     this.publicWorkbench(bench);
     this.viewHandles(bench);
     this.registeringPublicStation = false;
+    this.installAuthorProps();
+  }
+
+  private installAuthorProps(): void {
+    const material =
+      this.ports.propMaterial ??
+      this.propMaterial(this.find("Pedestal", this.find("DisplayCase"))) ??
+      this.propMaterial(this.find("Courier"));
+    if (!material)
+      throw new Error(
+        "Author tools need the actual display-case visual material",
+      );
+    this.props = new AuthorPropsHandles({
+      parent: this.root,
+      material,
+      bind: (...args) => this.bindObject(...args),
+      anchor: (name, fallback) => this.anchor(name, fallback),
+      toWorld: (point) =>
+        this.root
+          .getTransform()
+          .getWorldTransform()
+          .multiplyPoint(new vec3(...point)),
+      toStory: (point) => this.storyPoint(point),
+      deltaToStory: (delta) => this.storyDelta(delta),
+      template: (name) =>
+        name === "MuseumPartitionShortTemplate"
+          ? this.find(name)
+          : this.find(name, this.parent),
+      mode: () => this.state.flow.mode,
+      scope: () => `${this.epoch}/${this.inputGeneration}`,
+      read: () => this.state.author,
+      author: (command) => this.author(command),
+      flow: (type, confirmed) => this.flow(type, { confirmed }),
+      changed: () => this.render(this.state),
+    });
+  }
+  private propMaterial(root: SceneObject | undefined): Material | undefined {
+    if (!root) return undefined;
+    const visual = root.getComponent(
+      "Component.RenderMeshVisual",
+    ) as RenderMeshVisual;
+    if (visual?.mainMaterial) return visual.mainMaterial;
+    for (let i = 0; i < root.getChildrenCount(); i++) {
+      const material = this.propMaterial(root.getChild(i));
+      if (material) return material;
+    }
+    return undefined;
   }
 
   private buildRoleObjects(): void {
@@ -609,7 +694,12 @@ export class PlayTable {
       position,
       [22, 24, 8],
       () => {
-        if(this.state.reveal)return (this.state.reveal.playing?"Pause theft ":"Play theft ")+(this.state.reveal.tick/2).toFixed(1)+" s";
+        if (this.state.reveal)
+          return (
+            (this.state.reveal.playing ? "Pause theft " : "Play theft ") +
+            (this.state.reveal.tick / 2).toFixed(1) +
+            " s"
+          );
         const playing =
           this.state.author?.playing ?? this.state.detective?.playing;
         const tick = this.state.author?.tick ?? this.state.detective?.tick;
@@ -619,7 +709,8 @@ export class PlayTable {
       },
       () => {
         if (this.state.flow.mode === "ready") this.flow("replayAlarm");
-        else if(this.state.reveal)this.reveal({type:this.state.reveal.playing?"pause":"play"});
+        else if (this.state.reveal)
+          this.reveal({ type: this.state.reveal.playing ? "pause" : "play" });
         else if (this.state.author)
           this.author({ kind: this.state.author.playing ? "pause" : "play" });
         else if (this.state.detective)
@@ -629,7 +720,8 @@ export class PlayTable {
       },
       () =>
         this.state.flow.mode !== "handoff" &&
-        (!!this.state.reveal || this.state.flow.mode !== "finished" ||
+        (!!this.state.reveal ||
+          this.state.flow.mode !== "finished" ||
           this.state.detective?.mode === "reconstruction"),
     );
     let startTick = 0,
@@ -641,7 +733,11 @@ export class PlayTable {
       capturedGeneration = this.inputGeneration;
       this.dragging = true;
       distance = 0;
-      startTick = this.state.reveal?.tick ?? this.state.author?.tick ?? this.state.detective?.tick ?? 12;
+      startTick =
+        this.state.reveal?.tick ??
+        this.state.author?.tick ??
+        this.state.detective?.tick ??
+        12;
     });
     clock.input.onDragUpdate.add((event) => {
       if (
@@ -651,7 +747,7 @@ export class PlayTable {
         return;
       distance += this.storyDelta(event.dragVector).x;
       const tick = clamp(Math.round(startTick + distance / 2), 0, 24);
-      if(this.state.reveal)this.reveal({type:"seek",tick});
+      if (this.state.reveal) this.reveal({ type: "seek", tick });
       else if (this.state.author) this.author({ kind: "setTick", tick });
       else this.detective({ type: "seek", tick });
       clock.text.text = (tick / 2).toFixed(1) + " s";
@@ -685,7 +781,7 @@ export class PlayTable {
     );
   }
   private step(delta: -1 | 1): void {
-    if(this.state.reveal)this.reveal({type:"step",delta});
+    if (this.state.reveal) this.reveal({ type: "step", delta });
     else if (this.state.author) this.author({ kind: "stepTick", delta });
     else this.detective({ type: "step", delta });
   }
@@ -766,6 +862,8 @@ export class PlayTable {
         const author = this.state.author;
         if (author?.testing) return "Checking the recording";
         if (author?.needsAmbiguityConfirmation) return "Keep different thefts";
+        if (this.state.authorView?.mode === "change" && author?.canSeal)
+          return "Keep or discard this change first";
         return author?.canSeal ? "Pass the case" : "Test case";
       },
       () => {
@@ -776,8 +874,9 @@ export class PlayTable {
         } else if (this.state.author) {
           if (this.state.author.needsAmbiguityConfirmation)
             this.author({ kind: "confirmAmbiguity" });
-          else if (this.state.author.canSeal) this.flow("passCase");
-          else this.author({ kind: "startTest" });
+          else if (this.state.author.canSeal) {
+            if (this.state.authorView?.mode !== "change") this.flow("passCase");
+          } else this.author({ kind: "startTest" });
         }
       },
       () => ["author", "handoff", "finished"].includes(this.state.flow.mode),
@@ -893,7 +992,7 @@ export class PlayTable {
             },
           });
       },
-      () => !!this.selectedTrack(),
+      () => !!this.selectedTrack() && !this.props?.controller.isPlacing(),
     );
     this.bindObject(
       "TouchRim",
@@ -911,11 +1010,12 @@ export class PlayTable {
             },
           });
       },
-      () => !!this.selectedTrack(),
+      () => !!this.selectedTrack() && !this.props?.controller.isPlacing(),
     );
     this.bindCurtain();
     for (const witness of author.draft.witnesses)
       this.bindAuthorCamera(witness.id);
+    this.bindAuthorView();
     this.bindFloorPlacement();
     if (author.draft.chain)
       for (const box of author.draft.room.boxes ?? []) {
@@ -940,11 +1040,112 @@ export class PlayTable {
                 },
               });
           },
-          () => !!this.selectedTrack(),
+          () => !!this.selectedTrack() && !this.props?.controller.isPlacing(),
         );
       }
   }
 
+  private authorViewControl(id: string) {
+    return this.state.authorView && this.state.author
+      ? authorViewControls(
+          this.state.authorView,
+          this.state.author.draft.witnesses,
+        ).find((control) => control.id === id)
+      : undefined;
+  }
+  private bindAuthorView(): void {
+    const author = this.state.author;
+    if (!author) return;
+    const bench = this.anchor("Anchor_ConservationBench", [-350, 94, 380]);
+    const bind = (
+      id: string,
+      controlId: string,
+      position: Point,
+      size: Point,
+      onTop = true,
+    ) =>
+      this.bindObject(
+        id,
+        position,
+        size,
+        () => this.authorViewControl(controlId)?.label ?? "",
+        () => {
+          const control = this.authorViewControl(controlId);
+          if (!control) return;
+          this.finishTimeDrag();
+          this.send("authorView", control.action);
+        },
+        () =>
+          this.state.flow.mode === "author" &&
+          !!this.authorViewControl(controlId) &&
+          (controlId !== "CompareThisChange" ||
+            !!this.state.authorView?.canCompare),
+        onTop,
+      );
+    for (const witness of author.draft.witnesses) {
+      const watch = bind(
+        "AuthorViewWatchCamera_" + witness.id,
+        "WatchThisView-" + witness.id,
+        this.authorWatchPosition(witness),
+        [35, 22, 4],
+        false,
+      );
+      watch.object
+        .getTransform()
+        .setLocalRotation(quat.fromEulerAngles(0, witness.yaw, 0));
+      watch.inscription
+        .getTransform()
+        .setLocalPosition(new vec3(0, -13, -2.15));
+      bind(
+        "AuthorViewWatchBench_" + witness.id,
+        "WatchThisView-" + witness.id,
+        this.offset(
+          bench,
+          -68 + author.draft.witnesses.indexOf(witness) * 22,
+          7,
+          -42,
+        ),
+        [19, 6, 16],
+      );
+    }
+    bind(
+      "AuthorViewTryChange",
+      "TryAChange",
+      this.offset(bench, -26, 5, 20),
+      [18, 6, 14],
+    );
+    bind(
+      "AuthorViewCompareChange",
+      "CompareThisChange",
+      this.offset(bench, 0, 5, 20),
+      [20, 6, 14],
+    );
+    bind(
+      "AuthorViewKeepChange",
+      "KeepThisChange",
+      this.offset(bench, -26, 5, 39),
+      [20, 6, 14],
+    );
+    bind(
+      "AuthorViewDiscardChange",
+      "DiscardChange",
+      this.offset(bench, 0, 5, 39),
+      [20, 6, 14],
+    );
+    bind(
+      "AuthorViewBackToStage",
+      "BackToStage",
+      this.offset(bench, 26, 5, 20),
+      [18, 6, 14],
+    );
+  }
+  private authorWatchPosition(witness: { position: Vec3; yaw: number }): Point {
+    return [
+      witness.position.x * 100 - 64.2 * Math.sin(witness.yaw),
+      witness.position.y * 100,
+      witness.position.z * 100 - 64.2 * Math.cos(witness.yaw),
+    ];
+  }
   private bindAuthorCamera(id: string): void {
     const current = () =>
       this.state.author.draft.witnesses.find((witness) => witness.id === id);
@@ -981,15 +1182,21 @@ export class PlayTable {
       },
     );
     let captured = -1,
+      capturedGeneration = -1,
       position = { ...witness.position };
     camera.input.onDragStart.add(() => {
       captured = this.epoch;
+      capturedGeneration = this.inputGeneration;
       this.dragging = true;
       position = { ...current().position };
       this.author({ kind: "beginGesture" });
     });
     camera.input.onDragUpdate.add((event) => {
-      if (captured !== this.epoch) return;
+      if (
+        captured !== this.epoch ||
+        capturedGeneration !== this.inputGeneration
+      )
+        return;
       const delta = this.storyDelta(event.dragVector),
         room = this.state.author.draft.room;
       position = {
@@ -1010,11 +1217,19 @@ export class PlayTable {
     this.finishDrag(
       camera.input,
       () => {
-        if (captured === this.epoch) this.author({ kind: "commitGesture" });
+        if (
+          captured === this.epoch &&
+          capturedGeneration === this.inputGeneration
+        )
+          this.author({ kind: "commitGesture" });
         captured = -1;
       },
       () => {
-        if (captured === this.epoch) this.author({ kind: "cancelGesture" });
+        if (
+          captured === this.epoch &&
+          capturedGeneration === this.inputGeneration
+        )
+          this.author({ kind: "cancelGesture" });
         captured = -1;
       },
     );
@@ -1044,7 +1259,7 @@ export class PlayTable {
           },
         });
       },
-      () => !!this.selectedTrack(),
+      () => !!this.selectedTrack() && !this.props?.controller.isPlacing(),
     );
     floor.input.onTriggerStart.add((event) => {
       floorPoint = event.interactor.targetHitPosition;
@@ -1078,9 +1293,11 @@ export class PlayTable {
     let origin: Key,
       dx = 0,
       dz = 0,
-      captured = -1;
+      captured = -1,
+      capturedGeneration = -1;
     base.input.onDragStart.add(() => {
       captured = this.epoch;
+      capturedGeneration = this.inputGeneration;
       this.dragging = true;
       origin = this.pathPose(track);
       dx = 0;
@@ -1091,7 +1308,11 @@ export class PlayTable {
         this.author({ kind: "beginGesture" });
     });
     base.input.onDragUpdate.add((event) => {
-      if (captured !== this.epoch) return;
+      if (
+        captured !== this.epoch ||
+        capturedGeneration !== this.inputGeneration
+      )
+        return;
       const movement = this.storyDelta(event.dragVector);
       dx += movement.x / 100;
       dz += movement.z / 100;
@@ -1112,11 +1333,19 @@ export class PlayTable {
     this.finishDrag(
       base.input,
       () => {
-        if (captured === this.epoch) this.author({ kind: "commitGesture" });
+        if (
+          captured === this.epoch &&
+          capturedGeneration === this.inputGeneration
+        )
+          this.author({ kind: "commitGesture" });
         captured = -1;
       },
       () => {
-        if (captured === this.epoch) this.author({ kind: "cancelGesture" });
+        if (
+          captured === this.epoch &&
+          capturedGeneration === this.inputGeneration
+        )
+          this.author({ kind: "cancelGesture" });
         captured = -1;
       },
     );
@@ -1195,15 +1424,21 @@ export class PlayTable {
       );
     }
     let aperture = 0,
-      captured = -1;
+      captured = -1,
+      capturedGeneration = -1;
     curtain.input.onDragStart.add(() => {
       captured = this.epoch;
+      capturedGeneration = this.inputGeneration;
       this.dragging = true;
       aperture = this.state.author.draft.room.mirror.aperture;
       this.author({ kind: "beginGesture" });
     });
     curtain.input.onDragUpdate.add((event) => {
-      if (captured !== this.epoch) return;
+      if (
+        captured !== this.epoch ||
+        capturedGeneration !== this.inputGeneration
+      )
+        return;
       aperture = clamp(
         aperture + this.storyDelta(event.dragVector).x / 100,
         0,
@@ -1214,11 +1449,19 @@ export class PlayTable {
     this.finishDrag(
       curtain.input,
       () => {
-        if (captured === this.epoch) this.author({ kind: "commitGesture" });
+        if (
+          captured === this.epoch &&
+          capturedGeneration === this.inputGeneration
+        )
+          this.author({ kind: "commitGesture" });
         captured = -1;
       },
       () => {
-        if (captured === this.epoch) this.author({ kind: "cancelGesture" });
+        if (
+          captured === this.epoch &&
+          capturedGeneration === this.inputGeneration
+        )
+          this.author({ kind: "cancelGesture" });
         captured = -1;
       },
     );
@@ -1683,6 +1926,9 @@ export class PlayTable {
   }
 
   private updateMovingTargets(): void {
+    const propDisplay = this.state.author?.draft.room.exhibit.position;
+    if (propDisplay)
+      this.move("TakeRuby", [propDisplay.x * 100, 95, propDisplay.z * 100]);
     if (!this.state.author) return;
     for (const track of this.state.author.draft.tracks) {
       const pose = this.pathPose(track.id);
@@ -1700,6 +1946,14 @@ export class PlayTable {
       );
     }
     for (const witness of this.state.author.draft.witnesses) {
+      this.move(
+        "AuthorViewWatchCamera_" + witness.id,
+        this.authorWatchPosition(witness),
+      );
+      this.actions
+        .get("AuthorViewWatchCamera_" + witness.id)
+        ?.object.getTransform()
+        .setLocalRotation(quat.fromEulerAngles(0, witness.yaw, 0));
       this.move("Record" + witness.id, [
         witness.position.x * 100,
         witness.position.y * 100,
@@ -1760,6 +2014,7 @@ export class PlayTable {
   dispose(): void {
     if (this.disposed) return;
     this.disposed = true;
+    this.props?.dispose();
     this.lifecycle.removeEvent(this.lifecycleUpdate);
     this.clear();
     this.root.destroy();

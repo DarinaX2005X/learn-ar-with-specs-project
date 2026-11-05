@@ -35,16 +35,20 @@ const fields: Field[] = [
   "stashTick",
 ];
 const observationCache = new WeakMap<Board, Map<string, WitnessTape>>();
-function recorded(board: Board, h: History): WitnessTape {
+function recorded(
+  board: Board,
+  h: History,
+  legacyRecorder = false,
+): WitnessTape {
   let cache = observationCache.get(board);
   if (!cache) {
     cache = new Map();
     observationCache.set(board, cache);
   }
-  const key = JSON.stringify(h);
+  const key = (legacyRecorder ? "v1:" : "v2:") + JSON.stringify(h);
   let tape = cache.get(key);
   if (!tape) {
-    tape = observe(board, h);
+    tape = observe(board, h, legacyRecorder);
     if (cache.size < 5000) cache.set(key, tape);
   }
   return tape;
@@ -61,6 +65,7 @@ function* searchSteps(
   board: Board,
   clues: Clue[],
   options: ProofOptions,
+  legacyRecorder = false,
 ): Generator<{ work: number }, Search, void> {
   let count = 0,
     work = 0,
@@ -107,7 +112,9 @@ function* searchSteps(
         const relevant = clues.filter(
           (c) => c.kind === "Frame" && !c.observation,
         );
-        const tape = relevant.length ? recorded(board, fake) : undefined;
+        const tape = relevant.length
+          ? recorded(board, fake, legacyRecorder)
+          : undefined;
         let fits = true;
         for (const c of relevant)
           if (c.kind === "Frame") {
@@ -169,7 +176,7 @@ function* searchSteps(
             ...(pass ? { pass } : {}),
             ...(stash ? { stash } : {}),
           };
-          const publicTape = recorded(board, base);
+          const publicTape = recorded(board, base, legacyRecorder);
           const indexes = new Map(publicTape.clues.map((c) => [c.id, c]));
           let fits = true;
           for (const c of clues) {
@@ -193,7 +200,11 @@ function* searchSteps(
           const timed = clues.some(
             (c) =>
               c.kind === "Frame" &&
-              c.payload.actions.some((a) => a.kind === "BrushRim"),
+              (c.payload.actions.some((a) => a.kind === "BrushRim") ||
+                c.payload.palms !== undefined ||
+                c.observation?.kind === "hand" ||
+                !!c.payload.exhibitSurface ||
+                c.payload.actions.some((a) => !!a.contacts)),
           );
           if (!timed) {
             count += combinations;
@@ -211,7 +222,7 @@ function* searchSteps(
                     ...base,
                     brushes: [a, b, c].filter((m) => m.tick >= 0),
                   };
-                  const actual = recorded(board, h),
+                  const actual = recorded(board, h, legacyRecorder),
                     byId = new Map(actual.clues.map((c) => [c.id, c]));
                   if (
                     clues.every((c) =>
@@ -265,6 +276,34 @@ export function* proveSteps(
       status: "conflict",
       message: "Evidence belongs to a different case revision.",
     };
+  // Sealed recorder semantics are selected solely from public payload schema.
+  // Never compare a legitimate v1 frame with invented v2 palm provenance.
+  const formats = new Set(
+    tape.clues
+      .filter((c) => c.kind === "Frame")
+      .map((c) =>
+        c.kind === "Frame"
+          ? !c.payload ||
+            !Array.isArray(c.payload.fragments) ||
+            !Array.isArray(c.payload.hands) ||
+            !Array.isArray(c.payload.actions)
+            ? "unknown"
+            : c.payload.palms === undefined
+              ? "v1"
+              : Array.isArray(c.payload.palms)
+                ? "v2"
+                : "unknown"
+          : "unknown",
+      ),
+  );
+  if (formats.has("unknown") || formats.size > 1)
+    return {
+      ...out,
+      status: "incomplete",
+      message:
+        "This recording mixes incompatible or unknown formats. Reopen one complete sealed recording before checking evidence.",
+    };
+  const legacyRecorder = formats.has("v1");
   if (
     new Set(tape.clues.map((c) => c.id)).size !== tape.clues.length ||
     selectedIds.some((id) => !resolveObservation(tape, id))
@@ -290,7 +329,7 @@ export function* proveSteps(
       status: "conflict",
       message: "Rim evidence violates the public one-contact-per-role rule.",
     };
-  const result = yield* searchSteps(board, clues, options);
+  const result = yield* searchSteps(board, clues, options, legacyRecorder);
   if (result.incomplete)
     return {
       ...out,
@@ -355,7 +394,7 @@ export function* proveSteps(
       let reasons = [...clues];
       for (const c of options.minimizeReasons === false ? [] : [...reasons]) {
         const trial = reasons.filter((x) => x.id !== c.id);
-        const r = yield* searchSteps(board, trial, options);
+        const r = yield* searchSteps(board, trial, options, legacyRecorder);
         if (options.cancelled?.()) {
           return {
             status: "incomplete",
