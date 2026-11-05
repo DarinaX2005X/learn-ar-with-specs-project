@@ -570,11 +570,12 @@ export class ComparisonHall {
     const label = global.scene.createSceneObject("ReconstructionInscription");
     label.setParent(root);
     const inscription = label.createComponent("Component.Text");
-    inscription.size = 12;
+    inscription.size = 352;
     inscription.depthTest = true;
     inscription.horizontalAlignment = HorizontalAlignment.Center;
     inscription.verticalAlignment = VerticalAlignment.Center;
     inscription.horizontalOverflow = HorizontalOverflow.Wrap;
+    inscription.verticalOverflow = VerticalOverflow.Shrink;
     inscription.layoutRect = Rect.create(-70, 70, -18, 18);
     label
       .getTransform()

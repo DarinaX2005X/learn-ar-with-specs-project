@@ -181,6 +181,7 @@ const globals = {
   HorizontalAlignment: { Center: 0 },
   VerticalAlignment: { Center: 0 },
   HorizontalOverflow: { Wrap: 0 },
+  VerticalOverflow: { Shrink: 2 },
   Rect: { create: (...values) => values },
   console,
   isNull: node => !node || node.destroyed,

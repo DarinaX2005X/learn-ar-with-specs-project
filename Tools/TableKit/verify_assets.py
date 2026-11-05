@@ -7,7 +7,7 @@ def require(condition, message):
 
 """Validate all shipped GLB buffers, indices, normals, joint anchors and WAV samples."""
 from pathlib import Path
-import struct, json, wave
+import struct, json, wave, hashlib
 import numpy as np
 
 root = Path(__file__).resolve().parents[2]
@@ -16,6 +16,7 @@ expected_models = {
     "ExhibitionScreen",
     "ExhibitionScreenShort",
     "MuseumBuilding",
+    "MuseumMirrorNiche",
     "Guard",
     "Courier",
     "Conservator",
@@ -35,7 +36,7 @@ expected_models = {
 found_models = {file.stem for file in models.glob("*.glb")}
 require(
     found_models == expected_models,
-    f"Expected 18 TableKit models; missing={expected_models-found_models}; unexpected={found_models-expected_models}",
+    f"Expected 19 TableKit models; missing={expected_models-found_models}; unexpected={found_models-expected_models}",
 )
 audio_directory = root / "Assets" / "Audio" / "TableKit"
 from verify_tablekit_audio import validate_audio
@@ -43,8 +44,8 @@ validate_audio(audio_directory)
 manifest = json.loads((models / "manifest.json").read_text(encoding="utf-8"))
 records = {record["name"]: record for record in manifest["resources"]}
 require(
-    len(manifest["resources"]) == 18 and set(records) == expected_models,
-    "Manifest must list all 18 models exactly once",
+    len(manifest["resources"]) == 19 and set(records) == expected_models,
+    "Manifest must list all 19 models exactly once",
 )
 
 for file in models.glob("*.glb"):
@@ -164,6 +165,17 @@ for file in models.glob("*.glb"):
             )
             count += len(ix)
     names = {n["name"] for n in d["nodes"]}
+    if file.stem == "MuseumMirrorNiche":
+        record = records[file.stem]
+        require(count == 672 and len(d["meshes"]) == 4, "Mirror niche must retain bounded 672 triangles / four material batches")
+        require(len(d["nodes"]) == 5 and not any(name.startswith("Anchor_") for name in names), "Mirror niche must remain anchor-free")
+        points = np.concatenate([access(p["attributes"]["POSITION"]) for mesh in d["meshes"] for p in mesh["primitives"]])
+        require(points[:, 0].min() >= 7, "Mirror niche must not intrude into the canonical hall")
+        require(len(d.get("images", [])) == 2 and all("bufferView" in image and "uri" not in image for image in d["images"]), "Mirror niche textures must be embedded")
+        require(hashlib.sha256(b).hexdigest() == record.get("sha256"), "Mirror niche differs from its checked manifest hash")
+        generator = root / record["generator"]
+        require(generator.is_file() and hashlib.sha256(generator.read_bytes()).hexdigest() == record.get("generatorSha256"), "Mirror niche source differs from checked generator")
+
     if screen_positions:
         positions = np.asarray(screen_positions)
         width = 2.4 if file.stem == "ExhibitionScreen" else 1.25

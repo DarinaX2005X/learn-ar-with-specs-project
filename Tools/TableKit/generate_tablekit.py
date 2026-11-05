@@ -1887,7 +1887,7 @@ def main():
             record
             for record in previous.get("resources", [])
             if record["name"]
-            in {"MuseumBuilding", "ExhibitionScreen", "ExhibitionScreenShort"}
+            in {"MuseumBuilding", "MuseumMirrorNiche", "ExhibitionScreen", "ExhibitionScreenShort"}
             and (ROOT / record["path"]).exists()
         )
     (ROOT / "manifest.json").write_text(

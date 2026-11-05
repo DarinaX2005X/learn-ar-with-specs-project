@@ -98,7 +98,7 @@ export class LiveMuseumMirror {
   for(const [id,buffer] of buffers){const material=materials[id];if(!material)continue;let batch=this.batches.get(material);
    if(!batch){const object=global.scene.createSceneObject('AuthorizedLiveMirrorGeometry');object.setParent(this.theatre);const builder=new MeshBuilder([{name:'position',components:3},{name:'normal',components:3},{name:'texture0',components:2}]);builder.topology=MeshTopology.Triangles;builder.indexType=MeshIndexType.UInt16;
     const visual=object.createComponent('Component.RenderMeshVisual');visual.mesh=builder.getMesh();const ink=material.clone();ink.mainPass.depthTest=false;ink.mainPass.depthWrite=false;ink.mainPass.twoSided=false;visual.mainMaterial=ink;visual.setRenderOrder(50);batch={object,builder,material:ink};this.batches.set(material,batch);}
-   batch.builder.eraseIndices(0,batch.builder.getIndicesCount());batch.builder.eraseVertices(0,batch.builder.getVerticesCount());batch.builder.appendVerticesInterleaved(buffer.vertices);batch.builder.appendIndices(buffer.indices);batch.builder.updateMesh();batch.object.enabled=true;this.metrics.uploads++;this.shown=true;
+   const indexCount=batch.builder.getIndicesCount();if(indexCount>0)batch.builder.eraseIndices(0,indexCount);const vertexCount=batch.builder.getVerticesCount();if(vertexCount>0)batch.builder.eraseVertices(0,vertexCount);batch.builder.appendVerticesInterleaved(buffer.vertices);batch.builder.appendIndices(buffer.indices);batch.builder.updateMesh();batch.object.enabled=true;this.metrics.uploads++;this.shown=true;
   }
   this.metrics.emittedTriangles=mesh.indices.length/3;this.lastGeometry=geometry;this.lastRoots=roots;this.lastFrame=input.frameKey;
  }

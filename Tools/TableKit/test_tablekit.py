@@ -6,6 +6,8 @@ removed on exit. Tests never regenerate models or write inside Assets.
 """
 
 from pathlib import Path
+import hashlib
+import json
 import os
 import shutil
 import subprocess
@@ -39,6 +41,13 @@ def main():
         raise RuntimeError(f"Missing TableKit source files: {missing}")
     run([sys.executable, str(TOOLS / "verify_assets.py")])
     with tempfile.TemporaryDirectory(prefix="countercase-tablekit-") as temp:
+        reproduction = Path(temp) / "reproduced-niche"
+        run([sys.executable, str(TOOLS / "generate_mirror_niche.py"),
+             "--output", str(reproduction), "--asset-only"], cwd=temp)
+        shipped = PROJECT / "Assets" / "Art" / "TableKit" / "MuseumMirrorNiche.glb"
+        if (reproduction / shipped.name).read_bytes() != shipped.read_bytes():
+            raise RuntimeError("Mirror niche reproduction differs from shipped GLB")
+        print("PASS niche reproduces byte-for-byte outside project working directory")
         empty_tools = Path(temp) / "empty-project" / "Tools" / "TableKit"
         empty_tools.mkdir(parents=True)
         empty_validator = empty_tools / "verify_assets.py"
@@ -50,7 +59,7 @@ def main():
         )
         if (
             missing_assets.returncode == 0
-            or "Expected 18 TableKit models" not in missing_assets.stderr
+            or "Expected 19 TableKit models" not in missing_assets.stderr
         ):
             raise RuntimeError(
                 "Asset validation did not reject an empty project clearly"
