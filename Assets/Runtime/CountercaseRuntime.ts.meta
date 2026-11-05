@@ -29,6 +29,7 @@
   PackagePolicy: CanBeUnpacked
   ScriptInputsHidden:
     cloth: false
+    developerStateGallery: false
     enableFacetFinish: false
     enablePhysicalMirror: false
     engage: false
@@ -75,6 +76,7 @@
       rubyKeyLight: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
       enableFacetFinish: false
       enablePhysicalMirror: false
+      developerStateGallery: false
   ScriptTypes:
     -
       {}
@@ -98,3 +100,4 @@
     - // @input SceneObject rubyKeyLight
     - // @input bool enableFacetFinish
     - // @input bool enablePhysicalMirror
+    - // @input bool developerStateGallery

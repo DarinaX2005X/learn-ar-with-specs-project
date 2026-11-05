@@ -17,6 +17,10 @@ export class LensFoleyVoice implements FoleyVoice {
   constructor(private node: SceneObject, private clips: Record<string, AudioTrackAsset>, private anchor: (action: MuseumAction)=>vec3 | undefined) {
     this.audio=node.createComponent('Component.AudioComponent');
     this.audio.spatialAudio.enabled=true;
+    // Keep interaction cues audible across the room; spatial position still pans.
+    this.audio.spatialAudio.distanceEffect.enabled=false;
+    this.audio.spatialAudio.directivityEffect.enabled=false;
+    this.audio.spatialAudio.positionEffect.enabled=true;
   }
   private alive(): boolean {
     return !this.disposed && !isNull(this.node) && !isNull(this.audio)

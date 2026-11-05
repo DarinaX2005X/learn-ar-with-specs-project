@@ -1,7 +1,9 @@
+import { MuseumAudioListener } from "./MuseumAudioListener";
 import { NativeMuseumFoley } from '../Scripts/TableKit/NativeMuseumFoley';
 import { LensFoleyVoice, captureFoleyOrigin } from '../Scripts/TableKit/LensFoleyVoice';
 import { MuseumGame } from "./MuseumGame";
 import { MuseumScene } from "./MuseumScene";
+import { TableKitStateGallery } from "./TableKitStateGallery";
 
 /** Scene lifecycle only. Sessions own logical time; the renderer owns native art. */
 @component
@@ -32,6 +34,10 @@ export class CountercaseRuntime extends BaseScriptComponent {
   rubyKeyLight?: SceneObject;
   @input enableFacetFinish: boolean = false;
   @input enablePhysicalMirror: boolean = false;
+  /** Developer inspection only. Change this input, then restart Preview. */
+  @input developerStateGallery: boolean = false;
+  private stateGallery?: TableKitStateGallery;
+  private audioListener: MuseumAudioListener;
   private foley: NativeMuseumFoley;
   private foleyVoices: LensFoleyVoice[] = [];
   private foleyAnchor: vec3 | undefined;
@@ -42,6 +48,8 @@ export class CountercaseRuntime extends BaseScriptComponent {
   onAwake(): void {
     this.createEvent("OnStartEvent").bind(() => this.mount());
     this.createEvent("UpdateEvent").bind(() => {
+      if (this.stateGallery) return;
+      this.audioListener?.update(getTime());
       if (this.game) this.game.update(getDeltaTime());
       if(this.presentation)this.presentation.updateNativeFinish(this.rubyKeyLight,this.enableFacetFinish,this.enablePhysicalMirror);
     });
@@ -49,12 +57,28 @@ export class CountercaseRuntime extends BaseScriptComponent {
     this.createEvent("OnDestroyEvent").bind(() => {
       this.foley?.cancel();
       this.foleyVoices.forEach(v=>v.dispose());
+      this.audioListener?.dispose();
+      this.stateGallery?.dispose();
       if (this.game) this.game.dispose();
       if (this.presentation) this.presentation.dispose();
     });
   }
 
   private mount(): void {
+    if (this.developerStateGallery) {
+      const fonts = { regular: this.fontRegular, bold: this.fontBold };
+      // Inspector-only startup: no listener, foley voices, audio or game input.
+      const startedMs = Date.now();
+      this.presentation = new MuseumScene(this.sceneObject, this.recordingMaterial, undefined, fonts);
+      this.stateGallery = new TableKitStateGallery(this.sceneObject, this.presentation, fonts);
+      this.stateGallery.mount();
+      const measuredMs = Date.now() - startedMs, counts = this.stateGallery.read();
+      print("COUNTERCASE state gallery startup " + measuredMs + " ms; copied art " + counts.nodes + " nodes / " + counts.visuals + " shared mesh visuals");
+      print("COUNTERCASE developer TableKit state gallery, restart Preview with developerStateGallery false to return");
+      return;
+    }
+    this.audioListener = new MuseumAudioListener();
+    this.audioListener.update(getTime());
     this.foleyAnchor=undefined;
     const clips: Record<string,AudioTrackAsset>={museum_pin_01:this.museum_pin_01,museum_pin_02:this.museum_pin_02,museum_clock_01:this.museum_clock_01,museum_clock_02:this.museum_clock_02,museum_paper_01:this.museum_paper_01,museum_paper_02:this.museum_paper_02,museum_glass:this.museum_glass,museum_cloth:this.museum_cloth,museum_latch:this.museum_latch,museum_stamp:this.museum_stamp};
     const makeVoice=()=>{const node=global.scene.createSceneObject('MuseumFoleyVoice');node.setParent(this.sceneObject);return new LensFoleyVoice(node,clips,()=>this.foleyAnchor);};

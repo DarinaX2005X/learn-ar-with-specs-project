@@ -1,5 +1,7 @@
 # TableKit development tools
 
+To inspect the six TableKit states, select the `CountercaseRuntime` component in Inspector, enable `developerStateGallery`, then restart Preview. Disable it and save/reopen or restart Preview to return to a new ordinary game; the inspection mode does not preserve an active case.
+
 From the repository root, run:
 
 ```sh
