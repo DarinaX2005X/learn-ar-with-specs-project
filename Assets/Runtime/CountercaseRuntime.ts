@@ -135,6 +135,22 @@ export class CountercaseRuntime extends BaseScriptComponent {
       comparison: display.comparison,
       nativeMirror: display.nativeMirror,
       articulationBindings: display.articulationBindings,
+      authorView: state?.flow.mode === "author" && state.authorView ? {
+        enabled: state.authorView.enabled, mode: state.authorView.mode,
+        source: state.authorView.source, tick: state.authorView.tick,
+        comparing: state.authorView.comparing, canCompare: state.authorView.canCompare,
+        differences: state.authorView.differences,
+        ...Object.fromEntries((["recording", "before", "after"] as const).map(key => {
+          const value = state.authorView?.[key];
+          return [key, value ? {board: value.board ? {caseId:value.board.caseId, rev:value.board.rev} : undefined,
+            frame: value.frame ? {id:value.frame.id} : undefined, source:value.source, tick:value.tick} : undefined];
+        }))
+      } : {enabled:false},
+      authorRecording: state?.flow.mode === "author" ? display.authorRecording : {
+        camera: {enabled:false, roles:[], observationIds:[], caption:""},
+        before: {enabled:false, roles:[], observationIds:[], caption:""},
+        after: {enabled:false, roles:[], observationIds:[], caption:""},
+      },
       view: state?.view,
     };
   }

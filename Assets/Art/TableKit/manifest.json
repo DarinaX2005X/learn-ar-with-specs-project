@@ -1309,9 +1309,58 @@
       "importScale": 100
     },
     {
+      "name": "MuseumMirrorNiche",
+      "path": "MuseumMirrorNiche.glb",
+      "bytes": 123796,
+      "aabb_cm": [
+        61.0,
+        308.4,
+        142.0
+      ],
+      "aabb_min_cm": [
+        700.0,
+        -6.4,
+        249.0
+      ],
+      "aabb_center_offset_cm": [
+        730.5,
+        147.8,
+        320.0
+      ],
+      "nodeNames": [
+        "MuseumMirrorNiche",
+        "MirrorNicheFinish__plaster",
+        "MirrorNicheFinish__teal",
+        "MirrorNicheFinish__brass",
+        "MirrorNicheFinish__limestone"
+      ],
+      "triangles": 672,
+      "sha256": "9fb3b554e104e8c9cd3368f99faa78cad97a735391aecea40c26511894c6fcd5",
+      "generator": "Tools/TableKit/generate_mirror_niche.py",
+      "generatorSha256": "8ed4f76b0aefc4ccbbe1b4e2f0c2cbc95aba29eb04ae43bc1756e18e85b6617a",
+      "mount": {
+        "parent": "MuseumAnchor",
+        "localPosition": [
+          0,
+          0,
+          0
+        ],
+        "localRotation": [
+          0,
+          0,
+          0
+        ],
+        "localScale": [
+          100,
+          100,
+          100
+        ]
+      }
+    },
+    {
       "name": "MuseumBuilding",
       "path": "MuseumBuilding.glb",
-      "bytes": 12728752,
+      "bytes": 12731560,
       "aabb_cm": [
         1308.0,
         422.0,
@@ -1443,7 +1492,7 @@
         "FoyerSculpture__paintOchre",
         "FoyerSculpture__parquetChestnut"
       ],
-      "triangles": 107812,
+      "triangles": 107838,
       "storyBoundsMetres": {
         "x": [
           -5,
@@ -1596,55 +1645,6 @@
           "anchorRotation": "identity",
           "pinAnchor": "Anchor_PinHandle"
         }
-      }
-    },
-    {
-      "name": "MuseumMirrorNiche",
-      "path": "MuseumMirrorNiche.glb",
-      "bytes": 123796,
-      "aabb_cm": [
-        61.0,
-        308.4,
-        142.0
-      ],
-      "aabb_min_cm": [
-        700.0,
-        -6.4,
-        249.0
-      ],
-      "aabb_center_offset_cm": [
-        730.5,
-        147.8,
-        320.0
-      ],
-      "nodeNames": [
-        "MuseumMirrorNiche",
-        "MirrorNicheFinish__plaster",
-        "MirrorNicheFinish__teal",
-        "MirrorNicheFinish__brass",
-        "MirrorNicheFinish__limestone"
-      ],
-      "triangles": 672,
-      "sha256": "9fb3b554e104e8c9cd3368f99faa78cad97a735391aecea40c26511894c6fcd5",
-      "generator": "Tools/TableKit/generate_mirror_niche.py",
-      "generatorSha256": "8ed4f76b0aefc4ccbbe1b4e2f0c2cbc95aba29eb04ae43bc1756e18e85b6617a",
-      "mount": {
-        "parent": "MuseumAnchor",
-        "localPosition": [
-          0,
-          0,
-          0
-        ],
-        "localRotation": [
-          0,
-          0,
-          0
-        ],
-        "localScale": [
-          100,
-          100,
-          100
-        ]
       }
     }
   ],

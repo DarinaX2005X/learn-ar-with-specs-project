@@ -9,6 +9,13 @@ interface Pane {
   glass: RecordedGlass;
   caption: Text;
   key: string;
+  shown?: {
+    caseId: string;
+    rev: number;
+    frameId: string;
+    source: string;
+    tick: number;
+  };
 }
 const fieldName: Record<Field, string> = {
   taker: "Taker",
@@ -91,8 +98,17 @@ export class AuthorGlass {
     if (key !== pane.key) {
       pane.key = key;
       pane.glass.clear();
-      if (key && recording?.board)
+      pane.shown = undefined;
+      if (key && recording?.board && recording.frame) {
         pane.glass.render(recording.board, recording.frame, true);
+        pane.shown = {
+          caseId: recording.board.caseId,
+          rev: recording.board.rev,
+          frameId: recording.frame.id,
+          source: recording.frame.witness,
+          tick: recording.frame.tick,
+        };
+      }
     }
     pane.caption.text = caption;
     pane.root.enabled = true;
@@ -166,14 +182,12 @@ export class AuthorGlass {
         reason ?? view.source + " · " + (view.tick / 2).toFixed(1) + " s",
       );
     } else {
-      this.camera.glass.clear();
-      this.camera.key = "";
-      this.camera.root.enabled = false;
+      this.hide(this.camera);
     }
     const bench = this.global("Anchor_ConservationBench");
     if (!bench) {
-      this.before.root.enabled = false;
-      this.after.root.enabled = false;
+      this.hide(this.before);
+      this.hide(this.after);
       return;
     }
     for (const [pane, x] of [
@@ -204,10 +218,7 @@ export class AuthorGlass {
         recording?.errors[0]?.message ??
           view.source + " \u00b7 " + (view.tick / 2).toFixed(1) + " s",
       );
-      this.after.glass.clear();
-      this.after.key = "";
-      this.after.caption.text = "";
-      this.after.root.enabled = false;
+      this.hide(this.after);
       return;
     }
     this.show(
@@ -227,34 +238,30 @@ export class AuthorGlass {
         (view.after?.errors[0]?.message ?? this.assessment(view.after, view)),
     );
   }
+  private hide(pane: Pane): void {
+    pane.glass.clear();
+    pane.key = "";
+    pane.shown = undefined;
+    pane.caption.text = "";
+    pane.root.enabled = false;
+  }
   clear(): void {
-    for (const pane of [this.camera, this.before, this.after]) {
-      pane.glass.clear();
-      pane.key = "";
-      pane.caption.text = "";
-      pane.root.enabled = false;
-    }
+    for (const pane of [this.camera, this.before, this.after]) this.hide(pane);
   }
   read() {
+    const pane = (value: Pane) => ({
+      enabled: !this.disposed && value.root.enabled,
+      ...value.shown,
+      roles: value.glass.renderedRoles,
+      observationIds: value.glass.surfaces.map(
+        (surface) => surface.observationId,
+      ),
+      caption: this.disposed ? "" : value.caption.text,
+    });
     return {
-      camera: this.camera.root.enabled
-        ? {
-            roles: this.camera.glass.renderedRoles,
-            caption: this.camera.caption.text,
-          }
-        : undefined,
-      before: this.before.root.enabled
-        ? {
-            roles: this.before.glass.renderedRoles,
-            caption: this.before.caption.text,
-          }
-        : undefined,
-      after: this.after.root.enabled
-        ? {
-            roles: this.after.glass.renderedRoles,
-            caption: this.after.caption.text,
-          }
-        : undefined,
+      camera: pane(this.camera),
+      before: pane(this.before),
+      after: pane(this.after),
     };
   }
   dispose(): void {

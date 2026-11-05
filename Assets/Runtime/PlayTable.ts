@@ -582,21 +582,23 @@ export class PlayTable {
     });
     input.onTriggerEnd.add(() => {
       inscription.getTransform().setLocalScale(new vec3(1, 1, 1));
-      if (
+      const acceptedRelease =
         capturedEpoch === this.epoch &&
         capturedGeneration === this.inputGeneration &&
         canUse() &&
         (!this.dragging ||
           id.startsWith("CaseView") ||
           id.startsWith("AuthorView")) &&
-        !dragged
-      )
-        invoke();
+        !dragged;
+      // Release ownership BEFORE dispatch can synchronously disable this target.
       capturedEpoch = -1;
+      if (acceptedRelease) invoke();
     });
     const cancel = () => {
-      this.ports.cancelSound?.();
+      const ownsCapture = capturedEpoch === this.epoch && capturedEpoch >= 0 &&
+        capturedGeneration === this.inputGeneration;
       capturedEpoch = -1;
+      if (ownsCapture) this.ports.cancelSound?.();
       inscription.getTransform().setLocalScale(new vec3(1, 1, 1));
     };
     input.onTriggerCanceled.add(cancel);
@@ -1987,20 +1989,28 @@ export class PlayTable {
     commit: () => void,
     cancel = commit,
   ): void {
+    let dragEpoch = -1, dragGeneration = -1;
+    input.onDragStart.add(() => {
+      dragEpoch = this.epoch; dragGeneration = this.inputGeneration;
+    });
+    const takeDrag = () => {
+      const owned = dragEpoch === this.epoch && dragEpoch >= 0 && dragGeneration === this.inputGeneration;
+      dragEpoch = -1;
+      return owned;
+    };
     input.onDragEnd.add(() => {
+      if (!takeDrag()) return;
       commit();
       this.dragging = false;
     });
-    input.onTriggerCanceled.add(() => {
+    const cancelDrag = () => {
+      if (!takeDrag()) return;
       this.ports.cancelSound?.();
       cancel();
       this.dragging = false;
-    });
-    input.onTriggerEndOutside.add(() => {
-      this.ports.cancelSound?.();
-      cancel();
-      this.dragging = false;
-    });
+    };
+    input.onTriggerCanceled.add(cancelDrag);
+    input.onTriggerEndOutside.add(cancelDrag);
   }
   private updateError(): void {
     const error = this.state.author?.errors[0]?.message;

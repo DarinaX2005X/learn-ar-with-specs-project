@@ -376,7 +376,7 @@ export class MuseumGame {
   }
   private mechanismState(): PublicMechanisms {
     const s=this.state, d=s?.detective, a=s?.author;
-    return { identity: [s?.flow.mode,s?.flow.inputEpoch,d?.caseId ?? a?.draft.id,d?.rev ?? "author-edit",!!s?.reveal].join('|'),
+    return { identity: [s?.flow.mode === "finished" ? "detective" : s?.flow.mode,s?.flow.inputEpoch,d?.caseId ?? a?.draft.id,d?.rev ?? "author-edit",!!s?.reveal].join('|'),
       playing: s?.reveal?.playing ?? d?.playing ?? a?.playing ?? false,
       pins: d?.glass.map(g=>g.id).join('|') ?? '', page: d?.glassPage ?? 0,
       completed: d?.completed ?? false, checking: d?.checking ?? false, aperture: a?.draft.room.mirror?.aperture };

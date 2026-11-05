@@ -48,6 +48,23 @@ def main():
         if (reproduction / shipped.name).read_bytes() != shipped.read_bytes():
             raise RuntimeError("Mirror niche reproduction differs from shipped GLB")
         print("PASS niche reproduces byte-for-byte outside project working directory")
+        # Rebuild the wall-cap repair in an isolated clone, never inside Assets.
+        building_project = Path(temp) / "building-reproduction"
+        building_tools = building_project / "Tools" / "TableKit"
+        building_tools.mkdir(parents=True)
+        for filename in ["generate_tablekit.py", "generate_museum.py"]:
+            shutil.copyfile(TOOLS / filename, building_tools / filename)
+        shutil.copytree(PROJECT / "Assets" / "Art" / "Collection",
+                        building_project / "Assets" / "Art" / "Collection")
+        building_models = building_project / "Assets" / "Art" / "TableKit"
+        building_models.mkdir()
+        shutil.copyfile(PROJECT / "Assets" / "Art" / "TableKit" / "manifest.json",
+                        building_models / "manifest.json")
+        run([sys.executable, str(building_tools / "generate_museum.py")], cwd=temp)
+        installed_building = PROJECT / "Assets" / "Art" / "TableKit" / "MuseumBuilding.glb"
+        if (building_models / installed_building.name).read_bytes() != installed_building.read_bytes():
+            raise RuntimeError("MuseumBuilding reproduction differs from shipped GLB")
+        print("PASS repaired building reproduces byte-for-byte in isolated clone")
         empty_tools = Path(temp) / "empty-project" / "Tools" / "TableKit"
         empty_tools.mkdir(parents=True)
         empty_validator = empty_tools / "verify_assets.py"

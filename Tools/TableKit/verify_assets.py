@@ -451,6 +451,46 @@ for file in models.glob("*.glb"):
         print(
             "MuseumBuilding: five genuine open passages, four embedded images, linear factors and UVs verified"
         )
+    if file.stem == "MuseumBuilding":
+        def cap_overlap(subject, clip):
+            polygon = [point[:2] for point in subject]
+            signed = sum(np.cross(clip[(i+1)%3, :2]-clip[i, :2],
+                                  clip[(i+2)%3, :2]-clip[i, :2]) for i in range(3))
+            sign = 1 if signed > 0 else -1
+            for i in range(3):
+                a, b = clip[i, :2], clip[(i+1)%3, :2]
+                result = []
+                for p, q in zip(polygon, polygon[1:]+polygon[:1]):
+                    dp = float(np.cross(b-a, p-a))*sign
+                    dq = float(np.cross(b-a, q-a))*sign
+                    if dp >= 0:
+                        result.append(p)
+                    if (dp >= 0) != (dq >= 0):
+                        result.append(p+(q-p)*dp/(dp-dq))
+                polygon = result
+                if len(polygon) < 3:
+                    return 0
+            return abs(sum(float(np.cross(polygon[i], polygon[(i+1)%len(polygon)]))
+                           for i in range(len(polygon)))/2)
+        for plane in [2.55, 3.85]:
+            caps = {}
+            for node in d["nodes"]:
+                if "mesh" not in node or not node["name"].startswith("OuterWalls__"):
+                    continue
+                triangles = []
+                for primitive in d["meshes"][node["mesh"]]["primitives"]:
+                    points = access(primitive["attributes"]["POSITION"])
+                    for face in access(primitive["indices"]).reshape(-1,3):
+                        tri = points[face]
+                        if np.max(abs(tri[:,2]-plane)) < 1e-5 and tri[:,0].min()>6.8 and tri[:,0].max()<7.2:
+                            triangles.append(tri)
+                caps[node["name"]] = triangles
+            for plaster in caps.get("OuterWalls__plaster", []):
+                for material in ["teal", "brass", "limestone"]:
+                    for trim in caps.get("OuterWalls__"+material, []):
+                        require(cap_overlap(plaster, trim) < 1e-7,
+                                f"MuseumBuilding: coplanar plaster/{material} overlap at mirror jamb Z={plane}")
+        print("MuseumBuilding: both mirror jamb caps have no coplanar plaster/trim area")
     if file.stem in ["Guard", "Courier", "Conservator"]:
         require(
             {

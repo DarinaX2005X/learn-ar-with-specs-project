@@ -90,9 +90,13 @@ export class CasePaper {
     this.layer = global.scene.createSceneObject("CasePaperInk");
     this.layer.setParent(root);
     this.result = this.surface("CheckedFinding", [0, 9.35, -15], 37, 24, 128, true);
+    // Ink occupies the far 5 cm of each existing evidence pane. At the normal
+    // bench eye the loupe rim hides the middle of its pane, not this rear band.
+    // Keep the complete label inside the original 20 x 18 cm Evidence target;
+    // the physical pane, recorded image and interaction anchor stay in place.
     for (let index = 0; index < 3; index++)
       this.evidence.push(this.surface("PinnedEvidenceInk" + index,
-        [-24 + 24 * index, 6.85, -42], 17, 14, 56, false));
+        [-24 + 24 * index, 6.85, -37], 17, 5, 60, false));
     this.clear();
   }
   private find(name: string, from: SceneObject): SceneObject | undefined {

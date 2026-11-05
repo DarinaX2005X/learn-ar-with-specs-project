@@ -99,7 +99,64 @@ class Building(Model):
         batch[1].extend((np.asarray(faces) + offset).tolist())
         batch[2].extend(uv.tolist())
 
+    def trim_mirror_jamb_caps(self):
+        """Remove only plaster hidden by exactly coplanar trim end caps.
+
+        The two boundary jamb planes expose the wall's closed box end. Its
+        plinth/belt/cornice boxes originally repeat that same plane, producing
+        depth ties. Keep the original trim and subtract its actual flat-cap Y
+        bands from the underlying plaster; never offset or cover the jamb.
+        """
+        key = ("OuterWalls", "plaster")
+        if key not in self.batches:
+            return
+        vertices, faces, uv = self.batches[key]
+        for plane in [2.55, 3.85]:
+            bands = []
+            for material in ["teal", "brass", "limestone"]:
+                other_vertices, other_faces, _ = self.batches[("OuterWalls", material)]
+                points = np.asarray(other_vertices)
+                caps = [points[face] for face in other_faces
+                        if np.max(abs(points[face, 2] - plane)) < 1e-8
+                        and points[face, 0].min() > 6.8
+                        and points[face, 0].max() < 7.2]
+                if caps:
+                    cap = np.concatenate(caps)
+                    bands.append((float(cap[:, 1].min()), float(cap[:, 1].max())))
+            rebuilt = []
+            for face in faces:
+                points = np.asarray([vertices[i] for i in face])
+                target = (np.max(abs(points[:, 2] - plane)) < 1e-8
+                          and points[:, 0].min() > 6.8
+                          and points[:, 0].max() < 7.2)
+                if not target:
+                    rebuilt.append(face)
+                    continue
+                polygons = [[np.r_[vertices[i], uv[i]] for i in face]]
+                def clip(polygon, edge, keep_above):
+                    result = []
+                    for a, b in zip(polygon, polygon[1:] + polygon[:1]):
+                        da = (a[1] - edge) * (1 if keep_above else -1)
+                        db = (b[1] - edge) * (1 if keep_above else -1)
+                        if da >= -1e-12:
+                            result.append(a)
+                        if (da >= 0) != (db >= 0):
+                            result.append(a + (b-a) * da/(da-db))
+                    return result
+                for low, high in bands:
+                    polygons = [part for polygon in polygons
+                                for part in [clip(polygon, low, False),
+                                             clip(polygon, high, True)] if len(part) >= 3]
+                for polygon in polygons:
+                    start = len(vertices)
+                    vertices.extend([point[:3].tolist() for point in polygon])
+                    uv.extend([point[3:].tolist() for point in polygon])
+                    for i in range(1, len(polygon)-1):
+                        rebuilt.append([start, start+i, start+i+1])
+            faces[:] = rebuilt
+
     def finish(self):
+        self.trim_mirror_jamb_caps()
         for (section, material), (vertices, faces, uv) in self.batches.items():
             Model.mesh(self, section + "__" + material, vertices, faces, material)
             points = np.asarray(vertices)

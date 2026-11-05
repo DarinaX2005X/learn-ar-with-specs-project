@@ -25,6 +25,7 @@ import {
 
 import { CaseViewHandles } from "./CaseViewHandles";
 import { CasePaper } from "./CasePaper";
+import { BenchCameos } from "./BenchCameos";
 import { AuthorGlass } from "./MuseumScene/AuthorGlass";
 import { AuthorViewSnapshot } from "../Author/AuthorViewSession";
 import { PublicCradleTransport } from "./MuseumScene/PublicCradle";
@@ -83,6 +84,7 @@ export class MuseumScene {
   private disposed = false;
   private viewHandles: CaseViewHandles;
   private paper: CasePaper;
+  private benchCameos: BenchCameos;
   private cradle = new PublicCradleTransport();
   private authorGlass: AuthorGlass;
   private benchCaseParked = false;
@@ -175,6 +177,7 @@ export class MuseumScene {
     });
     this.viewHandles = new CaseViewHandles(root, material);
     this.paper = new CasePaper(root);
+    this.benchCameos = new BenchCameos(root, material);
     this.authorGlass = new AuthorGlass(root, material);
     this.mountClock("Anchor_EntryClock", false);
     this.mountClock("Anchor_HallClock", true);
@@ -1211,6 +1214,7 @@ export class MuseumScene {
     for (const camera of this.cameraCopies.values()) camera.destroy();
     this.cameraCopies.clear();
     this.paper.dispose();
+    this.benchCameos.dispose();
     this.viewHandles.dispose();
     this.glass.dispose();
     this.entryGlass?.dispose();
