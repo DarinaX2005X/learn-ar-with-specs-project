@@ -1,4 +1,4 @@
-import { Board, History, TrackId, Vec3, Field, Verdict } from "../Domain/types";
+import { Board, History, Track, TrackId, Vec3, Field, Verdict } from "../Domain/types";
 import { poseAt, add, sub, mul } from "../Domain/geometry";
 import { answer } from "../Domain/observe";
 import { ActorPose, WorldView } from "../Scripts/TableKit/TableKit";
@@ -22,6 +22,24 @@ export interface ReconstructionView extends WorldView {
   hands: ActionPose[];
   cache?: string;
   nestEmpty: boolean;
+}
+/** A stride follows the distance walked on this route. Sampling an integer
+ * recording tick or stepping backwards produces the same planted foot. */
+export function gaitAt(track: Track, tick: number): number {
+  let distanceM = 0;
+  for (let i = 1; i < track.keys.length; i++) {
+    const start = track.keys[i - 1], end = track.keys[i];
+    const segmentM = Math.hypot(end.x - start.x, end.z - start.z);
+    if (tick >= end.tick) {
+      distanceM += segmentM;
+      continue;
+    }
+    if (tick < start.tick || segmentM === 0) return 0;
+    distanceM += segmentM * (tick - start.tick) / (end.tick - start.tick);
+    const strideM = 0.85;
+    return Math.sin(distanceM * 2 * Math.PI / strideM) * 0.25;
+  }
+  return 0;
 }
 /** Pure sample in story centimetres. Root scales to .06 for the table or 1 for room scale.
  * The marker in Domain is head height; imported role mesh origin is floor height.
@@ -75,11 +93,7 @@ export function renderHistory(
     : exhibit;
   const actors: ActorPose[] = board.tracks.map((track) => {
     const p = positions.get(track.id)!;
-    const moving = track.keys.some(
-      (k, i) =>
-        i > 0 && (k.x !== track.keys[i - 1].x || k.z !== track.keys[i - 1].z),
-    );
-    const gait = moving ? Math.sin(t * Math.PI) * 0.2 : 0;
+    const gait = gaitAt(track, t);
     return {
       role: h.casting[track.id],
       positionCm: [p.x * 100, (p.y - 1) * 100, p.z * 100],

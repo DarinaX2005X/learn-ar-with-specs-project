@@ -11,6 +11,7 @@ export type AuthorEdit =
   | { kind: "setWall"; wall: Wall }
   | { kind: "setAperture"; aperture: number }
   | { kind: "setAlarm"; tick: number }
+  | { kind: "stageTake"; track: TrackId; tick: number }
   | { kind: "setEvent"; event: Event }
   | { kind: "removeEvent"; eventKind: Event["kind"]; track?: TrackId }
   | { kind: "setQuestions"; chain: boolean; fields: Field[] };
@@ -70,6 +71,8 @@ export class AuthorSession {
 
   getDraft(): CaseDraft { return clone(this.draft); }
   checkpoint(): AuthorCheckpoint { return { tick: this.tick, selected: this.selected }; }
+  /** Read the existing playback clock without changing recorded observation time. */
+  presentationTick(): number { return Math.min(24, this.tick + (this.playing ? this.remainder / .5 : 0)); }
   snapshot(): AuthorSnapshot {
     const ambiguous = (this.verdict?.possibleCulprits.length ?? 0) > 1;
     return freeze({
@@ -152,6 +155,12 @@ export class AuthorSession {
     return this.commit(candidate);
   }
   private apply(d: CaseDraft, edit: AuthorEdit): boolean {
+    // The alarm sounds when the chosen player lifts the ruby. Validate both
+    // changes on this candidate so an unreachable attempt leaves the case intact.
+    if (edit.kind === "stageTake") {
+      d.alarmTick = edit.tick;
+      edit = { kind: "setEvent", event: { kind: "Take", track: edit.track, tick: edit.tick } };
+    }
     switch (edit.kind) {
       case "setPathKey": {
         const track = d.tracks.find(t => t.id === edit.track);

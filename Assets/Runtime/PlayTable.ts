@@ -3,7 +3,27 @@ import { AuthorSnapshot } from "../Author/AuthorSession";
 import { AuthorCommand } from "../Author/AuthorController";
 import { DetectiveState, DetectiveAction } from "../Detective/DetectiveSession";
 import { FlowState } from "../Cases/CaseFlow";
-import { Board, Clue, Field, Role, TrackId, Key, Vec3 } from "../Domain/types";
+import {
+  Board,
+  Clue,
+  Field,
+  Role,
+  TrackId,
+  Key,
+  Vec3,
+  FrameClue,
+} from "../Domain/types";
+import {
+  recordedPaneViews,
+  toggleRecordingDetail,
+  recordingDetailEnabled,
+} from "./RecordedGlass";
+import {
+  CaseViewSnapshot,
+  CaseViewAction,
+  caseViewControls,
+} from "../Spatial/CaseViewRouting";
+import { caseViewHandleSlots } from "./CaseViewHandles";
 
 /** Public investigation data only. A vault never crosses this presentation port. */
 export interface PlayTableSnapshot {
@@ -11,6 +31,7 @@ export interface PlayTableSnapshot {
   author?: AuthorSnapshot;
   detective?: DetectiveState;
   board?: Board;
+  view?: CaseViewSnapshot;
 }
 export type FlowAction =
   | "replayAlarm"
@@ -40,7 +61,8 @@ export type PlayTableCommand =
       };
     }
   | { action: "author"; payload: AuthorCommand }
-  | { action: "detective"; payload: DetectiveAction };
+  | { action: "detective"; payload: DetectiveAction }
+  | { action: "view"; payload: CaseViewAction };
 export interface PlayTablePorts {
   dispatch(action: string, payload?: unknown): void;
 }
@@ -54,8 +76,11 @@ interface ObjectAction {
   inscription: SceneObject;
   text: Text;
   input: Interactable;
+  shape: BoxShape;
   label: () => string;
   active: () => boolean;
+  /** Undefined for lifetime-stable stations, otherwise the owning role generation. */
+  ownerEpoch?: number;
 }
 
 /** Diegetic controls live on museum objects in native story centimetres.
@@ -67,13 +92,22 @@ export class PlayTable {
   private state: PlayTableSnapshot;
   private epoch = -1;
   private signature = "";
+  private stationsBuilt = false;
+  private pendingRoleRebuild = false;
+  private registeringRole = false;
+  private registeringPublicStation = false;
+  private lifecycle: ScriptComponent;
+  private lifecycleUpdate: SceneEvent;
   private disposed = false;
   private dragging = false;
+  private inputGeneration = 0;
+  private viewIdentity = "";
   private actions = new Map<string, ObjectAction>();
   private sceneObjects = new Map<string, SceneObject>();
   private focus: string | undefined;
   private lastUsed: string | undefined;
   private rackPage = 0;
+  private observationSlots = new Map<string, FrameClue>();
 
   constructor(
     private parent: SceneObject,
@@ -89,6 +123,11 @@ export class PlayTable {
       );
     this.root.getTransform().setLocalRotation(quat.fromEulerAngles(0, 0, 0));
     this.root.getTransform().setLocalScale(new vec3(1, 1, 1));
+    this.lifecycle = this.root.createComponent(
+      "Component.ScriptComponent",
+    ) as ScriptComponent;
+    this.lifecycleUpdate = this.lifecycle.createEvent("UpdateEvent");
+    this.lifecycleUpdate.bind(() => this.flushRoleRebuild());
   }
 
   render(snapshot: PlayTableSnapshot): void {
@@ -103,32 +142,220 @@ export class PlayTable {
     };
     this.state = snapshot;
     this.epoch = snapshot.flow.inputEpoch;
+    const viewIdentity = snapshot.view
+      ? [snapshot.view.mode, snapshot.view.caseId, snapshot.view.rev].join("|")
+      : "museum";
+    if (this.viewIdentity && viewIdentity !== this.viewIdentity)
+      this.finishTimeDrag();
+    this.viewIdentity = viewIdentity;
+    // Evidence pages, shelf records, selection and proof results are data changes.
+    // They must never replace a native Interactable that is dispatching a release.
     const signature = [
       snapshot.flow.mode,
       snapshot.flow.inputEpoch,
-      snapshot.flow.shelf.map((item) => `${item.id}/${item.rev}`).join(","),
       snapshot.author?.draft.tracks.map((track) => track.id).join(","),
       snapshot.author?.draft.witnesses.map((source) => source.id).join(","),
-      snapshot.detective?.visibleGlass.map((glass) => glass.id).join(","),
+      snapshot.board?.witnesses.map((source) => source.id).join(","),
       snapshot.detective?.objects.map((clue) => clue.id).join(","),
-      snapshot.detective?.questionFields.join(","),
-      this.rackPage,
     ].join("|");
-    if (
-      previousEpoch !== this.epoch ||
-      (signature !== this.signature && !this.dragging)
-    ) {
-      this.clear();
+    if (!this.stationsBuilt) {
+      this.buildStations();
+      this.stationsBuilt = true;
       this.signature = signature;
-      this.build();
+      this.buildRoleObjects();
+    } else if (signature !== this.signature) {
+      this.signature = signature;
+      this.pendingRoleRebuild = true;
+      if (previousEpoch !== this.epoch) {
+        this.dragging = false;
+        this.sceneObjects.clear();
+      }
     }
     this.updateMovingTargets();
+    this.updateObservationTargets();
+    this.updateViewHandles();
     for (const [id, action] of this.actions) {
       action.object.enabled = action.active();
-      action.text.text = action.label();
+      if (action.object.enabled) action.text.text = action.label();
       action.inscription.enabled = this.focus === id && action.object.enabled;
     }
     this.updateError();
+  }
+
+  /** Finalize at the already authoritative tick, then ignore the held old input.
+   * MuseumGame freezes its session afterwards. No second seek or replay occurs. */
+  finishTimeDrag(): void {
+    this.inputGeneration++;
+    this.dragging = false;
+  }
+
+  readCaseTargets(): {
+    targetName: string;
+    caseId: string;
+    rev: number;
+    state: string;
+  }[] {
+    const targets: {
+      targetName: string;
+      id: string;
+      caseId: string;
+      rev: number;
+      state: string;
+    }[] = [];
+    if (!this.state) return targets;
+    for (let index = 0; index < 3; index++) {
+      const item = this.state.flow.shelf[this.rackPage * 3 + index],
+        action = this.actions.get("CaseSpine" + index);
+      if (item && action?.object.enabled && action.active())
+        targets.push({
+          targetName: action.object.name,
+          id: item.id,
+          caseId: item.id,
+          rev: item.rev,
+          state: item.state,
+        });
+    }
+    return targets;
+  }
+
+  readObservationTargets(): { targetName: string; observationId: string }[] {
+    const targets: { targetName: string; observationId: string }[] = [];
+    for (const [id, observation] of this.observationSlots) {
+      const action = this.actions.get(id);
+      if (action?.object.enabled && action.active())
+        targets.push({
+          targetName: action.object.name,
+          observationId: observation.id,
+        });
+    }
+    return targets;
+  }
+
+  /** Geometry and identity come from the same public clipped observation.
+   * Slots grow without replacing any previously registered native target. */
+  private updateObservationTargets(): void {
+    this.observationSlots.clear();
+    const detective = this.state.detective;
+    if (
+      !detective ||
+      this.state.flow.mode !== "detective" ||
+      detective.mode === "reconstruction"
+    )
+      return;
+    const fragments = detective.observations.filter(
+      (observation) => observation.observation?.kind === "fragment",
+    );
+    for (const pane of recordedPaneViews()) {
+      if (
+        !["PublicRecordedGlass", "EntryRecordedGlass"].includes(
+          pane.root.name,
+        ) ||
+        !pane.root.isEnabledInHierarchy
+      )
+        continue;
+      const surfaces = pane.surfaces
+        .map((surface) => ({
+          surface,
+          observation: fragments.find((observation) => {
+            const fragment = observation.payload.fragments[0];
+            return (
+              fragment?.segment === surface.segment &&
+              fragment.via === surface.via
+            );
+          }),
+        }))
+        .filter((item) => !!item.observation);
+      for (let index = 0; index < surfaces.length; index++) {
+        const id = "Observation_" + pane.root.name + "_" + index;
+        const { surface, observation } = surfaces[index];
+        this.observationSlots.set(id, observation);
+        if (!this.actions.has(id)) this.bindObservationTarget(id);
+        const action = this.actions.get(id);
+        action.shape.size = new vec3(
+          Math.max(2, surface.widthCm + 1),
+          Math.max(3, surface.heightCm + 1),
+          1.5,
+        );
+        const world = pane.root
+          .getTransform()
+          .getWorldTransform()
+          .multiplyPoint(
+            new vec3(
+              surface.centerCm[0],
+              surface.centerCm[1],
+              surface.centerCm[2] + 1,
+            ),
+          );
+        action.object.getTransform().setWorldPosition(world);
+        action.object
+          .getTransform()
+          .setWorldRotation(pane.root.getTransform().getWorldRotation());
+        action.object
+          .getTransform()
+          .setWorldScale(pane.root.getTransform().getWorldScale());
+        action.inscription
+          .getTransform()
+          .setLocalPosition(new vec3(0, surface.heightCm / 2 + 2, 1));
+        action.inscription
+          .getTransform()
+          .setLocalRotation(quat.fromEulerAngles(0, 0, 0));
+      }
+    }
+  }
+
+  private bindObservationTarget(id: string): void {
+    const publicRegistration = this.registeringPublicStation;
+    this.registeringPublicStation = true;
+    let capturedId: string | undefined;
+    let capturedEpoch = -1;
+    const action = this.bindObject(
+      id,
+      [0, 0, 0],
+      [2, 3, 1.5],
+      () => {
+        const observation = this.observationSlots.get(id);
+        const role = observation?.payload.fragments[0]?.role;
+        const selected =
+          this.state.detective?.focusedObservation?.id === observation?.id;
+        return selected
+          ? role
+            ? role + " selected"
+            : "Mark selected"
+          : role
+            ? "Select " + role
+            : "Select visible mark";
+      },
+      () => {
+        const observation = this.observationSlots.get(id);
+        if (
+          capturedEpoch === this.epoch &&
+          capturedId &&
+          observation?.id === capturedId
+        )
+          this.detective({ type: "selectObservation", id: capturedId });
+      },
+      () => this.observationSlots.has(id),
+    );
+    this.registeringPublicStation = publicRegistration;
+    action.text.size = 18;
+    action.input.onTriggerStart.add(() => {
+      capturedId = this.observationSlots.get(id)?.id;
+      capturedEpoch = this.epoch;
+    });
+  }
+
+  private pinLabel(): string {
+    const detective = this.state.detective;
+    if (detective.mode === "reconstruction") return "Back to observations";
+    const role = detective.focusedObservation?.payload.fragments[0]?.role;
+    if (role) return "Pin " + role;
+    if (
+      detective.frame?.kind === "Frame" &&
+      detective.observations.length > 1 &&
+      !detective.focusedObservation
+    )
+      return "Select a visible mark";
+    return "Pin evidence";
   }
 
   private object(name: string, position: Point): SceneObject {
@@ -205,6 +432,30 @@ export class PlayTable {
     active = () => true,
     onTop = false,
   ): ObjectAction {
+    const ownerEpoch = this.registeringRole ? this.epoch : undefined;
+    const ownerMode = this.registeringRole ? this.state.flow.mode : undefined;
+    const publicStation = this.registeringPublicStation;
+    const isPublicContext = () => {
+      if (!publicStation) return true;
+      if (!this.state.detective) return false;
+      if (this.state.flow.mode === "detective") return true;
+      return (
+        this.state.flow.mode === "finished" &&
+        ([
+          "CompareVersions",
+          "VersionFile0",
+          "VersionFile1",
+          "PinGlass",
+        ].includes(id) ||
+          id.startsWith("CaseView"))
+      );
+    };
+    const canUse = () =>
+      !this.disposed &&
+      (ownerEpoch === undefined || ownerEpoch === this.epoch) &&
+      (ownerMode === undefined || ownerMode === this.state.flow.mode) &&
+      isPublicContext() &&
+      active();
     const object = this.object("Use_" + id, position);
     const collider = object.createComponent("Physics.ColliderComponent");
     const shape = Shape.createBoxShape();
@@ -231,7 +482,7 @@ export class PlayTable {
           : quat.fromEulerAngles(0, Math.PI, 0),
       );
     const text = inscription.createComponent("Component.Text");
-    text.text = label();
+    text.text = canUse() ? label() : "";
     text.size = size[0] < 15 ? 18 : 28;
     text.depthTest = true;
     text.horizontalAlignment = HorizontalAlignment.Center;
@@ -246,15 +497,25 @@ export class PlayTable {
     );
     text.horizontalOverflow = HorizontalOverflow.Wrap;
     inscription.enabled = false;
-    const action = { object, inscription, text, input, label, active };
+    const action: ObjectAction = {
+      object,
+      inscription,
+      text,
+      input,
+      shape,
+      label,
+      active: canUse,
+      ownerEpoch,
+    };
     this.actions.set(id, action);
     let capturedEpoch = -1;
+    let capturedGeneration = -1;
     let dragged = false;
     input.onDragStart.add(() => {
       dragged = true;
     });
     input.onHoverEnter.add(() => {
-      if (!active()) return;
+      if (!canUse()) return;
       if (this.focus)
         this.actions.get(this.focus)?.inscription &&
           (this.actions.get(this.focus).inscription.enabled = false);
@@ -269,6 +530,7 @@ export class PlayTable {
     });
     input.onTriggerStart.add(() => {
       capturedEpoch = this.epoch;
+      capturedGeneration = this.inputGeneration;
       dragged = false;
       this.lastUsed = id;
       inscription.getTransform().setLocalScale(new vec3(0.97, 0.97, 0.97));
@@ -277,8 +539,9 @@ export class PlayTable {
       inscription.getTransform().setLocalScale(new vec3(1, 1, 1));
       if (
         capturedEpoch === this.epoch &&
-        active() &&
-        !this.dragging &&
+        capturedGeneration === this.inputGeneration &&
+        canUse() &&
+        (!this.dragging || id.startsWith("CaseView")) &&
         !dragged
       )
         invoke();
@@ -293,18 +556,46 @@ export class PlayTable {
     return action;
   }
 
-  private build(): void {
-    const entryClock = this.anchor("Anchor_EntryClock", [490, 115, -240]);
+  private buildStations(): void {
+    const entryClock = this.anchor("Anchor_EntryClock", [360, 115, -115]);
     this.bindClock("EntryClock", entryClock);
-    const hallClock = this.anchor("Anchor_HallClock", [340, 100, 95]);
-    this.bindClock("HallClock", hallClock);
+    this.bindClock(
+      "HallClock",
+      this.anchor("Anchor_HallClock", [340, 100, 95]),
+    );
     const bench = this.anchor("Anchor_ConservationBench", [-350, 94, 380]);
     this.bindClock("WorkshopClock", this.offset(bench, 70, 7, -20));
     this.caseRack();
     this.workbench(bench);
+    this.registeringPublicStation = true;
+    this.publicWorkbench(bench);
+    this.viewHandles(bench);
+    this.registeringPublicStation = false;
+  }
+
+  private buildRoleObjects(): void {
+    this.registeringRole = true;
     if (this.state.author) this.authorObjects();
     if (this.state.detective && this.state.flow.mode === "detective")
-      this.detectiveObjects(bench);
+      this.detectiveObjects();
+    this.registeringRole = false;
+  }
+
+  /** Native event observers only request replacement. Destruction happens after
+   * their dispatch stack has returned, in the next lifecycle update. */
+  private flushRoleRebuild(): void {
+    if (this.disposed || !this.pendingRoleRebuild || this.dragging) return;
+    this.pendingRoleRebuild = false;
+    for (const [id, action] of this.actions) {
+      if (action.ownerEpoch === undefined) continue;
+      if (this.focus === id) this.focus = undefined;
+      if (this.lastUsed === id) this.lastUsed = undefined;
+      this.actions.delete(id);
+      action.object.destroy();
+    }
+    this.sceneObjects.clear();
+    this.buildRoleObjects();
+    this.render(this.state);
   }
 
   private bindClock(id: string, position: Point): void {
@@ -331,19 +622,26 @@ export class PlayTable {
       },
       () =>
         this.state.flow.mode !== "handoff" &&
-        this.state.flow.mode !== "finished",
+        (this.state.flow.mode !== "finished" ||
+          this.state.detective?.mode === "reconstruction"),
     );
     let startTick = 0,
       distance = 0,
-      captured = -1;
+      captured = -1,
+      capturedGeneration = -1;
     clock.input.onDragStart.add(() => {
       captured = this.epoch;
+      capturedGeneration = this.inputGeneration;
       this.dragging = true;
       distance = 0;
       startTick = this.state.author?.tick ?? this.state.detective?.tick ?? 12;
     });
     clock.input.onDragUpdate.add((event) => {
-      if (captured !== this.epoch) return;
+      if (
+        captured !== this.epoch ||
+        capturedGeneration !== this.inputGeneration
+      )
+        return;
       distance += this.storyDelta(event.dragVector).x;
       const tick = clamp(Math.round(startTick + distance / 2), 0, 24);
       if (this.state.author) this.author({ kind: "setTick", tick });
@@ -376,50 +674,65 @@ export class PlayTable {
   }
 
   private caseRack(): void {
-    const rack = this.anchor("Anchor_FileRack", [555, 102, -260]);
+    const rack = this.anchor("Anchor_FileRack", [395, 104.2, -130]);
     this.bindObject(
       "StagingFile",
-      this.offset(rack, -16, 0, 0),
-      [13, 18, 9],
+      rack,
+      [13, 3, 9],
       () => "Stage a theft",
       () => this.flow("stageTheft", { confirmed: true }),
       () => ["ready", "detective"].includes(this.state.flow.mode),
+      true,
     );
-    const items = this.state.flow.shelf;
-    items
-      .slice(this.rackPage * 3, this.rackPage * 3 + 3)
-      .forEach((item, index) => {
-        this.bindObject(
-          "CaseSpine" + index,
-          this.offset(rack, index * 9, 0, 0),
-          [7, 18, 9],
-          () => item.spine,
-          () => {
-            if (this.state.flow.mode === "author") this.flow("leaveAuthor");
-            if (["detective", "finished"].includes(this.state.flow.mode))
-              this.flow("finishAttempt", { confirmed: true });
-            if (item.state === "Draft")
-              this.flow("resumeSavedDraft", { id: item.id });
-            else {
-              this.flow("selectCase", { id: item.id, rev: item.rev });
-              this.flow("replayAlarm");
-            }
-          },
-          () => this.state.flow.mode !== "handoff",
-        );
-      });
-    if (items.length > 3)
-      this.bindObject(
-        "RackPage",
-        this.offset(rack, 35, 0, 0),
-        [10, 18, 9],
-        () => "Next files",
+    for (let index = 0; index < 3; index++) {
+      const itemAtSlot = () => this.state.flow.shelf[this.rackPage * 3 + index];
+      let capturedCase: string | undefined;
+      const spine = this.bindObject(
+        "CaseSpine" + index,
+        this.offset(
+          rack,
+          ...([
+            [0, 0, -18],
+            [69.5, 0, 5],
+            [65, 0, -18],
+          ][index] as [number, number, number]),
+        ),
+        index === 1 ? [4, 3, 7] : [7, 3, 7],
+        () => itemAtSlot()?.spine ?? "",
         () => {
-          this.rackPage = (this.rackPage + 1) % Math.ceil(items.length / 3);
-          this.signature = "";
-          this.render(this.state);
+          const item = itemAtSlot();
+          if (!item || capturedCase !== item.id + "/" + item.rev) return;
+          if (this.state.flow.mode === "author") this.flow("leaveAuthor");
+          if (["detective", "finished"].includes(this.state.flow.mode))
+            this.flow("finishAttempt", { confirmed: true });
+          if (item.state === "Draft")
+            this.flow("resumeSavedDraft", { id: item.id });
+          else {
+            this.flow("selectCase", { id: item.id, rev: item.rev });
+            this.flow("replayAlarm");
+          }
         },
+        () => !!itemAtSlot() && this.state.flow.mode !== "handoff",
+        true,
       );
+      spine.input.onTriggerStart.add(() => {
+        const item = itemAtSlot();
+        capturedCase = item ? item.id + "/" + item.rev : undefined;
+      });
+    }
+    this.bindObject(
+      "RackPage",
+      this.offset(rack, 65, 0, -6),
+      [7, 3, 5],
+      () => "Next files",
+      () => {
+        this.rackPage =
+          (this.rackPage + 1) % Math.ceil(this.state.flow.shelf.length / 3);
+        this.render(this.state);
+      },
+      () => this.state.flow.shelf.length > 3,
+      true,
+    );
   }
 
   private workbench(bench: Point): void {
@@ -557,8 +870,9 @@ export class PlayTable {
           this.author({
             kind: "edit",
             edit: {
-              kind: "setEvent",
-              event: { kind: "Take", track, tick: this.state.author.tick },
+              kind: "stageTake",
+              track,
+              tick: this.state.author.tick,
             },
           });
       },
@@ -839,6 +1153,30 @@ export class PlayTable {
           },
         }),
     );
+    // The two rail end stops are the sequential equivalent of dragging the handle.
+    // They share the real mirror plane and remain at fixed positions as cloth moves.
+    for (const endpoint of [
+      { id: "CurtainOpen", aperture: 1, side: 1, label: "Open mirror" },
+      { id: "CurtainClose", aperture: 0, side: -1, label: "Close mirror" },
+    ]) {
+      const distance = mirror.width * 50 * endpoint.side;
+      const stop: Point = [
+        mirror.origin.x * 100 + mirror.right.x * distance + mirror.normal.x * 3,
+        115,
+        mirror.origin.z * 100 + mirror.right.z * distance + mirror.normal.z * 3,
+      ];
+      this.bindObject(
+        endpoint.id,
+        stop,
+        [16, 22, 16],
+        () => endpoint.label,
+        () =>
+          this.author({
+            kind: "edit",
+            edit: { kind: "setAperture", aperture: endpoint.aperture },
+          }),
+      );
+    }
     let aperture = 0,
       captured = -1;
     curtain.input.onDragStart.add(() => {
@@ -869,7 +1207,7 @@ export class PlayTable {
     );
   }
 
-  private detectiveObjects(bench: Point): void {
+  private detectiveObjects(): void {
     const detective = this.state.detective;
     for (const witness of this.state.board?.witnesses ?? [])
       this.bindObject(
@@ -884,27 +1222,6 @@ export class PlayTable {
         () => this.detective({ type: "source", source: witness.id }),
         () => this.state.detective.mode !== "reconstruction",
       );
-    const loupe = this.anchor("Anchor_PinGlass", this.offset(bench, 0, 8, -58));
-    this.bindObject(
-      "PinGlass",
-      loupe,
-      [25, 8, 25],
-      () =>
-        this.state.detective.mode === "reconstruction"
-          ? "Back to observations"
-          : "Pin evidence",
-      () =>
-        this.detective({
-          type:
-            this.state.detective.mode === "reconstruction"
-              ? "returnObservations"
-              : "pin",
-        }),
-      () =>
-        !!this.state.detective.frame ||
-        this.state.detective.mode === "reconstruction",
-      true,
-    );
     for (const clue of detective.objects) {
       if (clue.kind === "Box") {
         const box = this.state.board.room.boxes?.find(
@@ -931,27 +1248,82 @@ export class PlayTable {
         );
       }
     }
-    detective.visibleGlass.forEach((glass, index) =>
-      this.bindObject(
+  }
+
+  /** Fixed glass slots and tools retain their native identity across pin, page,
+   * removal, solved states and case changes. Only their current record changes. */
+  private publicWorkbench(bench: Point): void {
+    const loupe = this.anchor("Anchor_PinGlass", this.offset(bench, 0, 8, -58));
+    this.bindObject(
+      "PinGlass",
+      this.anchor("Anchor_PinHandle", this.offset(loupe, 25, -0.1, -15)),
+      [10, 8, 14],
+      () => this.pinLabel(),
+      () =>
+        this.detective({
+          type:
+            this.state.detective.mode === "reconstruction"
+              ? "returnObservations"
+              : "pin",
+        }),
+      () =>
+        !!this.state.detective.frame ||
+        this.state.detective.mode === "reconstruction",
+      true,
+    );
+    const entryPin = this.bindObject(
+      "EntryPinGlass",
+      this.anchor("Anchor_EntryPinClip", [402.5, 108.5096, -173.8743]),
+      [3, 5, 3],
+      () => this.pinLabel(),
+      () => this.detective({ type: "pin" }),
+      () =>
+        !!this.state.detective.frame &&
+        this.state.detective.mode !== "reconstruction",
+    );
+    const clipAnchor = this.find("Anchor_EntryPinClip");
+    if (clipAnchor)
+      entryPin.object
+        .getTransform()
+        .setWorldRotation(clipAnchor.getTransform().getWorldRotation());
+    entryPin.inscription
+      .getTransform()
+      .setLocalRotation(quat.fromEulerAngles(0, 0, 0));
+    entryPin.inscription.getTransform().setLocalPosition(new vec3(0, 0, 1.7));
+    for (let index = 0; index < 3; index++) {
+      const glassAtSlot = () => this.state.detective?.visibleGlass[index];
+      let capturedGlass: string | undefined;
+      const glassTarget = this.bindObject(
         "Evidence" + index,
         this.offset(bench, -24 + index * 24, 4, -42),
         [20, 5, 18],
-        () => this.clueLabel(glass.clue),
-        () => this.detective({ type: "selectClue", id: glass.id }),
-        () => this.state.detective.mode !== "reconstruction",
-        true,
-      ),
-    );
-    if (detective.glass.length > 3)
-      this.bindObject(
-        "MoreEvidence",
-        this.offset(bench, 52, 4, -42),
-        [12, 5, 18],
-        () => "Next evidence",
-        () => this.detective({ type: "tabPage", delta: 1 }),
-        () => this.state.detective.mode !== "reconstruction",
+        () => {
+          const glass = glassAtSlot();
+          return glass ? this.clueLabel(glass.clue) : "";
+        },
+        () => {
+          const glass = glassAtSlot();
+          if (glass && glass.id === capturedGlass)
+            this.detective({ type: "selectClue", id: glass.id });
+        },
+        () => !!glassAtSlot() && this.state.detective.mode !== "reconstruction",
         true,
       );
+      glassTarget.input.onTriggerStart.add(() => {
+        capturedGlass = glassAtSlot()?.id;
+      });
+    }
+    this.bindObject(
+      "MoreEvidence",
+      this.offset(bench, 52, 4, -42),
+      [12, 5, 18],
+      () => "Next evidence",
+      () => this.detective({ type: "tabPage", delta: 1 }),
+      () =>
+        this.state.detective.glass.length > 3 &&
+        this.state.detective.mode !== "reconstruction",
+      true,
+    );
     this.bindObject(
       "RemoveEvidence",
       this.offset(bench, 52, 4, -62),
@@ -962,6 +1334,33 @@ export class PlayTable {
         this.state.detective.glass.some(
           (glass) => glass.id === this.state.detective.selected,
         ),
+      true,
+    );
+    this.bindObject(
+      "UndoEvidence",
+      this.offset(bench, 42, 3, -20),
+      [15, 8, 16],
+      () => "Undo evidence removal",
+      () => this.detective({ type: "undo" }),
+      () => this.state.detective.canUndoEvidence,
+      true,
+    );
+    this.bindObject(
+      "LoupeDetail",
+      this.offset(loupe, -11, 1, 0),
+      [5, 5, 5],
+      () =>
+        recordingDetailEnabled("PublicRecordedGlass")
+          ? "Show all marks"
+          : "Enlarge selected mark",
+      () => {
+        toggleRecordingDetail("PublicRecordedGlass");
+        this.render(this.state);
+      },
+      () =>
+        this.state.detective.mode !== "reconstruction" &&
+        (recordingDetailEnabled("PublicRecordedGlass") ||
+          !!this.state.detective.focusedObservation),
       true,
     );
     this.findingObjects(bench);
@@ -985,30 +1384,50 @@ export class PlayTable {
         true,
       ),
     );
-    this.state.detective.questionFields.forEach((field, index) =>
+    const fields: Field[] = [
+      "taker",
+      "recipient",
+      "cache",
+      "takeTick",
+      "passTick",
+      "stashTick",
+    ];
+    fields.forEach((field, index) =>
       this.bindObject(
         "Finding" + field,
         this.offset(bench, -60, 5, -35 + index * 20),
         [20, 5, 17],
         () => this.fieldLabel(field),
         () => this.detective({ type: "selectField", field }),
-        () => this.state.detective.mode !== "reconstruction",
+        () =>
+          this.state.detective.questionFields.includes(field) &&
+          this.state.detective.mode !== "reconstruction",
         true,
       ),
     );
-    for (const [index, box] of (this.state.board.room.boxes ?? []).entries())
+    for (let index = 0; index < 2; index++) {
+      const boxAtSlot = () => this.state.board?.room.boxes?.[index];
       this.bindObject(
-        "CacheChoice" + box.id,
+        "CacheChoice" + index,
         this.offset(bench, -15 + index * 30, 5, 6),
         [25, 5, 22],
-        () => box.id,
+        () => boxAtSlot()?.id ?? "",
+        () => {
+          const box = boxAtSlot();
+          if (box)
+            this.detective({
+              type: "claimField",
+              field: "cache",
+              value: box.id,
+            });
+        },
         () =>
-          this.detective({ type: "claimField", field: "cache", value: box.id }),
-        () =>
+          !!boxAtSlot() &&
           this.state.detective.selectedField === "cache" &&
           this.state.detective.mode !== "reconstruction",
         true,
       );
+    }
     this.bindObject(
       "UnknownFinding",
       this.offset(bench, 52, 5, 6),
@@ -1046,10 +1465,23 @@ export class PlayTable {
         [20, 5, 20],
         () => this.versionLabel(index),
         () => this.versionAction(index),
-        () => this.hasVersion(index),
+        () => this.hasVersion(index) && (index !== 0 || !this.canCompare()),
         true,
       );
     }
+    this.bindObject(
+      "CompareVersions",
+      this.offset(bench, -52, 5, 38),
+      [20, 5, 20],
+      () => "Compare reconstructions",
+      () =>
+        this.detective({
+          type: "compareVersions",
+          field: this.state.detective.selectedField,
+        }),
+      () => this.canCompare(),
+      true,
+    );
     this.bindObject(
       "NoneFinding",
       this.offset(bench, 52, 5, -14),
@@ -1067,6 +1499,101 @@ export class PlayTable {
       true,
     );
   }
+  private canCompare(): boolean {
+    const detective = this.state.detective;
+    if (!detective?.verdict) return false;
+    return detective.selectedField === "taker"
+      ? detective.verdict.possibleCulprits.length > 1
+      : (detective.verdict.examplesByField[detective.selectedField]?.length ??
+          0) > 1;
+  }
+
+  private viewHandles(bench: Point): void {
+    const positions: Record<string, Point> = {
+      CaseViewHandle: this.offset(bench, 0, 7, -29),
+      CaseViewSeated: this.offset(bench, -13, 7, -15),
+      CaseViewStanding: this.offset(bench, 13, 7, -15),
+      CaseViewClose: this.offset(bench, 0, 7, 3),
+      CaseViewBack: this.offset(bench, -14, 7, -15),
+    };
+    for (const id of Object.keys(positions)) {
+      const control = () =>
+        this.state.view
+          ? caseViewControls(this.state.view).find(
+              (control) => control.id === id,
+            )
+          : undefined;
+      this.bindObject(
+        id,
+        positions[id],
+        id === "CaseViewHandle"
+          ? [18, 8, 8]
+          : id === "CaseViewClose"
+            ? [10, 8, 8]
+            : [18, 8, 14],
+        () => control()?.label ?? "",
+        () => {
+          const action = control()?.action;
+          if (action) {
+            this.finishTimeDrag();
+            this.send("view", action);
+          }
+        },
+        () => !!control(),
+        true,
+      );
+    }
+  }
+
+  private updateViewHandles(): void {
+    const bench = this.anchor("Anchor_ConservationBench", [-350, 94, 380]);
+    const transform = this.root.getTransform().getWorldTransform();
+    const position = transform.multiplyPoint(new vec3(...bench));
+    const forward = transform.multiplyDirection(new vec3(0, 0, 1));
+    const slots = caseViewHandleSlots(this.state.view, {
+      originCm: [position.x, position.y, position.z],
+      scale: 1,
+      yawRad: Math.atan2(forward.x, forward.z),
+    });
+    for (const slot of slots) {
+      const action = this.actions.get(slot.id);
+      if (!action) continue;
+      const dynamic =
+        this.state.view?.mode === "room" || this.state.view?.mode === "table";
+      const size: Point = dynamic
+        ? slot.id === "CaseViewStanding"
+          ? [24, 10, 8]
+          : [22, 10, 8]
+        : slot.id === "CaseViewHandle"
+          ? [18, 8, 8]
+          : slot.id === "CaseViewClose"
+            ? [10, 8, 8]
+            : [18, 8, 14];
+      action.shape.size = new vec3(...size);
+      action.object
+        .getTransform()
+        .setWorldPosition(new vec3(...slot.placement.originCm));
+      action.object
+        .getTransform()
+        .setWorldRotation(quat.fromEulerAngles(0, slot.placement.yawRad, 0));
+      action.object.getTransform().setWorldScale(new vec3(1, 1, 1));
+      action.inscription
+        .getTransform()
+        .setLocalRotation(
+          slot.kind === "tab"
+            ? quat.fromEulerAngles(-Math.PI / 2, 0, 0)
+            : quat.fromEulerAngles(0, Math.PI, 0),
+        );
+      action.inscription
+        .getTransform()
+        .setLocalPosition(
+          slot.kind === "tab"
+            ? new vec3(0, size[1] / 2 + 0.15, 0)
+            : new vec3(0, 0, -size[2] / 2 - 0.15),
+        );
+    }
+  }
+
   private hasVersion(index: number): boolean {
     const detective = this.state.detective;
     if (!detective.verdict) return false;
@@ -1105,8 +1632,19 @@ export class PlayTable {
     }
   }
   private clueLabel(clue: Clue): string {
-    if (clue.kind === "Frame")
-      return clue.witness + " " + (clue.tick / 2).toFixed(1) + " s";
+    if (clue.kind === "Frame") {
+      const fragment =
+        clue.payload.fragments.length === 1
+          ? clue.payload.fragments[0]
+          : undefined;
+      const mark = fragment
+        ? (fragment.role ?? "Unidentified mark") +
+          (fragment.via === "mirror" ? " in mirror" : "")
+        : "Recording";
+      return (
+        mark + "\n" + clue.witness + " " + (clue.tick / 2).toFixed(1) + " s"
+      );
+    }
     if (clue.kind === "Rim") return "Rim mark";
     return clue.box;
   }
@@ -1167,7 +1705,11 @@ export class PlayTable {
   private updateError(): void {
     const error = this.state.author?.errors[0]?.message;
     if (error && this.lastUsed) {
-      const action = this.actions.get(this.lastUsed);
+      const id =
+        this.lastUsed === "PathFloor" && this.selectedTrack()
+          ? "ActorBase" + this.selectedTrack()
+          : this.lastUsed;
+      const action = this.actions.get(id);
       if (action) {
         action.text.text = error;
         action.inscription.enabled = true;
@@ -1185,6 +1727,7 @@ export class PlayTable {
   dispose(): void {
     if (this.disposed) return;
     this.disposed = true;
+    this.lifecycle.removeEvent(this.lifecycleUpdate);
     this.clear();
     this.root.destroy();
   }

@@ -27,6 +27,27 @@ export function detectiveControls(
     { id: "inspect", label: "Watch this view", action: { type: "inspect" } },
   ];
   if (s.mode !== "reconstruction")
+    for (const observation of s.observations) {
+      const fragment = observation.payload.fragments[0];
+      const label = fragment
+        ? (fragment.role ?? "Observed shape") +
+          (fragment.via === "mirror" ? " in reflection" : "")
+        : observation.payload.actions[0]?.kind === "Take"
+          ? "Ruby taken"
+          : observation.payload.actions[0]?.kind === "Pass"
+            ? "Hands meet"
+            : observation.payload.actions.length
+              ? "Observed action"
+              : observation.payload.hands.length
+                ? "Ruby in hand"
+                : "Observed surface";
+      controls.push({
+        id: `select-observation-${observation.id}`,
+        label,
+        action: { type: "selectObservation", id: observation.id },
+      });
+    }
+  if (s.mode !== "reconstruction")
     controls.push({
       id: "pin",
       label: "Pin evidence",
@@ -38,7 +59,8 @@ export function detectiveControls(
       label: "Remove evidence",
       action: { type: "remove" },
     });
-  controls.push({ id: "undo", label: "Undo", action: { type: "undo" } });
+  if (s.canUndoEvidence)
+    controls.push({ id: "undo", label: "Undo", action: { type: "undo" } });
   for (const object of s.objects)
     controls.push({
       id: `inspect-object-${object.id}`,
@@ -121,7 +143,7 @@ export function detectiveControls(
       id: `glass-${glass.id}`,
       label:
         glass.clue.kind === "Frame"
-          ? `${glass.clue.witness} ${(glass.clue.tick / 2).toFixed(1)}`
+          ? `${glass.clue.payload.fragments[0]?.role ?? (glass.clue.payload.actions.length ? "Action" : "Surface")} ${glass.clue.witness} ${(glass.clue.tick / 2).toFixed(1)}`
           : glass.clue.kind === "Rim"
             ? "Rim mark"
             : glass.clue.box,
@@ -140,6 +162,12 @@ export function detectiveControls(
       id: `field-version-${s.selectedField}-${index}`,
       label: `See ${value} version`,
       action: { type: "versionField", field: s.selectedField, index },
+    });
+  if ((s.verdict?.examplesByField[s.selectedField]?.length ?? 0) > 1)
+    controls.push({
+      id: "compare-versions",
+      label: "Compare reconstructions",
+      action: { type: "compareVersions", field: s.selectedField },
     });
   if (s.mode === "reconstruction")
     controls.push({

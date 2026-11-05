@@ -1,0 +1,520 @@
+- !<AssetImportMetadata/ad146a00-d712-4878-93b7-98831edc1547>
+  ImportedAssetIds:
+    .hidden/brass: !<reference> 9bdb450f-4d50-4d37-8d1e-47e4079e15b4
+    12a4bd84e2c1c66b: !<reference> 459dff5f-aeb6-4fd2-8926-a0ca566d43aa
+    13c632a925f07b88: !<reference> 17bc49be-5846-43b7-90e9-40130354d53b
+    22d9a705e5ec18f6: !<reference> 9ded9519-a9a0-4d9d-ac24-424343c6ca69
+    231f1da85a81be95: !<reference> 246d9e3d-50a6-438b-a0fd-7388b1f84075
+    26ba073d67b9d0dd: !<reference> 089d45b8-2c99-4898-9cca-7e9a16b9c814
+    27018550e0ede459: !<reference> 4aba930d-56ac-4fec-b63b-c60420eb4155
+    3fc4d1f52fd5c4b7: !<reference> 228ee7fd-9d03-445a-9b53-4f212815ec2b
+    4873c2427db5a115: !<reference> 9d68b12b-cb75-4a39-9240-ed746192651e
+    6213d2e793609dee: !<reference> 33fdc7eb-c7c9-4397-afb9-6a316582132e
+    7819c6a56feec54c: !<reference> c8f5558e-e646-4516-b50b-fb80f51cbbac
+    78fc5d36e1210024: !<reference> 78573e3d-cacb-4b9a-b83b-8a1e928259a3
+    7db7272016b26a1c: !<reference> ef00d3a1-c6c1-4473-8cd2-5e44f61551ec
+    85e6c93f02d1a02e: !<reference> 8ded3b24-f782-492e-8601-32b6e5b378ef
+    88792d369588fb6e: !<reference> a597f3f4-e06c-4eb0-923b-e7d420a03a61
+    88ab437fd121cc69: !<reference> 2088d4d3-7489-4d72-a87d-e40c42436d76
+    8c2c6f3cf8d060fd: !<reference> 461d89ff-08e2-41d0-87bd-63dd491289f0
+    8dbe694bf19f9e8d: !<reference> 483cff05-d8fd-4220-a6b7-110e2eed9831
+    9750ffd5343a48c9: !<reference> 717f4c68-6582-412a-a653-65b06cd9b41f
+    Materials/brass: !<reference> 70c2265b-92a1-4860-b9e5-57596d8d1fd8
+    Materials/brass|brass|GraphPassInfo: !<reference> ffa1d81a-7108-4a93-8ce6-24fd3887e335
+    Materials/driedLeaf: !<reference> c62b78e3-f01d-4952-9c4a-e00adab28b27
+    Materials/driedLeaf|driedLeaf|GraphPassInfo: !<reference> 555ab6e2-d758-4d7e-91fb-a1401c10fcc5
+    Materials/driedStem: !<reference> 9a85e56e-34ad-40c7-8a8d-4ec11815cf3f
+    Materials/driedStem|driedStem|GraphPassInfo: !<reference> ce2272ab-6d52-45d9-a732-04b8c9c91d20
+    Materials/leather: !<reference> 36881dac-d9e9-4f9d-8b5f-a84d73956a88
+    Materials/leather|leather|GraphPassInfo: !<reference> 480cd34b-7714-41ef-9500-e7cac18f3b2e
+    Materials/parquetChestnut: !<reference> e145eae0-381e-4431-bedd-e9234dfe4815
+    Materials/parquetChestnut|parquetChestnut|GraphPassInfo: !<reference> d2cccbe6-db4e-4886-b811-126416452d62
+    Materials/screenAubergine: !<reference> 99ce8304-c94e-48ca-9877-b6287307c812
+    Materials/screenAubergine|screenAubergine|GraphPassInfo: !<reference> 690016e9-dd4d-49e8-bf13-943e898b5ed9
+    Materials/screenForest: !<reference> 45a2712e-1a52-4e03-a8c8-41acfdbc662a
+    Materials/screenForest|screenForest|GraphPassInfo: !<reference> b3061bfd-6bb1-49e9-b107-7b695b4fe962
+    Materials/woodGrain: !<reference> 15220531-bb99-4069-94ae-a523c6d10c5e
+    Materials/woodGrain|woodGrain|GraphPassInfo: !<reference> fae7a08a-15d2-4fb2-a191-43bb0cecd9c5
+    Meshes/BotanicalSpecimens__brass: !<reference> 7f74165d-3fb7-4ef1-b959-f06464053b90
+    Meshes/BotanicalSpecimens__driedLeaf: !<reference> ec8609f4-49ca-4ca0-8ee2-120c66d113d5
+    Meshes/BotanicalSpecimens__driedStem: !<reference> 39fbb66d-a937-4187-aa8b-4b3ae49ed148
+    Meshes/Joinery__brass: !<reference> 2abdc160-bb12-4171-87b9-ca26fcaf384b
+    Meshes/Joinery__parquetChestnut: !<reference> 2c4c6389-8bdf-4130-8c68-de2da83baf42
+    Meshes/Joinery__woodGrain: !<reference> 739006b4-18bc-448f-a60d-b9e5a662f659
+    Meshes/UpholsteredPanels__leather: !<reference> 9002f6f4-c7a3-4b35-bd49-f44470173c75
+    Meshes/UpholsteredPanels__screenAubergine: !<reference> 95259d0a-4d36-4110-b94a-8f463b8645bc
+    Meshes/UpholsteredPanels__screenForest: !<reference> 0d421476-abcf-474a-9bca-393710268f80
+    Meshes/UpholsteredPanels__woodGrain: !<reference> b338ea7a-20e4-476e-896e-45d49b36ab86
+    Scene: !<reference> a0fd0d5f-c25a-4ff9-a8c7-9ed65107067f
+    Textures/parquetHoneySurface: !<reference> f2fc9fd7-bbf9-462b-9609-b98c48d18213
+    Textures/parquetHoneySurface1: !<reference> 5a04f2ba-d918-4bed-a3ec-960081e6d4f3
+    Textures/parquetHoneySurface2: !<reference> 89495368-342e-46f7-b8e0-116319fb0dc5
+    Textures/parquetHoneySurface3: !<reference> 14693a68-fde0-4430-a825-22e97ff29687
+    Textures/parquetHoneySurface4: !<reference> 997b3c29-4183-4fc7-bce6-82a654aa790b
+    Textures/plasterSurface: !<reference> f74727c7-db36-4488-a742-45d2eae20588
+    Textures/plasterSurface1: !<reference> a240b800-1825-4268-9f13-c9452a5b55a7
+    ac411bf23a822767: !<reference> 4bd1a58f-0534-4766-9b72-81a2d3c3d1c5
+    c0c8a706db996ef3: !<reference> 4401e79c-69c9-40db-97b8-d0c5c06293cd
+    d01f5cd6c9b12ece: !<reference> 052cf29c-e949-485e-8bc1-47d82f17d35d
+    d4b6484544727bf6: !<reference> 65f8e87a-f386-46e9-84de-4309d8be4313
+    e6de735baab88330: !<reference> 8ee5e0a0-16b6-4b86-a9a8-1b60a565b390
+    f5e53b19e23e0653: !<reference> 757f1301-daff-4436-ab28-0cc59038b5fa
+  ImporterName: GltfImporter
+  PrimaryAsset: !<reference> a0fd0d5f-c25a-4ff9-a8c7-9ed65107067f
+  PackageType: LegacyPackage
+  LegacyPackagePolicy: CanBeUnpackedTransparent
+  ExtraData:
+    {}
+  AssetDataMap:
+    Scene: !<own> 9649bafd-71ea-429d-9066-90bc89093a6c
+  DependentFiles:
+    []
+  ImporterSettings: !<GltfImporterSettings>
+    UseLegacyImporter: false
+    WithMaterials: true
+    NamingConvention: ByCategorySanitizeV2
+    PersistentIdGenerationAlgorithm: DescriptorBasedV2
+    AnimationCurveOptimization: true
+    CustomAnimationSamplingRate: 30.000000
+    ImportVertexColor: true
+    ImportTangents: true
+    ImportMorphTargetAnimation: true
+    ConvertMetersToCentimeters: true
+    RegenerateTangents: false
+    OptimizeMesh: true
+  CompressionSettings: !<ComplexCompressionSettings>
+    Presets:
+      None Compression: !<FileCompressionSettings>
+        {}
+      Performance Compression: !<PerformanceCompressionSettings>
+        Level: Medium
+        Mipmap: false
+    ExtensionMappings:
+      mesh: None Compression
+      jpg: Performance Compression
+    Overrides:
+      {}
+- !<SceneObject/052cf29c-e949-485e-743e-b827d0e82ca2>
+  PrefabRemaps:
+    []
+  Name: UpholsteredPanels__screenAubergine
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 717f4c68-6582-412a-59ac-9a4f93264be0
+- !<SceneObject/089d45b8-2c99-4898-6335-8165e94637eb>
+  PrefabRemaps:
+    []
+  Name: ExhibitionScreenShort
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 100.000000, y: 100.000000, z: 100.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    - !<own> 2088d4d3-7489-4d72-5782-1bf3bdbc9289
+  Components:
+    []
+- !<SceneObject/17bc49be-5846-43b7-6f16-bfecfcab2ac4>
+  PrefabRemaps:
+    []
+  Name: BotanicalSpecimens__driedLeaf
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 459dff5f-aeb6-4fd2-76d9-5f35a992bc55
+- !<SceneObject/2088d4d3-7489-4d72-5782-1bf3bdbc9289>
+  PrefabRemaps:
+    []
+  Name: Scenes
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    - !<own> 461d89ff-08e2-41d0-7842-9c22b6ed760f
+  Components:
+    []
+- !<SceneObject/228ee7fd-9d03-445a-64ac-b0ded7ea13d4>
+  PrefabRemaps:
+    []
+  Name: UpholsteredPanels__woodGrain
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 4bd1a58f-0534-4766-648d-7e5d2c3c2e3a
+- !<RenderMeshVisual/246d9e3d-50a6-438b-5f02-8c774e07bf8a>
+  PrefabRemaps:
+    []
+  Name: Joinery__parquetChestnut
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> e145eae0-381e-4431-bedd-e9234dfe4815
+  Mesh: !<reference> 2c4c6389-8bdf-4130-8c68-de2da83baf42
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<RenderMeshVisual/33fdc7eb-c7c9-4397-5046-95ce9a7decd1>
+  PrefabRemaps:
+    []
+  Name: BotanicalSpecimens__brass
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 70c2265b-92a1-4860-b9e5-57596d8d1fd8
+  Mesh: !<reference> 7f74165d-3fb7-4ef1-b959-f06464053b90
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<SceneObject/4401e79c-69c9-40db-6847-2f3a3f9d6c32>
+  PrefabRemaps:
+    []
+  Name: BotanicalSpecimens__driedStem
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 65f8e87a-f386-46e9-7b21-bcf62741bcec
+- !<RenderMeshVisual/459dff5f-aeb6-4fd2-76d9-5f35a992bc55>
+  PrefabRemaps:
+    []
+  Name: BotanicalSpecimens__driedLeaf
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> c62b78e3-f01d-4952-9c4a-e00adab28b27
+  Mesh: !<reference> ec8609f4-49ca-4ca0-8ee2-120c66d113d5
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<SceneObject/461d89ff-08e2-41d0-7842-9c22b6ed760f>
+  PrefabRemaps:
+    []
+  Name: Scene0
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    - !<own> 78573e3d-cacb-4b9a-47c4-75e16d7da65c
+  Components:
+    []
+- !<SceneObject/483cff05-d8fd-4220-5948-eef1d11267ce>
+  PrefabRemaps:
+    []
+  Name: UpholsteredPanels__leather
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 4aba930d-56ac-4fec-49c4-39fbdf14beaa
+- !<RenderMeshVisual/4aba930d-56ac-4fec-49c4-39fbdf14beaa>
+  PrefabRemaps:
+    []
+  Name: UpholsteredPanels__leather
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 36881dac-d9e9-4f9d-8b5f-a84d73956a88
+  Mesh: !<reference> 9002f6f4-c7a3-4b35-bd49-f44470173c75
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<RenderMeshVisual/4bd1a58f-0534-4766-648d-7e5d2c3c2e3a>
+  PrefabRemaps:
+    []
+  Name: UpholsteredPanels__woodGrain
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 15220531-bb99-4069-94ae-a523c6d10c5e
+  Mesh: !<reference> b338ea7a-20e4-476e-896e-45d49b36ab86
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<RenderMeshVisual/65f8e87a-f386-46e9-7b21-bcf62741bcec>
+  PrefabRemaps:
+    []
+  Name: BotanicalSpecimens__driedStem
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 9a85e56e-34ad-40c7-8a8d-4ec11815cf3f
+  Mesh: !<reference> 39fbb66d-a937-4187-aa8b-4b3ae49ed148
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<RenderMeshVisual/717f4c68-6582-412a-59ac-9a4f93264be0>
+  PrefabRemaps:
+    []
+  Name: UpholsteredPanels__screenAubergine
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 99ce8304-c94e-48ca-9877-b6287307c812
+  Mesh: !<reference> 95259d0a-4d36-4110-b94a-8f463b8645bc
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<SceneObject/757f1301-daff-4436-54d7-f33a6fc74a05>
+  PrefabRemaps:
+    []
+  Name: Joinery__woodGrain
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> a597f3f4-e06c-4eb0-6dc4-182bdf5fc59e
+- !<SceneObject/78573e3d-cacb-4b9a-47c4-75e16d7da65c>
+  PrefabRemaps:
+    []
+  Name: ExhibitionScreenShort
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    - !<own> 757f1301-daff-4436-54d7-f33a6fc74a05
+    - !<own> 9d68b12b-cb75-4a39-6dbf-128b9e6d9ae1
+    - !<own> 8ded3b24-f782-492e-79fe-cd491a4c8710
+    - !<own> 228ee7fd-9d03-445a-64ac-b0ded7ea13d4
+    - !<own> 8ee5e0a0-16b6-4b86-5657-e49f5a9a4c6f
+    - !<own> 483cff05-d8fd-4220-5948-eef1d11267ce
+    - !<own> 052cf29c-e949-485e-743e-b827d0e82ca2
+    - !<own> 4401e79c-69c9-40db-6847-2f3a3f9d6c32
+    - !<own> 17bc49be-5846-43b7-6f16-bfecfcab2ac4
+    - !<own> c8f5558e-e646-4516-4af4-047f0ae34453
+  Components:
+    []
+- !<SceneObject/8ded3b24-f782-492e-79fe-cd491a4c8710>
+  PrefabRemaps:
+    []
+  Name: Joinery__brass
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> ef00d3a1-c6c1-4473-732d-a1bb09eaae13
+- !<SceneObject/8ee5e0a0-16b6-4b86-5657-e49f5a9a4c6f>
+  PrefabRemaps:
+    []
+  Name: UpholsteredPanels__screenForest
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 9ded9519-a9a0-4d9d-53db-bdbcbc393596
+- !<ObjectPrefabAssetData/9649bafd-71ea-429d-9066-90bc89093a6c>
+  Prototype: !<ObjectOwner/9919b579-685d-413b-8d36-bed2b7a1563c>
+    PackagePath: ""
+    objects:
+      - !<own> 089d45b8-2c99-4898-6335-8165e94637eb
+- !<SceneObject/9d68b12b-cb75-4a39-6dbf-128b9e6d9ae1>
+  PrefabRemaps:
+    []
+  Name: Joinery__parquetChestnut
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 246d9e3d-50a6-438b-5f02-8c774e07bf8a
+- !<RenderMeshVisual/9ded9519-a9a0-4d9d-53db-bdbcbc393596>
+  PrefabRemaps:
+    []
+  Name: UpholsteredPanels__screenForest
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 45a2712e-1a52-4e03-a8c8-41acfdbc662a
+  Mesh: !<reference> 0d421476-abcf-474a-9bca-393710268f80
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<RenderMeshVisual/a597f3f4-e06c-4eb0-6dc4-182bdf5fc59e>
+  PrefabRemaps:
+    []
+  Name: Joinery__woodGrain
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 15220531-bb99-4069-94ae-a523c6d10c5e
+  Mesh: !<reference> 739006b4-18bc-448f-a60d-b9e5a662f659
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<SceneObject/c8f5558e-e646-4516-4af4-047f0ae34453>
+  PrefabRemaps:
+    []
+  Name: BotanicalSpecimens__brass
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 33fdc7eb-c7c9-4397-5046-95ce9a7decd1
+- !<RenderMeshVisual/ef00d3a1-c6c1-4473-732d-a1bb09eaae13>
+  PrefabRemaps:
+    []
+  Name: Joinery__brass
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 70c2265b-92a1-4860-b9e5-57596d8d1fd8
+  Mesh: !<reference> 2abdc160-bb12-4171-87b9-ca26fcaf384b
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}

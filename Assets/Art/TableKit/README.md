@@ -13,6 +13,14 @@ connect the outside and rooms; the roof, pilasters and floors form one building.
 The central hall contains no new interior sight-line obstacles. Game-case walls,
 actors, mirror and ruby display remain mounted by the authoritative runtime.
 MuseumBuilding.contract.json lists all semantic interaction anchors in metres.
+The hinged recording glass next to the entry clock has a 36×20 cm clear aperture,
+42×26 cm wooden frame and an 18-degree upward lean. `Anchor_EntryRecording`
+encodes its complete rotation for geometry emitted with normal +Z. The physical
+side clip has its own `Anchor_EntryPinClip`; it does not cover the recording.
+`Anchor_PinGlass` sits at the workbench loupe's actual centre, with identity
+rotation. The renderer applies −π/2 around X and scale 0.5, fitting its 16×8 cm
+recorded crop inside the clear 21 cm lens. `Anchor_PinHandle` names the separate
+tactile wood handle. The loupe has a real three-foot support on the leather mat.
 The two framed Collection paintings use full 3:2 UVs, while oak/plaster tiles
 repeat at 0.70×0.18 m and 1.6×1.6 m. JPEGs stay sRGB; every palette multiplier
 is converted to linear RGB for glTF baseColorFactor.

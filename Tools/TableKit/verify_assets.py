@@ -13,6 +13,8 @@ import numpy as np
 root = Path(__file__).resolve().parents[2]
 models = root / "Assets" / "Art" / "TableKit"
 expected_models = {
+    "ExhibitionScreen",
+    "ExhibitionScreenShort",
     "MuseumBuilding",
     "Guard",
     "Courier",
@@ -33,7 +35,7 @@ expected_models = {
 found_models = {file.stem for file in models.glob("*.glb")}
 require(
     found_models == expected_models,
-    f"Expected 16 TableKit models; missing={expected_models-found_models}; unexpected={found_models-expected_models}",
+    f"Expected 18 TableKit models; missing={expected_models-found_models}; unexpected={found_models-expected_models}",
 )
 audio_directory = root / "Assets" / "Audio" / "TableKit"
 expected_audio = {"cloth", "engage", "latch"}
@@ -45,8 +47,8 @@ require(
 manifest = json.loads((models / "manifest.json").read_text(encoding="utf-8"))
 records = {record["name"]: record for record in manifest["resources"]}
 require(
-    len(manifest["resources"]) == 16 and set(records) == expected_models,
-    "Manifest must list all 16 models exactly once",
+    len(manifest["resources"]) == 18 and set(records) == expected_models,
+    "Manifest must list all 18 models exactly once",
 )
 
 for file in models.glob("*.glb"):
@@ -90,9 +92,12 @@ for file in models.glob("*.glb"):
     require(bool(d.get("meshes")), file.name + ": no renderable meshes")
     count = 0
     building_triangles = []
+    screen_positions = []
     for m in d["meshes"]:
         for p in m["primitives"]:
             v = access(p["attributes"]["POSITION"])
+            if file.stem.startswith("ExhibitionScreen"):
+                screen_positions.extend(v)
             n = access(p["attributes"]["NORMAL"])
             ix = access(p["indices"]).reshape(-1, 3)
             if "TEXCOORD_0" in p["attributes"]:
@@ -122,6 +127,21 @@ for file in models.glob("*.glb"):
             )
             count += len(ix)
     names = {n["name"] for n in d["nodes"]}
+    if screen_positions:
+        positions = np.asarray(screen_positions)
+        width = 2.4 if file.stem == "ExhibitionScreen" else 1.25
+        require(
+            np.allclose(positions.min(axis=0), [-width / 2, 0, -0.075], atol=1e-6),
+            file.name + ": screen exceeds authoritative minimum bounds",
+        )
+        require(
+            np.allclose(positions.max(axis=0), [width / 2, 2, 0.075], atol=1e-6),
+            file.name + ": screen exceeds authoritative maximum bounds",
+        )
+        require(
+            any("BotanicalSpecimens" in name for name in names),
+            file.name + ": reversible exhibit geometry missing",
+        )
     teal = next(material for material in d["materials"] if material["name"] == "teal")
     require(
         np.allclose(
@@ -132,6 +152,66 @@ for file in models.glob("*.glb"):
         file.name + ": teal material factor must use linear RGB, not raw sRGB",
     )
     if file.stem == "MuseumBuilding":
+        anchor_nodes = {
+            node["name"]: node
+            for node in d["nodes"]
+            if node["name"].startswith("Anchor_")
+        }
+        require(
+            np.allclose(
+                anchor_nodes["Anchor_EntryRecording"]["translation"],
+                [4.25, 1.155, -1.695],
+            ),
+            "MuseumBuilding: entry recording anchor position is wrong",
+        )
+        require(
+            np.allclose(
+                anchor_nodes["Anchor_EntryRecording"]["rotation"],
+                [0, np.cos(np.pi / 20), np.sin(np.pi / 20), 0],
+            ),
+            "MuseumBuilding: entry recording must face the viewer and lean upward 18 degrees",
+        )
+        require(
+            np.allclose(
+                anchor_nodes["Anchor_PinGlass"]["translation"], [-3.53, 1.026, 3.26]
+            ),
+            "MuseumBuilding: workshop recording is not centred on the real loupe",
+        )
+        require(
+            "rotation" not in anchor_nodes["Anchor_PinGlass"],
+            "MuseumBuilding: workshop anchor must remain identity; renderer supplies the horizontal tilt",
+        )
+        require(
+            np.allclose(
+                anchor_nodes["Anchor_EntryClock"]["translation"], [3.6, 1.15, -1.15]
+            ),
+            "MuseumBuilding: existing clock control anchor changed",
+        )
+        require(
+            np.allclose(
+                anchor_nodes["Anchor_FileRack"]["translation"], [3.95, 1.042, -1.30]
+            ),
+            "MuseumBuilding: staging file anchor must stay on the exposed left folder top",
+        )
+        require(
+            np.allclose(
+                anchor_nodes["Anchor_ReceptionLamp_Desk"]["translation"],
+                [4.42, 1.425, -1.31],
+            )
+            and np.allclose(
+                anchor_nodes["Anchor_ReceptionLamp_Picture"]["translation"],
+                [6.43, 2.51, -2.8],
+            ),
+            "MuseumBuilding: desk light must follow the counter while the wall picture light stays fixed",
+        )
+        require(
+            {"Anchor_EntryPinClip", "Anchor_PinHandle"} <= set(anchor_nodes),
+            "MuseumBuilding: tactile pin targets missing",
+        )
+        require(
+            np.hypot(0.16 / 2, 0.08 / 2) < 0.105,
+            "MuseumBuilding: workshop optical crop does not fit the clear 21 cm loupe",
+        )
         require(
             {
                 "Anchor_Entrance",

@@ -28,7 +28,10 @@
   ExportUid: 00000000-0000-0000-0000-000000000000
   PackagePolicy: CanBeUnpacked
   ScriptInputsHidden:
-    ui: false
+    cloth: false
+    engage: false
+    latch: false
+    recordingMaterial: false
   ScriptTypesHidden:
     {}
   ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
@@ -38,9 +41,15 @@
   Attachments:
     []
   DefaultScriptInputs:
-    - ui: !<MappingBased.AssignableType_1> 00000000-0000-0000-0000-000000000000
+    - recordingMaterial: !<reference.Material> 00000000-0000-0000-0000-000000000000
+      cloth: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
+      engage: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
+      latch: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
   ScriptTypes:
     -
       {}
   InputLines:
-    - // @input AssignableType_1 ui
+    - // @input Asset.Material recordingMaterial
+    - // @input Asset.AudioTrackAsset cloth
+    - // @input Asset.AudioTrackAsset engage
+    - // @input Asset.AudioTrackAsset latch

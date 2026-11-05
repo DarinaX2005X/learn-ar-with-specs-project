@@ -3,17 +3,27 @@ import {findInteractablesByName} from "Leaf.lspkg/Interactors/InteractableUtils"
 
 export interface CountercaseSnapshot {
   revision: number
+  caseId: string
   aperture: number
   tick: number
   observedRoles: string[]
   possibleCulprits: string[]
   frameId: string
-  frameRevision: number
+  frameRevision: string | number
   frameObservedRoles: string[]
   mode: string
   playing: boolean
-  grab: boolean
-  draftAperture: number
+  preview: boolean
+  testing: boolean
+  testedRev: number | null
+  canSeal: boolean
+  needsAmbiguityConfirmation: boolean
+  evidenceIds: string[]
+  observations: {id: string; roles: string[]}[]
+  observationTargets: {targetName: string; observationId: string}[]
+  focusedObservationId: string | null
+  verdictStatus: string | null
+  errors: unknown[]
 }
 
 /** Read-only telemetry. No setter, compile call, or production action is invoked here. */

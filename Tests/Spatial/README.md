@@ -1,13 +1,8 @@
 
-The transfer reference was inspected directly. The two differently directed palms
-meet around a single ruby, and the empty socket stays below their shared action.
-The dark guard silhouette is separated in the right frame. Spatial uses one hand
-contact point and one ruby per history, with a separate fixed recording. The
-reference's carved ornament, close eye distance and photographic fabric are not
-requirements for the playable scene.
+# Spatial checks
 
 Run from repository root:
-`powershell -ExecutionPolicy Bypass -File project/Tests/Spatial/run.ps1`
+`powershell -ExecutionPolicy Bypass -File Tests/Spatial/run.ps1`
 
 The tests compile the actual Domain, Detective-compatible histories, TableKit and
 Spatial modules. They use compiled closed-curtain and packing cases, actual solver

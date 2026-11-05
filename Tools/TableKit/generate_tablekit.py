@@ -312,7 +312,14 @@ def footprint(m, name, outline, levels, mat):
             a = k * n + j
             b = k * n + (j + 1) % n
             f.extend([[a, a + n, b], [b, a + n, b + n]])
-    v.extend([[0, levels[0][0], 0], [0, levels[-1][0], 0]])
+    center_x = sum(point[0] for point in outline) / n
+    center_z = sum(point[1] for point in outline) / n
+    v.extend(
+        [
+            [center_x * levels[0][1], levels[0][0], center_z * levels[0][1]],
+            [center_x * levels[-1][1], levels[-1][0], center_z * levels[-1][1]],
+        ]
+    )
     bot = len(v) - 2
     top = len(v) - 1
     for j in range(n):
@@ -1280,7 +1287,9 @@ def main():
         manifest["resources"].extend(
             record
             for record in previous.get("resources", [])
-            if record["name"] == "MuseumBuilding" and (ROOT / record["path"]).exists()
+            if record["name"]
+            in {"MuseumBuilding", "ExhibitionScreen", "ExhibitionScreenShort"}
+            and (ROOT / record["path"]).exists()
         )
     (ROOT / "manifest.json").write_text(
         json.dumps(manifest, indent=2), encoding="utf-8"

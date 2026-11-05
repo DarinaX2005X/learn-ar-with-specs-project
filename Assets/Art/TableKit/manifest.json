@@ -795,9 +795,93 @@
       "triangles": 64
     },
     {
+      "name": "ExhibitionScreen",
+      "path": "ExhibitionScreen.glb",
+      "bytes": 286556,
+      "aabb_cm": [
+        240.0,
+        200.0,
+        15.0
+      ],
+      "aabb_min_cm": [
+        -120.0,
+        0.0,
+        -7.5
+      ],
+      "aabb_center_offset_cm": [
+        0.0,
+        100.0,
+        0.0
+      ],
+      "nodeNames": [
+        "ExhibitionScreen",
+        "Joinery__woodGrain",
+        "Joinery__parquetChestnut",
+        "Joinery__brass",
+        "UpholsteredPanels__woodGrain",
+        "UpholsteredPanels__screenForest",
+        "UpholsteredPanels__leather",
+        "UpholsteredPanels__screenAubergine",
+        "BotanicalSpecimens__driedStem",
+        "BotanicalSpecimens__driedLeaf",
+        "BotanicalSpecimens__brass"
+      ],
+      "triangles": 2136,
+      "authoredWidthMetres": 2.4,
+      "authoredHeightMetres": 2,
+      "authoredThicknessMetres": 0.15,
+      "longAxis": "+X",
+      "frontAxis": "-Z",
+      "origin": "ground at centre X/Z",
+      "reversible": true,
+      "importScale": 100
+    },
+    {
+      "name": "ExhibitionScreenShort",
+      "path": "ExhibitionScreenShort.glb",
+      "bytes": 215224,
+      "aabb_cm": [
+        125.0,
+        200.0,
+        15.0
+      ],
+      "aabb_min_cm": [
+        -62.5,
+        0.0,
+        -7.5
+      ],
+      "aabb_center_offset_cm": [
+        0.0,
+        100.0,
+        0.0
+      ],
+      "nodeNames": [
+        "ExhibitionScreenShort",
+        "Joinery__woodGrain",
+        "Joinery__parquetChestnut",
+        "Joinery__brass",
+        "UpholsteredPanels__woodGrain",
+        "UpholsteredPanels__screenForest",
+        "UpholsteredPanels__leather",
+        "UpholsteredPanels__screenAubergine",
+        "BotanicalSpecimens__driedStem",
+        "BotanicalSpecimens__driedLeaf",
+        "BotanicalSpecimens__brass"
+      ],
+      "triangles": 1476,
+      "authoredWidthMetres": 1.25,
+      "authoredHeightMetres": 2,
+      "authoredThicknessMetres": 0.15,
+      "longAxis": "+X",
+      "frontAxis": "-Z",
+      "origin": "ground at centre X/Z",
+      "reversible": true,
+      "importScale": 100
+    },
+    {
       "name": "MuseumBuilding",
       "path": "MuseumBuilding.glb",
-      "bytes": 12109808,
+      "bytes": 12710380,
       "aabb_cm": [
         1308.0,
         422.0,
@@ -814,7 +898,7 @@
         0.0
       ],
       "nodeNames": [
-        "paintOchre",
+        "shadowInner",
         "ArrivalRiverCanvas",
         "ConservatorToolsCanvas",
         "Anchor_Entrance",
@@ -826,9 +910,14 @@
         "Anchor_HallClock",
         "Anchor_ConservationBench",
         "Anchor_PinGlass",
+        "Anchor_PinHandle",
+        "Anchor_EntryRecording",
+        "Anchor_EntryPinClip",
         "Anchor_CaseLid",
         "Anchor_ArchiveRecorder",
         "Anchor_EvidenceShelf",
+        "Anchor_ReceptionLamp_Desk",
+        "Anchor_ReceptionLamp_Picture",
         "FoyerFloor__woodGrain",
         "FoyerFloor__stoneShade",
         "FoyerFloor__limestone",
@@ -860,13 +949,31 @@
         "RoofAndCoffers__plasterLight",
         "RoofAndCoffers__woodGrain",
         "RoofAndCoffers__parquetHoney",
-        "ReceptionFurniture__parquetChestnut",
-        "ReceptionFurniture__parquetLight",
+        "ReceptionFurniture__receptionWalnut",
+        "ReceptionFurniture__receptionWalnutVertical",
         "ReceptionFurniture__woodGrain",
-        "ReceptionFurniture__brass",
+        "ReceptionFurniture__leather",
+        "ReceptionFurniture__leatherWear",
+        "ReceptionFurniture__clothTeal",
         "ReceptionFurniture__paper",
         "ReceptionFurniture__cream",
+        "ReceptionFurniture__stoneShade",
+        "ReceptionFurniture__velvet",
+        "ReceptionFurniture__ruby",
+        "ReceptionFurniture__rubyLight",
+        "ReceptionFurniture__brass",
         "ReceptionFurniture__ink",
+        "ReceptionLighting__teal",
+        "ReceptionLighting__brass",
+        "ReceptionLighting__clothTeal",
+        "ReceptionLighting__lampIvory",
+        "ReceptionContactOcclusion__shadowOuter",
+        "ReceptionContactOcclusion__shadowMiddle",
+        "ReceptionContactOcclusion__shadowInner",
+        "ReceptionRecording__receptionWalnut",
+        "ReceptionRecording__recordingDarkGlass",
+        "ReceptionRecording__brass",
+        "ReceptionRecording__clothTeal",
         "WorkshopFurniture__parquetChestnut",
         "WorkshopFurniture__parquetLight",
         "WorkshopFurniture__woodGrain",
@@ -878,6 +985,10 @@
         "WorkshopFurniture__ruby",
         "WorkshopFurniture__wood",
         "WorkshopFurniture__teal",
+        "WorkshopRecording__wood",
+        "WorkshopRecording__brass",
+        "WorkshopRecording__recordingDarkGlass",
+        "WorkshopRecording__leather",
         "WorkshopFurniture__cream",
         "WorkshopFurniture__paintOchre",
         "WorkshopFurniture__paintBlue",
@@ -898,7 +1009,7 @@
         "FoyerSculpture__paintOchre",
         "FoyerSculpture__parquetChestnut"
       ],
-      "triangles": 102296,
+      "triangles": 107650,
       "storyBoundsMetres": {
         "x": [
           -5,
@@ -933,14 +1044,14 @@
           -2.5
         ],
         "FileRack": [
-          5.55,
-          1.02,
-          -2.6
+          3.95,
+          1.042,
+          -1.2999999999999998
         ],
         "EntryClock": [
-          4.9,
+          3.6000000000000005,
           1.15,
-          -2.4
+          -1.15
         ],
         "HallClock": [
           5.4,
@@ -953,9 +1064,24 @@
           3.8
         ],
         "PinGlass": [
-          -3.1,
-          1.0,
-          3.6
+          -3.53,
+          1.026,
+          3.26
+        ],
+        "PinHandle": [
+          -3.28,
+          1.025,
+          3.11
+        ],
+        "EntryRecording": [
+          4.25,
+          1.155,
+          -1.6949999999999998
+        ],
+        "EntryPinClip": [
+          4.025,
+          1.085096,
+          -1.738743
         ],
         "CaseLid": [
           -3.9,
@@ -971,11 +1097,50 @@
           -4.65,
           1.25,
           -1.8
+        ],
+        "ReceptionLamp_Desk": [
+          4.42,
+          1.425,
+          -1.31
+        ],
+        "ReceptionLamp_Picture": [
+          6.43,
+          2.51,
+          -2.8
         ]
       },
       "importScale": 100,
       "forwardStory": "+Z",
-      "paintingCanvasUV": "Full 0..1, 3:2; assign Collection images"
+      "paintingCanvasUV": "Full 0..1, 3:2; assign Collection images",
+      "recordingSurfaces": {
+        "entry": {
+          "anchor": "Anchor_EntryRecording",
+          "clearApertureCm": [
+            36,
+            20
+          ],
+          "outerFrameCm": [
+            42,
+            26
+          ],
+          "rotationQuaternionXYZW": [
+            0,
+            0.9876883405951378,
+            0.15643446504023087,
+            0
+          ],
+          "emittedNormal": "+Z",
+          "pinAnchor": "Anchor_EntryPinClip"
+        },
+        "workshop": {
+          "anchor": "Anchor_PinGlass",
+          "clearDiameterCm": 21,
+          "rendererScale": 0.5,
+          "rendererRotateXRad": -1.5707963267948966,
+          "anchorRotation": "identity",
+          "pinAnchor": "Anchor_PinHandle"
+        }
+      }
     }
   ],
   "mirror": {

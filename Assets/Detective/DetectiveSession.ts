@@ -4,13 +4,20 @@ import {
   Claim,
   Clue,
   Field,
+  FrameClue,
   History,
   Role,
   SealedCase,
   Verdict,
+  WitnessTape,
 } from "../Domain/types";
 import { proveSteps } from "../Domain/prove";
-import { observe } from "../Domain/observe";
+import {
+  observe,
+  getObservations,
+  resolveObservation,
+  compareObservations,
+} from "../Domain/observe";
 import { reconstructionIssue } from "./Reconstruction";
 
 const copy = <T>(value: T): T => JSON.parse(JSON.stringify(value));
@@ -31,7 +38,10 @@ export interface DetectiveState {
   glass: EvidenceGlass[];
   visibleGlass: EvidenceGlass[];
   glassPage: number;
+  canUndoEvidence: boolean;
   frame?: Clue;
+  observations: FrameClue[];
+  focusedObservation?: FrameClue;
   objects: Clue[];
   selectedField: Field;
   questionFields: Field[];
@@ -40,6 +50,12 @@ export interface DetectiveState {
   verdict?: Verdict;
   message: string;
   reconstruction?: History;
+  comparison?: {
+    pair: [History, History];
+    scope: "all" | "selected";
+    field: Field;
+    tape: WitnessTape;
+  };
   reasons: Clue[];
   completed: boolean;
   fields: Partial<
@@ -86,6 +102,7 @@ export type DetectiveAction =
   | { type: "tabPage"; delta: number }
   | { type: "source"; source: string }
   | { type: "selectClue"; id: string }
+  | { type: "selectObservation"; id: string }
   | { type: "pinClue"; id: string; caseId: string; rev: number }
   | { type: "inspectObject"; id: string }
   | { type: "selectField"; field: Field }
@@ -94,7 +111,8 @@ export type DetectiveAction =
   | { type: "claim"; claim: Claim }
   | { type: "version"; role: Role }
   | { type: "hypothesis"; history: History; all?: boolean }
-  | { type: "comparePair"; first: History; second: History; all?: boolean };
+  | { type: "comparePair"; first: History; second: History; all?: boolean }
+  | { type: "compareVersions"; field?: Field };
 
 /** The sole investigation input is the sealed public snapshot. A gesture and
  * its accessible button dispatch the same action exactly once. */
@@ -138,6 +156,8 @@ export class DetectiveSession {
       glass: [],
       visibleGlass: [],
       glassPage: 0,
+      canUndoEvidence: false,
+      observations: [],
       objects: copy(sealed.clues.clues.filter((c) => c.kind !== "Frame")),
       selectedField: "taker",
       questionFields: [...sealed.board.fields],
@@ -156,6 +176,15 @@ export class DetectiveSession {
   snapshot(): DetectiveState {
     return copy(this.state);
   }
+  presentationTick(): number {
+    return Math.min(
+      24,
+      this.state.tick + (this.state.playing ? this.elapsed / 0.5 : 0),
+    );
+  }
+  isCompleted(): boolean {
+    return this.state.completed;
+  }
   archive(): DetectiveArchive {
     return copy({
       caseId: this.sealed.caseId,
@@ -171,9 +200,7 @@ export class DetectiveSession {
       saved.caseId !== this.sealed.caseId ||
       saved.rev !== this.sealed.rev ||
       !Array.isArray(saved.ids) ||
-      saved.ids.some(
-        (id) => !this.sealed.clues.clues.some((c) => c.id === id),
-      ) ||
+      saved.ids.some((id) => !this.isPinnableObservation(id)) ||
       !this.sealed.board.witnesses.some((w) => w.id === saved.source) ||
       !Number.isFinite(saved.tick)
     )
@@ -184,6 +211,7 @@ export class DetectiveSession {
     this.state.claim = copy(saved.claim);
     this.state.mode = "table";
     this.state.reconstruction = undefined;
+    this.state.comparison = undefined;
     this.restore = undefined;
     this.invalidate();
     this.emit();
@@ -264,9 +292,17 @@ export class DetectiveSession {
       case "selectClue":
         this.select(action.id);
         break;
+      case "selectObservation":
+        if (
+          this.state.mode !== "reconstruction" &&
+          this.state.observations.some((c) => c.id === action.id)
+        )
+          this.select(action.id);
+        break;
       case "pin": {
         const clue = this.currentObservation();
         if (clue) this.pin(clue.id);
+        else this.state.message = "Choose a visible mark";
         break;
       }
       case "pinClue":
@@ -319,11 +355,30 @@ export class DetectiveSession {
           Object.assign(this.state, this.restore);
           this.restore = undefined;
           this.state.reconstruction = undefined;
+          this.state.comparison = undefined;
         }
         break;
       case "comparePair":
         this.comparePair(action.first, action.second, !!action.all);
         break;
+      case "compareVersions": {
+        const field = action.field ?? this.state.selectedField;
+        const examples = this.state.verdict?.examplesByField[field] ?? [];
+        if (examples.length < 2) {
+          this.state.message = "These observations allow only one value";
+          break;
+        }
+        const scope = this.state.verdict!.scope;
+        this.showVersion(examples[0]);
+        this.state.comparison = {
+          pair: [copy(examples[0]), copy(examples[1])],
+          scope,
+          field,
+          tape: copy(this.sealed.clues),
+        };
+        this.state.message = "Possible reconstructions";
+        break;
+      }
       case "hypothesis":
         this.compare(action.history, !!action.all);
         break;
@@ -380,6 +435,7 @@ export class DetectiveSession {
     this.state.selected = undefined;
   }
   private showVersion(history: History): void {
+    this.state.comparison = undefined;
     this.restore ??= {
       mode: this.state.mode,
       tick: this.state.tick,
@@ -393,7 +449,16 @@ export class DetectiveSession {
   }
   private currentObservation(): Clue | undefined {
     const object = this.state.objects.find((c) => c.id === this.state.selected);
-    return object ?? this.currentFrame();
+    if (object) return object;
+    const observations = getObservations(
+      this.sealed.clues,
+      this.state.source,
+      this.state.tick,
+    );
+    return (
+      observations.find((c) => c.id === this.state.selected) ??
+      (observations.length === 1 ? observations[0] : undefined)
+    );
   }
   private currentFrame(): Clue | undefined {
     return this.sealed.clues.clues.find(
@@ -404,7 +469,7 @@ export class DetectiveSession {
     );
   }
   private select(id: string): void {
-    const c = this.sealed.clues.clues.find((c) => c.id === id);
+    const c = resolveObservation(this.sealed.clues, id);
     if (!c) return;
     this.state.selected = id;
     this.state.playing = false;
@@ -416,13 +481,23 @@ export class DetectiveSession {
   }
   private pin(id: string): void {
     if (this.state.mode === "reconstruction") return;
-    const c = this.sealed.clues.clues.find((c) => c.id === id);
+    let c = resolveObservation(this.sealed.clues, id);
     if (!c) return;
+    if (c.kind === "Frame" && !c.observation) {
+      const candidates = getObservations(this.sealed.clues, c.witness, c.tick);
+      if (candidates.length !== 1) {
+        this.state.message = "Choose a visible mark";
+        return;
+      }
+      c = candidates[0];
+      id = c.id;
+    }
     if (
       c.kind === "Frame" &&
       !c.payload.fragments.length &&
       !c.payload.actions.length &&
-      !c.payload.hands.length
+      !c.payload.hands.length &&
+      !c.observation
     ) {
       this.state.message = "No one is identifiable in this frame";
       return;
@@ -434,7 +509,17 @@ export class DetectiveSession {
     this.state.selected = id;
     this.state.glassPage = Math.floor(this.ids.indexOf(id) / 3);
   }
+  private isPinnableObservation(id: string): boolean {
+    const clue = resolveObservation(this.sealed.clues, id);
+    return !!clue && (clue.kind !== "Frame" || !!clue.observation);
+  }
   private invalidate(removed: string[] = [], preserveFields = false): void {
+    if (this.restore) {
+      Object.assign(this.state, this.restore);
+      this.restore = undefined;
+    }
+    this.state.comparison = undefined;
+    this.state.reconstruction = undefined;
     this.generation++;
     this.task = undefined;
     this.state.checking = false;
@@ -479,9 +564,9 @@ export class DetectiveSession {
   private accept(verdict: Verdict): void {
     this.state.checking = false;
     this.state.verdict = verdict;
-    this.state.reasons = this.sealed.clues.clues.filter((c) =>
-      verdict.reasonIds.includes(c.id),
-    );
+    this.state.reasons = verdict.reasonIds
+      .map((id) => resolveObservation(this.sealed.clues, id))
+      .filter((c): c is Clue => !!c);
     this.state.completed = false;
     const messages: Record<Verdict["status"], string> = {
       proved: "The evidence proves this finding",
@@ -541,12 +626,16 @@ export class DetectiveSession {
     }
     const a = observe(this.sealed.board, first),
       b = observe(this.sealed.board, second);
-    const different = a.clues.find(
-      (c) =>
-        (all || this.ids.includes(c.id)) &&
-        JSON.stringify(c) !==
-          JSON.stringify(b.clues.find((p) => p.id === c.id)),
-    );
+    const id = all
+      ? compareObservations(a, b)[0]
+      : this.ids.find(
+          (id) =>
+            JSON.stringify(resolveObservation(a, id)) !==
+            JSON.stringify(resolveObservation(b, id)),
+        );
+    const different = id
+      ? (resolveObservation(a, id) ?? resolveObservation(this.sealed.clues, id))
+      : undefined;
     if (!different) {
       this.state.reasons = [];
       this.state.message = all
@@ -557,11 +646,21 @@ export class DetectiveSession {
     this.select(different.id);
     this.state.reasons = [
       copy(different),
-      copy(b.clues.find((c) => c.id === different.id)!),
+      copy(
+        resolveObservation(b, different.id) ??
+          b.clues.find(
+            (c) =>
+              c.id ===
+              (different.kind === "Frame"
+                ? different.observation?.frameId
+                : undefined),
+          )!,
+      ),
     ];
     this.state.message = "These observations differ";
   }
   private compare(history: History, all: boolean): void {
+    this.state.comparison = undefined;
     const issue = reconstructionIssue(this.sealed.board, history);
     if (issue) {
       this.state.message = issue;
@@ -569,17 +668,26 @@ export class DetectiveSession {
       return;
     }
     const proposed = observe(this.sealed.board, copy(history));
-    const mismatch = this.sealed.clues.clues.find(
-      (c) =>
-        (all || this.ids.includes(c.id)) &&
-        JSON.stringify(c) !==
-          JSON.stringify(proposed.clues.find((p) => p.id === c.id)),
-    );
+    const id = compareObservations(
+      this.sealed.clues,
+      proposed,
+      all ? undefined : this.ids,
+    )[0];
+    const mismatch = id ? resolveObservation(this.sealed.clues, id) : undefined;
     if (mismatch) {
       this.select(mismatch.id);
       this.state.reasons = [
         copy(mismatch),
-        copy(proposed.clues.find((p) => p.id === mismatch.id)!),
+        copy(
+          resolveObservation(proposed, mismatch.id) ??
+            proposed.clues.find(
+              (c) =>
+                c.id ===
+                (mismatch.kind === "Frame"
+                  ? mismatch.observation?.frameId
+                  : undefined),
+            )!,
+        ),
       ].filter(Boolean);
       this.state.message = "These observations differ";
     } else
@@ -588,10 +696,21 @@ export class DetectiveSession {
         : "These two histories match the selected evidence";
   }
   private emit(): void {
-    this.state.frame = this.currentObservation();
+    this.state.canUndoEvidence = !!this.removed;
+    this.state.frame =
+      this.state.objects.find((c) => c.id === this.state.selected) ??
+      this.currentFrame();
+    this.state.observations = getObservations(
+      this.sealed.clues,
+      this.state.source,
+      this.state.tick,
+    );
+    this.state.focusedObservation = this.state.observations.find(
+      (c) => c.id === this.state.selected,
+    );
     this.state.glass = this.ids.map((id) => ({
       id,
-      clue: copy(this.sealed.clues.clues.find((c) => c.id === id)!),
+      clue: copy(resolveObservation(this.sealed.clues, id)!),
       selected: id === this.state.selected,
     }));
     this.state.visibleGlass = this.state.glass.slice(

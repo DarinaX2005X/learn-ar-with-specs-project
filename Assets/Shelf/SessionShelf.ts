@@ -8,6 +8,7 @@ import {
   compileCase,
 } from "../Domain/index";
 import { DetectiveArchive } from "../Detective/DetectiveSession";
+import { resolveObservation } from "../Domain/observe";
 
 export interface CaseRef {
   id: string;
@@ -53,7 +54,7 @@ export class SessionShelf {
     // Presentation staging shares the tested optics, while the shelf keeps its
     // established public reference so saved selections and clue IDs stay stable.
     const starter = createMuseumTheft(true);
-    starter.id = 'missing-ruby';
+    starter.id = "missing-ruby";
     for (const draft of [starter, createPackingCase()]) {
       const result = compileCase(draft);
       if (result.ok === false) throw new Error("Reload case");
@@ -164,9 +165,7 @@ export class SessionShelf {
       !Number.isInteger(saved.tick) ||
       saved.tick < 0 ||
       saved.tick > 24 ||
-      saved.ids.some(
-        (id) => !sealed.clues.clues.some((clue) => clue.id === id),
-      ) ||
+      saved.ids.some((id) => !resolveObservation(sealed.clues, id)) ||
       (saved.source !== "rim" &&
         !saved.source.startsWith("box:") &&
         !sealed.board.witnesses.some((source) => source.id === saved.source))

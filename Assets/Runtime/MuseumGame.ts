@@ -12,10 +12,21 @@ import {
 import { VaultEntry } from "../Domain/types";
 import { SessionShelf } from "../Shelf/SessionShelf";
 import { PlayTable, PlayTableSnapshot } from "./PlayTable";
+import {
+  CaseViewAction,
+  CaseViewPorts,
+  CaseViewRouting,
+  CaseViewSnapshot,
+} from "../Spatial/CaseViewRouting";
 
 export interface MuseumTable {
+  finishTimeDrag?(): void;
   render(snapshot: PlayTableSnapshot): void;
   dispose(): void;
+  readObservationTargets?(): readonly {
+    targetName: string;
+    observationId: string;
+  }[];
 }
 export interface MuseumAuthorController {
   mount(session: AuthorSession, port: AuthorPresentationPort): void;
@@ -23,6 +34,9 @@ export interface MuseumAuthorController {
   detach(): void;
 }
 export interface MuseumGamePorts {
+  caseView?: Omit<CaseViewPorts, "readSession">;
+  /** Fractional poses only; observations and controls still use integer ticks. */
+  presentPose?(tick: number): void;
   renderScene(snapshot: PlayTableSnapshot, reveal?: VaultEntry): void;
   clearScene(): void;
   setLid(closed: boolean): void;
@@ -43,12 +57,14 @@ export class MuseumGame {
   private detective: DetectiveSession | undefined;
   private controller: MuseumAuthorController | undefined;
   private controllerObject: SceneObject | undefined;
-  private state: PlayTableSnapshot | undefined;
+  private state: (PlayTableSnapshot & { view?: CaseViewSnapshot }) | undefined;
   private revealed: VaultEntry | undefined;
   private revealView: PlayTableSnapshot | undefined;
   private disposed = false;
   private mounting = false;
   private shelf = new SessionShelf();
+  private caseView: CaseViewRouting | undefined;
+  private arrivalAlarm: number | undefined;
   constructor(
     private root: SceneObject,
     private ports: MuseumGamePorts,
@@ -67,6 +83,26 @@ export class MuseumGame {
       this.controller = this.controllerObject.createComponent(
         AuthorController.getTypeName(),
       ) as AuthorController;
+    }
+    if (this.ports.caseView) {
+      const native = this.ports.caseView;
+      this.caseView = new CaseViewRouting({
+        ...native,
+        readSession: () => {
+          const state = this.state;
+          return !this.revealed &&
+            state?.detective &&
+            state.board &&
+            (state.flow.mode === "detective" || state.flow.mode === "finished")
+            ? { detective: state.detective, board: state.board }
+            : undefined;
+        },
+        finishTimeDrag: () => {
+          this.table?.finishTimeDrag?.();
+          this.detective?.dispatch({ type: "freeze" });
+          native.finishTimeDrag();
+        },
+      });
     }
     this.flow = new CaseFlow(
       {
@@ -96,7 +132,7 @@ export class MuseumGame {
             },
           };
         },
-        mountDetective: (sealed) => {
+        mountDetective: (sealed, _epoch, saved) => {
           this.mounting = true;
           const session = new DetectiveSession(sealed, {
             render: (detective, board) => {
@@ -112,9 +148,11 @@ export class MuseumGame {
             },
             returnToCases: () => this.flow!.finishAttempt(true),
           });
+          if (saved) session.restoreArchive(saved);
           this.detective = session;
           this.mounting = false;
           return {
+            archive: () => session.archive(),
             detach: () => {
               session.dispose();
               if (this.detective === session) this.detective = undefined;
@@ -142,10 +180,18 @@ export class MuseumGame {
     // The player arrives inside the public room. Role choice belongs to the
     // physical case on the workbench, rather than an entry menu.
     this.flow.replayAlarm();
+    const alarm = this.state?.board?.alarmTick;
+    if (alarm !== undefined && this.detective) {
+      this.arrivalAlarm = alarm;
+      this.detective.dispatch({ type: "seek", tick: Math.max(0, alarm - 4) });
+      this.detective.dispatch({ type: "play" });
+    }
   }
   private clearRole(): void {
+    this.arrivalAlarm = undefined;
     this.revealed = undefined;
     if (this.state) this.state = { flow: this.state.flow };
+    this.caseView?.sync();
     this.ports.clearScene();
   }
   private show(flow: FlowState): void {
@@ -169,11 +215,20 @@ export class MuseumGame {
   }
   private render(): void {
     if (!this.state || this.disposed) return;
-    this.table?.render(this.state);
+    this.caseView?.sync();
+    if (this.caseView)
+      this.state = { ...this.state, view: this.caseView.snapshot() };
     this.ports.renderScene(this.state, this.revealed);
+    this.table?.render(this.state);
   }
   snapshot(): PlayTableSnapshot | undefined {
     return this.state ? JSON.parse(JSON.stringify(this.state)) : undefined;
+  }
+  readObservationTargets(): { targetName: string; observationId: string }[] {
+    return (
+      this.table?.readObservationTargets?.().map((target) => ({ ...target })) ??
+      []
+    );
   }
   update(seconds: number): void {
     if (this.disposed || !Number.isFinite(seconds) || seconds < 0) return;
@@ -182,13 +237,40 @@ export class MuseumGame {
     if (
       session &&
       session === this.detective &&
-      session.snapshot().completed &&
-      this.flow?.snapshot().mode === "detective"
+      this.arrivalAlarm !== undefined &&
+      session.presentationTick() >= this.arrivalAlarm
+    ) {
+      const alarm = this.arrivalAlarm;
+      this.arrivalAlarm = undefined;
+      session.dispatch({ type: "seek", tick: alarm });
+    }
+    if (
+      session &&
+      session === this.detective &&
+      session.isCompleted() &&
+      this.state?.flow.mode === "detective"
     )
-      this.flow.markSolved();
+      this.flow?.markSolved();
+    const poseTick =
+      this.author?.presentationTick() ?? this.detective?.presentationTick();
+    if (poseTick !== undefined) this.ports.presentPose?.(poseTick);
+    this.caseView?.update(seconds);
   }
   dispatch(action: string, payload?: unknown): boolean {
     if (this.disposed || !this.flow) return false;
+    if (
+      this.arrivalAlarm !== undefined &&
+      ["flow", "author", "detective", "view"].includes(action)
+    ) {
+      this.arrivalAlarm = undefined;
+      this.detective?.dispatch({ type: "freeze" });
+    }
+    if (action === "view") {
+      if (!payload || !this.caseView) return false;
+      const accepted = this.caseView.dispatch(payload as CaseViewAction);
+      this.render();
+      return accepted;
+    }
     const mode = this.flow.snapshot().mode;
     if (action === "author")
       return (
@@ -225,6 +307,7 @@ export class MuseumGame {
           "tabPage",
           "source",
           "selectClue",
+          "selectObservation",
           "pinClue",
           "claim",
           "version",
@@ -234,10 +317,11 @@ export class MuseumGame {
           "selectField",
           "claimField",
           "versionField",
+          "compareVersions",
         ].includes(command.type)
       )
         return false;
-      if (command.type === "reveal" && !this.detective.snapshot().completed)
+      if (command.type === "reveal" && !this.detective.isCompleted())
         return false;
       if (
         mode === "finished" &&
@@ -253,6 +337,7 @@ export class MuseumGame {
           "source",
           "version",
           "versionField",
+          "compareVersions",
           "reveal",
           "finish",
           "selectClue",
@@ -320,6 +405,7 @@ export class MuseumGame {
   }
   dispose(): void {
     if (this.disposed) return;
+    this.caseView?.dispose();
     this.flow?.dispose();
     this.controller?.detach();
     this.table?.dispose();

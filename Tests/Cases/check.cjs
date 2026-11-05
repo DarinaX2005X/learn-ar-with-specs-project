@@ -91,4 +91,54 @@ assert(
   ),
 );
 assert(detached >= 5);
+
+// A fresh performance should produce a different culprit from the same props.
+assert(flow.finishAttempt(true));
+assert(flow.selectCase("missing-ruby"));
+assert(flow.stageTheft());
+const witness = author.getDraft().witnesses[0];
+assert(author.edit({
+  kind: "setWitness",
+  witness: { ...witness, position: { x: 0.7, y: 1, z: 0.9 }, yaw: witness.yaw - 0.08 },
+}));
+assert(author.edit({ kind: "assignRole", track: "A", role: "Conservator" }));
+assert(author.edit({ kind: "assignRole", track: "B", role: "Guard" }));
+assert(author.edit({
+  kind: "setPathKey", track: "B",
+  key: { tick: 11, x: 2.4, z: 4, y: 1, yaw: 0 },
+}));
+const beforeTake = author.getDraft();
+assert(!author.edit({ kind: "stageTake", track: "A", tick: 11 }));
+assert.deepEqual(author.getDraft(), beforeTake, "An unreachable hand must not move the alarm");
+assert(author.edit({ kind: "stageTake", track: "B", tick: 11 }));
+assert.equal(author.getDraft().rev, beforeTake.rev + 1);
+assert.equal(author.getDraft().alarmTick, 11);
+assert(author.undo());
+assert.equal(author.getDraft().alarmTick, beforeTake.alarmTick);
+assert.deepEqual(author.getDraft().events, beforeTake.events);
+assert(author.edit({ kind: "stageTake", track: "B", tick: 11 }));
+assert(!flow.passCase());
+assert(author.startTest());
+while (author.snapshot().testing) author.advanceProof(32);
+assert(flow.passCase());
+assert(flow.openCase());
+assert.equal(detective.board.alarmTick, 11);
+assert.ok(!("casting" in detective.board));
+const { DetectiveSession } = require(path.join(root, "Detective/DetectiveSession.js"));
+const investigation = new DetectiveSession(detective, { render() {}, clear() {} });
+const marks = investigation.snapshot().observations.filter(mark => mark.observation.kind === "fragment");
+assert.deepEqual(marks.map(mark => mark.payload.fragments[0].role).sort(), ["Conservator", "Courier"]);
+for (const mark of marks) {
+  investigation.dispatch({ type: "selectObservation", id: mark.id });
+  investigation.dispatch({ type: "pin" });
+}
+investigation.dispatch({ type: "claim", claim: "Guard" });
+investigation.dispatch({ type: "check" });
+while (investigation.snapshot().checking) investigation.update(0);
+assert.equal(investigation.snapshot().verdict.status, "proved");
+investigation.dispose();
+assert(flow.finishAttempt(true));
+assert(flow.selectCase("missing-ruby"));
+assert(flow.replayAlarm());
+assert.equal(JSON.stringify(detective), original, "Staging another performance must preserve the original");
 flow.dispose();

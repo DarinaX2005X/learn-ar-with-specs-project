@@ -15,6 +15,20 @@ function compiled(d) {
   return r;
 }
 const mirror = compiled(C.createMirrorCase(false));
+test("recording steps retain a readable stride, stationary figures stand still", () => {
+  const moving = C.createMuseumTheft().tracks[0];
+  const atThree = S.gaitAt(moving, 3);
+  a.ok(Math.abs(atThree) > 0.05);
+  a.ok(Math.abs(S.gaitAt(moving, 3.25) - atThree) > 0.001);
+  const stopped = { ...moving, keys: [
+    { tick: 0, x: 0, z: 0, yaw: 0 },
+    { tick: 4, x: 1, z: 0, yaw: 0 },
+    { tick: 8, x: 1, z: 0, yaw: 1 },
+  ] };
+  a.equal(S.gaitAt(stopped, 5), 0);
+  a.equal(S.gaitAt(stopped, 8), 0);
+  a.equal(S.gaitAt(moving, 3), atThree);
+});
 const board = mirror.sealed.board;
 const verdict = D.prove(board, mirror.sealed.clues, [], "Underdetermined");
 const pair = S.compatiblePair(board, verdict, "taker");

@@ -31,13 +31,32 @@ palette.update(
         "paper": ("#EFE4CA", 0, 0.98),
         "paintBlue": ("#637D84", 0, 0.86),
         "paintOchre": ("#C59450", 0, 0.9),
+        "receptionWalnut": ("#56392D", 0, 0.52),
+        "receptionWalnutVertical": ("#634333", 0, 0.57),
+        "leatherWear": ("#987253", 0, 0.82),
+        "lampIvory": ("#F2DDB6", 0, 0.45),
+        "recordingDarkGlass": ("#18312F", 0.12, 0.18),
+        "shadowOuter": ("#25342D", 0, 1),
+        "shadowMiddle": ("#25342D", 0, 1),
+        "shadowInner": ("#25342D", 0, 1),
     }
 )
+
+
+RECEPTION_GROUP_OFFSET = np.array([-1.30, 0, 1.25])
 
 
 class Building(Model):
     def __init__(self):
         super().__init__("MuseumBuilding", 1)
+        for name, alpha in [
+            ("shadowOuter", 0.07),
+            ("shadowMiddle", 0.10),
+            ("shadowInner", 0.15),
+        ]:
+            material = self.materials[list(palette).index(name)]
+            material["alphaMode"] = "BLEND"
+            material["pbrMetallicRoughness"]["baseColorFactor"][3] = alpha
         self.section = "Architecture"
         self.batches = {}
         self.images = []
@@ -52,7 +71,13 @@ class Building(Model):
         batch = self.batches.setdefault(key, [[], [], []])
         points = np.asarray(vertices) + np.asarray(pos)
         dimensions = np.ptp(points, axis=0)
-        if material.startswith("parquet") or material in ["wood", "woodGrain"]:
+        if material.startswith("receptionWalnut"):
+            along = 1 if material.endswith("Vertical") else int(np.argmax(dimensions))
+            across = next(
+                axis for axis in np.argsort(dimensions)[::-1] if axis != along
+            )
+            uv = np.stack([points[:, along] / 0.70, points[:, across] / 0.18], axis=1)
+        elif material.startswith("parquet") or material in ["wood", "woodGrain"]:
             along = 2 if dimensions[2] > dimensions[0] else 0
             across = 0 if along == 2 else 2
             uv = np.stack([points[:, along] / 0.70, points[:, across] / 0.18], axis=1)
@@ -60,6 +85,15 @@ class Building(Model):
             normal_axis = int(np.argmin(dimensions))
             axes = [axis for axis in [0, 1, 2] if axis != normal_axis]
             uv = points[:, axes] / 1.6
+        # Translate the counter group after UV construction so its finish stays attached.
+        move_counter = self.section.startswith(
+            ("ReceptionFurniture", "ReceptionRecording", "ReceptionContactOcclusion")
+        )
+        move_desk_lamp = self.section == "ReceptionLighting" and name.startswith(
+            "DeskLamp"
+        )
+        if move_counter or move_desk_lamp:
+            points = points + RECEPTION_GROUP_OFFSET
         offset = len(batch[0])
         batch[0].extend(points.tolist())
         batch[1].extend((np.asarray(faces) + offset).tolist())
@@ -90,6 +124,8 @@ class Building(Model):
             "parquetLight",
             "wood",
             "woodGrain",
+            "receptionWalnut",
+            "receptionWalnutVertical",
         ]:
             self.surface_texture(material, "oak-albedo.jpg")
         for material in ["plaster", "plasterLight"]:
@@ -418,18 +454,493 @@ def anchors(model):
         "RubyHall": (3.5, 0, 2.5),
         "Workshop": (-2.5, 0, 2.5),
         "Archive": (-2.5, 0, -2.5),
-        "FileRack": (5.55, 1.02, -2.6),
+        "FileRack": (5.25, 1.042, -2.55),
         "EntryClock": (4.9, 1.15, -2.4),
         "HallClock": (5.4, 1.35, 0.26),
         "ConservationBench": (-3.5, 0.94, 3.8),
-        "PinGlass": (-3.1, 1.00, 3.6),
+        "PinGlass": (-3.53, 1.026, 3.26),
+        "PinHandle": (-3.28, 1.025, 3.11),
+        "EntryRecording": (5.55, 1.155, -2.945),
+        "EntryPinClip": (5.325, 1.085096, -2.988743),
         "CaseLid": (-3.9, 1.02, 3.8),
         "ArchiveRecorder": (-3.6, 1.15, -3.7),
         "EvidenceShelf": (-4.65, 1.25, -1.8),
+        "ReceptionLamp_Desk": (5.72, 1.425, -2.56),
+        "ReceptionLamp_Picture": (6.43, 2.51, -2.8),
+    }
+    moved_anchors = {
+        "FileRack",
+        "EntryClock",
+        "EntryRecording",
+        "EntryPinClip",
+        "ReceptionLamp_Desk",
     }
     for name, position in positions.items():
-        model.node("Anchor_" + name, model.root, position)
+        if name in moved_anchors:
+            position = tuple(np.asarray(position) + RECEPTION_GROUP_OFFSET)
+            positions[name] = position
+        node = model.node("Anchor_" + name, model.root, position)
+        if name in ["EntryRecording", "EntryPinClip"]:
+            model.nodes[node]["rotation"] = [
+                0,
+                math.cos(math.pi / 20),
+                math.sin(math.pi / 20),
+                0,
+            ]
     return positions
+
+
+def reception(model):
+    """The old case service counter; all original control anchors stay fixed."""
+    model.section = "ReceptionFurniture"
+    block(
+        model,
+        "CounterTop",
+        (5.3, 0.91, -2.6),
+        (2, 0.09, 0.85),
+        "receptionWalnut",
+        0.035,
+    )
+    block(
+        model,
+        "CabinetCarcass",
+        (5.3, 0.48, -2.6),
+        (1.85, 0.76, 0.70),
+        "receptionWalnut",
+        0.025,
+    )
+    block(
+        model,
+        "MouldedLowerPlinth",
+        (5.3, 0.095, -2.6),
+        (1.98, 0.13, 0.81),
+        "receptionWalnut",
+        0.025,
+    )
+    block(
+        model,
+        "CounterApron",
+        (5.3, 0.835, -2.985),
+        (1.91, 0.14, 0.055),
+        "receptionWalnut",
+        0.012,
+    )
+    for x in [4.38, 5.0, 5.60, 6.22]:
+        block(
+            model,
+            "FrontStile",
+            (x, 0.50, -2.99),
+            (0.07, 0.64, 0.065),
+            "receptionWalnutVertical",
+            0.01,
+        )
+        block(
+            model,
+            "StileShoulder",
+            (x, 0.79, -3.01),
+            (0.10, 0.10, 0.075),
+            "receptionWalnut",
+            0.015,
+        )
+    for x in [4.69, 5.30, 5.91]:
+        block(
+            model,
+            "RecessedField",
+            (x, 0.49, -2.968),
+            (0.52, 0.48, 0.026),
+            "woodGrain",
+            0.018,
+        )
+        for y in [0.25, 0.735]:
+            block(
+                model,
+                "FieldMoulding",
+                (x, y, -2.995),
+                (0.53, 0.022, 0.028),
+                "receptionWalnut",
+                0.008,
+            )
+        for xx in [x - 0.26, x + 0.26]:
+            block(
+                model,
+                "FieldMoulding",
+                (xx, 0.49, -2.995),
+                (0.022, 0.49, 0.028),
+                "receptionWalnutVertical",
+                0.008,
+            )
+    # The lower timber meets the floor; no thin floating legs remain.
+    for x in [4.44, 6.16]:
+        block(
+            model,
+            "CabinetFoot",
+            (x, 0.034, -2.6),
+            (0.22, 0.068, 0.68),
+            "receptionWalnut",
+            0.018,
+        )
+    # Worn inset leather: a fitted broad surface with localized pale edge wear.
+    outline = [
+        (4.59, -2.88),
+        (4.62, -2.91),
+        (6.02, -2.91),
+        (6.05, -2.88),
+        (6.05, -2.36),
+        (6.02, -2.33),
+        (4.62, -2.33),
+        (4.59, -2.36),
+    ]
+    kit["footprint"](
+        model, "LeatherWorkInset", outline, [(0.956, 1), (0.965, 1)], "leather"
+    )
+    for x, z, length in [
+        (4.76, -2.894, 0.22),
+        (5.66, -2.894, 0.19),
+        (5.86, -2.346, 0.14),
+    ]:
+        block(
+            model,
+            "LeatherEdgeWear",
+            (x, 0.966, z),
+            (length, 0.001, 0.008),
+            "leatherWear",
+            0.0004,
+        )
+    # Two different bound case files rather than repeated paper stacks.
+    for x, z, w, d, mat, spine in [
+        (5.34, -2.57, 0.36, 0.46, "clothTeal", "cream"),
+        (5.82, -2.61, 0.32, 0.40, "velvet", "clothTeal"),
+    ]:
+        block(model, "FileLowerCover", (x, 0.977, z), (w, 0.015, d), mat, 0.006)
+        block(
+            model,
+            "CutPaperBlock",
+            (x + 0.012, 1.002, z),
+            (w - 0.04, 0.036, d - 0.035),
+            "paper",
+            0.004,
+        )
+        block(model, "FileUpperCover", (x, 1.029, z), (w, 0.015, d), mat, 0.006)
+        block(
+            model,
+            "ClothSpine",
+            (x - w / 2 + 0.012, 1.002, z),
+            (0.036, 0.062, d),
+            spine,
+            0.006,
+        )
+        for yy in [0.990, 1.002, 1.014]:
+            block(
+                model,
+                "PaperEdge",
+                (x + 0.012, yy, z - d / 2 + 0.018),
+                (w - 0.055, 0.002, 0.005),
+                "stoneShade",
+                0.0005,
+            )
+    # Flattened red wax, with the ruby facet impressed as an actual shallow solid.
+    lathe(
+        model,
+        "WaxSeal",
+        [
+            (1.038, 0.040, 0.034, 5.40, -2.63),
+            (1.043, 0.047, 0.041, 5.40, -2.63),
+            (1.048, 0.038, 0.033, 5.40, -2.63),
+        ],
+        "ruby",
+        n=11,
+    )
+    vertices = [
+        (5.375, 1.049, -2.63),
+        (5.40, 1.049, -2.651),
+        (5.425, 1.049, -2.63),
+        (5.40, 1.049, -2.609),
+        (5.40, 1.054, -2.63),
+    ]
+    model.mesh(
+        "RubySealFacet",
+        vertices,
+        [[0, 4, 1], [1, 4, 2], [2, 4, 3], [3, 4, 0]],
+        "rubyLight",
+    )
+    # Mantel clock, exact original dial centre and live pointer plane preserved.
+    block(
+        model,
+        "ClockFoot",
+        (4.9, 0.980, -2.36),
+        (0.62, 0.05, 0.25),
+        "receptionWalnut",
+        0.02,
+    )
+    block(
+        model,
+        "ClockTimberBody",
+        (4.9, 1.13, -2.36),
+        (0.53, 0.30, 0.18),
+        "receptionWalnutVertical",
+        0.025,
+    )
+    ellip(
+        model,
+        "ClockArchedCase",
+        (4.9, 1.25, -2.36),
+        (0.265, 0.22, 0.09),
+        "receptionWalnut",
+        n=28,
+        lat=10,
+    )
+    for s in [-1, 1]:
+        block(
+            model,
+            "ClockCaseCheek",
+            (4.9 + s * 0.235, 1.13, -2.45),
+            (0.025, 0.22, 0.025),
+            "receptionWalnutVertical",
+            0.007,
+        )
+    pts = [
+        (
+            4.9 + 0.199 * math.sin(i * math.tau / 48),
+            1.15 + 0.199 * math.cos(i * math.tau / 48),
+            -2.49,
+        )
+        for i in range(49)
+    ]
+    tube(model, "ClockMetalBezel", pts, 0.009, "brass", n=8)
+    ellip(
+        model,
+        "ClockFace",
+        (4.9, 1.15, -2.485),
+        (0.186, 0.186, 0.009),
+        "cream",
+        n=24,
+        lat=6,
+    )
+    tube(
+        model,
+        "WindingStem",
+        [(5.145, 1.15, -2.36), (5.19, 1.15, -2.36)],
+        0.012,
+        "brass",
+        n=8,
+    )
+    ellip(
+        model,
+        "WindingCrown",
+        (5.205, 1.15, -2.36),
+        (0.022, 0.035, 0.035),
+        "brass",
+        n=12,
+        lat=6,
+    )
+    for i in range(12):
+        a = i * math.tau / 12
+        tube(
+            model,
+            "ClockTick",
+            [
+                (4.9 + 0.15 * math.sin(a), 1.15 + 0.15 * math.cos(a), -2.5),
+                (4.9 + 0.17 * math.sin(a), 1.15 + 0.17 * math.cos(a), -2.5),
+            ],
+            0.006,
+            "ink",
+            n=4,
+        )
+    tube(
+        model, "ClockHand", [(4.9, 1.15, -2.51), (4.81, 1.27, -2.51)], 0.008, "ink", n=6
+    )
+    tube(
+        model,
+        "ClockHand",
+        [(4.9, 1.15, -2.515), (5.02, 1.15, -2.515)],
+        0.006,
+        "ink",
+        n=6,
+    )
+    model.section = "ReceptionLighting"
+    # Real banker-style lamp points at the leather surface, leaving the dial clear.
+    ellip(
+        model,
+        "DeskLampFoot",
+        (6.02, 0.979, -2.50),
+        (0.13, 0.025, 0.10),
+        "teal",
+        n=20,
+        lat=6,
+    )
+    tube(
+        model,
+        "DeskLampGooseneck",
+        [
+            (6.02, 0.99, -2.50),
+            (6.02, 1.30, -2.50),
+            (5.95, 1.49, -2.53),
+            (5.73, 1.50, -2.56),
+        ],
+        0.017,
+        "brass",
+        n=10,
+    )
+    ellip(
+        model,
+        "DeskLampShade",
+        (5.72, 1.51, -2.56),
+        (0.22, 0.08, 0.12),
+        "clothTeal",
+        n=24,
+        lat=8,
+    )
+    ellip(
+        model,
+        "DeskLampDiffuser",
+        (5.72, 1.452, -2.56),
+        (0.17, 0.012, 0.087),
+        "lampIvory",
+        n=20,
+        lat=5,
+    )
+    # The second fixture is a picture light on the actual collection wall.
+    block(
+        model,
+        "PictureLampWallPlate",
+        (6.82, 2.70, -2.8),
+        (0.045, 0.16, 0.15),
+        "teal",
+        0.018,
+    )
+    tube(
+        model,
+        "PictureLampArm",
+        [(6.80, 2.70, -2.8), (6.57, 2.70, -2.8), (6.48, 2.58, -2.8)],
+        0.014,
+        "brass",
+        n=8,
+    )
+    block(
+        model, "PictureLampShade", (6.47, 2.59, -2.8), (0.11, 0.08, 0.65), "teal", 0.025
+    )
+    block(
+        model,
+        "PictureLampDiffuser",
+        (6.47, 2.545, -2.8),
+        (0.075, 0.012, 0.55),
+        "lampIvory",
+        0.005,
+    )
+    # Local feathered contact occlusion, bounded to the physical furniture.
+    model.section = "ReceptionContactOcclusion"
+    for rx, rz, y, mat in [
+        (1.08, 0.48, 0.022, "shadowOuter"),
+        (0.99, 0.43, 0.023, "shadowMiddle"),
+        (0.92, 0.38, 0.024, "shadowInner"),
+    ]:
+        vertices = [(5.3, y, -2.6)] + [
+            (
+                5.3 + rx * math.cos(i * math.tau / 48),
+                y,
+                -2.6 + rz * math.sin(i * math.tau / 48),
+            )
+            for i in range(48)
+        ]
+        faces = [[0, 1 + (i + 1) % 48, 1 + i] for i in range(48)]
+        model.mesh("FeatheredContact", vertices, faces, mat)
+
+
+def entry_recording(model):
+    """Fixed optical recording glass, hinged to the actual case-service counter."""
+    model.section = "ReceptionRecording"
+    center = np.array([5.55, 1.155, -2.945])
+    angle = math.pi / 10
+    rotation = np.array(
+        [
+            [-1, 0, 0],
+            [0, math.cos(angle), math.sin(angle)],
+            [0, math.sin(angle), -math.cos(angle)],
+        ]
+    )
+
+    class Oriented:
+        def mesh(self, name, vertices, faces, material, parent=None, pos=(0, 0, 0)):
+            points = (np.asarray(vertices) + np.asarray(pos)) @ rotation.T + center
+            model.mesh(name, points, faces, material)
+
+    local = Oriented()
+    for side in [-1, 1]:
+        block(
+            local,
+            "RecordingStile",
+            (side * 0.195, 0, 0),
+            (0.03, 0.26, 0.026),
+            "receptionWalnut",
+            0.006,
+        )
+        block(
+            local,
+            "RecordingCrossRail",
+            (0, side * 0.115, 0),
+            (0.36, 0.03, 0.026),
+            "receptionWalnut",
+            0.006,
+        )
+    block(
+        local,
+        "DarkRecordingGlass",
+        (0, 0, -0.006),
+        (0.36, 0.20, 0.006),
+        "recordingDarkGlass",
+        0.002,
+    )
+    for side in [-1, 1]:
+        block(
+            local,
+            "RecordingInnerBead",
+            (side * 0.182, 0, 0.010),
+            (0.004, 0.20, 0.004),
+            "brass",
+            0.001,
+        )
+    block(
+        model,
+        "RecordingFoot",
+        (5.55, 0.979, -2.935),
+        (0.40, 0.045, 0.15),
+        "receptionWalnut",
+        0.014,
+    )
+    # A real longitudinal hinge supports the lower rail above its wooden foot.
+    tube(
+        model,
+        "RecordingBrassHinge",
+        [(5.38, 1.014, -2.972), (5.72, 1.014, -2.972)],
+        0.017,
+        "brass",
+        n=16,
+    )
+    for x in [5.40, 5.70]:
+        tube(
+            model,
+            "RecordingStandStay",
+            [(x, 0.995, -2.90), (x, 1.080, -2.925)],
+            0.012,
+            "brass",
+            n=8,
+        )
+    block(
+        local,
+        "TactilePinClip",
+        (0.225, -0.080, 0.020),
+        (0.032, 0.052, 0.018),
+        "brass",
+        0.005,
+    )
+    block(
+        local,
+        "PinClipGrip",
+        (0.225, -0.079, 0.031),
+        (0.021, 0.031, 0.006),
+        "clothTeal",
+        0.003,
+    )
 
 
 def main():
@@ -490,63 +1001,8 @@ def main():
                 (0.14, 0.2, z1 - z0),
                 "parquetHoney",
             )
-    model.section = "ReceptionFurniture"
-    table(model, 5.3, -2.6, 2, 0.85)
-    # Brass card rack with distinct thin paper edges, not identical crates.
-    for x in [5.17, 5.5, 5.83]:
-        block(model, "RackDivider", (x, 1.03, -2.55), (0.025, 0.18, 0.33), "brass")
-        for i in range(5):
-            block(
-                model,
-                "CaseCard",
-                (x + 0.12, 1.015 + i * 0.014, -2.57),
-                (0.21, 0.009, 0.28),
-                "paper",
-                0.002,
-            )
-    # Mechanical clock dial; the interactive hands can be mounted at its anchor.
-    ellip(
-        model,
-        "ClockHousing",
-        (4.9, 1.15, -2.4),
-        (0.22, 0.22, 0.08),
-        "brass",
-        n=24,
-        lat=8,
-    )
-    ellip(
-        model,
-        "ClockFace",
-        (4.9, 1.15, -2.485),
-        (0.186, 0.186, 0.009),
-        "cream",
-        n=24,
-        lat=6,
-    )
-    for i in range(12):
-        a = i * math.tau / 12
-        tube(
-            model,
-            "ClockTick",
-            [
-                (4.9 + 0.15 * math.sin(a), 1.15 + 0.15 * math.cos(a), -2.5),
-                (4.9 + 0.17 * math.sin(a), 1.15 + 0.17 * math.cos(a), -2.5),
-            ],
-            0.006,
-            "ink",
-            n=4,
-        )
-    tube(
-        model, "ClockHand", [(4.9, 1.15, -2.51), (4.81, 1.27, -2.51)], 0.008, "ink", n=6
-    )
-    tube(
-        model,
-        "ClockHand",
-        [(4.9, 1.15, -2.515), (5.02, 1.15, -2.515)],
-        0.006,
-        "ink",
-        n=6,
-    )
+    reception(model)
+    entry_recording(model)
     model.section = "WorkshopFurniture"
     table(model, -3.5, 3.8, 2.4, 1.5)
     block(model, "BenchMat", (-3.5, 0.967, 3.8), (2.1, 0.014, 1.25), "clothTeal")
@@ -599,6 +1055,7 @@ def main():
     block(
         model, "UnknownFindingCard", (-2.98, 0.99, 3.86), (0.19, 0.018, 0.16), "paper"
     )
+    model.section = "WorkshopRecording"
     tube(
         model,
         "LoupeHandle",
@@ -609,13 +1066,41 @@ def main():
     )
     pts = [
         (
-            -3.53 + 0.105 * math.cos(i * math.tau / 24),
+            -3.53 + 0.112 * math.cos(i * math.tau / 24),
             1.025,
-            3.26 + 0.105 * math.sin(i * math.tau / 24),
+            3.26 + 0.112 * math.sin(i * math.tau / 24),
         )
         for i in range(25)
     ]
-    tube(model, "LoupeRim", pts, 0.017, "brass", n=8)
+    tube(model, "LoupeRim", pts, 0.007, "brass", n=12)
+    lens_vertices = [(-3.53, 1.023, 3.26)] + [
+        (
+            -3.53 + 0.105 * math.cos(i * math.tau / 48),
+            1.023,
+            3.26 + 0.105 * math.sin(i * math.tau / 48),
+        )
+        for i in range(48)
+    ]
+    model.mesh(
+        "LoupeDarkGlass",
+        lens_vertices,
+        [[0, 1 + (i + 1) % 48, 1 + i] for i in range(48)],
+        "recordingDarkGlass",
+    )
+    for angle in [0, 2 * math.pi / 3, 4 * math.pi / 3]:
+        x = -3.53 + 0.095 * math.cos(angle)
+        z = 3.26 + 0.095 * math.sin(angle)
+        lathe(
+            model,
+            "LoupeStandFoot",
+            [(0.975, 0.018, 0.018, x, z), (0.980, 0.018, 0.018, x, z)],
+            "leather",
+            n=12,
+        )
+        tube(
+            model, "LoupeStandLeg", [(x, 0.980, z), (x, 1.019, z)], 0.006, "brass", n=8
+        )
+    model.section = "WorkshopFurniture"
     for i in range(4):
         x = -4.15 + i * 0.18
         tube(
@@ -750,6 +1235,29 @@ def main():
         importScale=100,
         forwardStory="+Z",
         paintingCanvasUV="Full 0..1, 3:2; assign Collection images",
+        recordingSurfaces={
+            "entry": {
+                "anchor": "Anchor_EntryRecording",
+                "clearApertureCm": [36, 20],
+                "outerFrameCm": [42, 26],
+                "rotationQuaternionXYZW": [
+                    0,
+                    math.cos(math.pi / 20),
+                    math.sin(math.pi / 20),
+                    0,
+                ],
+                "emittedNormal": "+Z",
+                "pinAnchor": "Anchor_EntryPinClip",
+            },
+            "workshop": {
+                "anchor": "Anchor_PinGlass",
+                "clearDiameterCm": 21,
+                "rendererScale": 0.5,
+                "rendererRotateXRad": -math.pi / 2,
+                "anchorRotation": "identity",
+                "pinAnchor": "Anchor_PinHandle",
+            },
+        },
     )
     (kit["ROOT"] / "MuseumBuilding.contract.json").write_text(
         json.dumps(record, indent=2), encoding="utf-8"
