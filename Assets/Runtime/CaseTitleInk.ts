@@ -1,3 +1,4 @@
+import { MuseumFonts, applyMuseumFont } from "./MuseumFonts";
 import { caseTitle } from "../Shelf/CaseTitles";
 /** Public name printed on the existing case's leather front edge. No mesh,
  * floating title, private case data, input target or camera dependency. */
@@ -5,7 +6,7 @@ export class CaseTitleInk {
   private object: SceneObject;
   private text: Text;
   private disposed = false;
-  constructor(root: SceneObject) {
+  constructor(root: SceneObject, fonts: MuseumFonts = {}) {
     let top = root;
     while (top.getParent()) top = top.getParent();
     const find = (node: SceneObject): SceneObject | undefined => {
@@ -29,6 +30,7 @@ export class CaseTitleInk {
     this.object.getTransform().setWorldRotation(rotation
       .multiply(quat.fromEulerAngles(0, Math.PI, 0)));
     this.text = this.object.createComponent("Component.Text");
+    applyMuseumFont(this.text, fonts, "bold");
     this.text.text = "";
     this.text.size = 64;
     this.text.depthTest = true;

@@ -1,3 +1,4 @@
+import { MuseumFonts } from "./MuseumFonts";
 import { NativeMuseumFoley, PublicMechanisms } from '../Scripts/TableKit/NativeMuseumFoley';
 import {
   AuthorController,
@@ -40,6 +41,7 @@ export interface MuseumAuthorController {
   detach(): void;
 }
 export interface MuseumGamePorts {
+  fonts?: MuseumFonts;
   foley?: NativeMuseumFoley;
   soundAnchor?(object: SceneObject): void;
   caseView?: Omit<CaseViewPorts, "readSession">;
@@ -85,7 +87,7 @@ export class MuseumGame {
     if (this.flow || this.disposed) return;
     this.table = this.ports.createTable
       ? this.ports.createTable(this.root, (a, p) => this.dispatch(a, p))
-      : new PlayTable(this.root, { dispatch: (a, p) => this.dispatch(a, p), soundAnchor: object => this.ports.soundAnchor?.(object), cancelSound: () => this.ports.foley?.cancel() });
+      : new PlayTable(this.root, { fonts: this.ports.fonts, dispatch: (a, p) => this.dispatch(a, p), soundAnchor: object => this.ports.soundAnchor?.(object), cancelSound: () => this.ports.foley?.cancel() });
     if (this.ports.createAuthorController)
       this.controller = this.ports.createAuthorController(this.root);
     else {

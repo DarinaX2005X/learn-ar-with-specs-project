@@ -252,8 +252,17 @@ new Function(
     },
   ).outputText,
 )(contactModule.exports, contactModule);
+const fontModule = { exports: {} };
+new Function("exports", "module", ts.transpileModule(
+  fs.readFileSync("Assets/Runtime/MuseumFonts.ts", "utf8"),
+  { compilerOptions: { target: ts.ScriptTarget.ES2021, module: ts.ModuleKind.CommonJS } }
+).outputText)(fontModule.exports, fontModule);
 new Function("require", "module", "exports", js)(
   (id) => {
+    if (id === "./MuseumFonts") return fontModule.exports;
+    if (id === "SpectaclesInteractionKit.lspkg/Providers/CameraProvider/WorldCameraFinderProvider") {
+      return { default: { getInstance: () => undefined } };
+    }
     if (id.includes("Interactable")) return { Interactable: Input };
     if(id.endsWith("/Domain/types"))return require("./build/Domain/types");
     if(id.endsWith("/Shelf/CaseTitles"))return require("./build/Shelf/CaseTitles");

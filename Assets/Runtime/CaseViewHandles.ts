@@ -1,3 +1,4 @@
+import { MuseumFonts, applyMuseumFont } from "./MuseumFonts";
 import { CaseViewSnapshot } from "../Spatial/CaseViewRouting";
 import { Placement } from "../Spatial/SpatialStage";
 export interface CaseViewHandleSlot {
@@ -77,7 +78,7 @@ export class CaseViewHandles {
   private disposed = false;
   private qualification: SceneObject | undefined;
   private qualificationInk: Text | undefined;
-  constructor(parent: SceneObject, material: Material) {
+  constructor(parent: SceneObject, material: Material, private fonts: MuseumFonts = {}) {
     this.root = global.scene.createSceneObject("CaseViewSightFrame");
     this.root.setParent(parent);
     this.brass = material.clone();
@@ -158,6 +159,7 @@ export class CaseViewHandles {
       ink.getTransform().setLocalPosition(new vec3(0, -8.4, -1.42));
       ink.getTransform().setLocalRotation(quat.fromEulerAngles(0, Math.PI, 0));
       const text = ink.createComponent("Component.Text");
+      applyMuseumFont(text, this.fonts, "regular");
       text.size = 24;
       text.depthTest = true;
       text.horizontalAlignment = HorizontalAlignment.Center;
@@ -196,7 +198,7 @@ export class CaseViewHandles {
         const ink=global.scene.createSceneObject("VersionTabEngraving");
         ink.setParent(node);ink.getTransform().setLocalPosition(new vec3(0,.83,0));
         ink.getTransform().setLocalRotation(quat.fromEulerAngles(-Math.PI/2,0,0));
-        const text=ink.createComponent("Component.Text");text.text="Version";text.size=18;text.depthTest=true;
+        const text=ink.createComponent("Component.Text");applyMuseumFont(text,this.fonts,"bold");text.text="Version";text.size=18;text.depthTest=true;
         text.horizontalAlignment=HorizontalAlignment.Center;text.verticalAlignment=VerticalAlignment.Center;
         text.layoutRect=Rect.create(-5.5,5.5,-2,2);
       }

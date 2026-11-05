@@ -7,6 +7,12 @@ import { MuseumScene } from "./MuseumScene";
 @component
 export class CountercaseRuntime extends BaseScriptComponent {
   @input recordingMaterial: Material;
+  @input
+  @allowUndefined
+  fontRegular?: Font;
+  @input
+  @allowUndefined
+  fontBold?: Font;
   @input cloth: AudioTrackAsset;
   @input engage: AudioTrackAsset;
   @input latch: AudioTrackAsset;
@@ -54,12 +60,14 @@ export class CountercaseRuntime extends BaseScriptComponent {
     const makeVoice=()=>{const node=global.scene.createSceneObject('MuseumFoleyVoice');node.setParent(this.sceneObject);return new LensFoleyVoice(node,clips,()=>this.foleyAnchor);};
     const v1=makeVoice(),v2=makeVoice();this.foleyVoices=[v1,v2];
     this.foley=new NativeMuseumFoley([v1,v2],()=>getTime());
+    const fonts = { regular: this.fontRegular, bold: this.fontBold };
     this.presentation = new MuseumScene(this.sceneObject, this.recordingMaterial, {
       cloth: this.cloth,
       engage: this.engage,
       latch: this.latch,
-    });
+    }, fonts);
     this.game = new MuseumGame(this.sceneObject, {
+      fonts,
       foley: this.foley,
       soundAnchor: object => { this.foleyAnchor=captureFoleyOrigin(object); },
       renderScene: (state, reveal) => this.presentation.render(state, reveal),

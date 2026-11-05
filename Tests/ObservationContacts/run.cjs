@@ -24,8 +24,8 @@ class Event {
   add(fn) {
     this.handlers.push(fn);
   }
-  fire() {
-    for (const fn of [...this.handlers]) fn();
+  fire(event) {
+    for (const fn of [...this.handlers]) fn(event);
   }
 }
 class Input {
@@ -129,6 +129,7 @@ class ObjectNode {
   }
 }
 let paneViews = [];
+let cameraRight;
 function load(file) {
   file = path.resolve(file);
   if (!path.extname(file)) file += ".ts";
@@ -162,6 +163,11 @@ function load(file) {
         },
       },
       require: (name) => {
+        if (name.includes("WorldCameraFinderProvider"))
+          return {
+            __esModule: true,
+            default: { getInstance: () => ({ right: () => cameraRight }) },
+          };
         if (name.startsWith("SpectaclesInteractionKit"))
           return { Interactable: Input };
         if(name.includes('AuthorPropsHandles'))return {AuthorPropsHandles:class {constructor(ports){this.controller=new (load(path.join(assets,'Author/AuthorPropsController.ts')).AuthorPropsController)(ports);}sync(){this.controller.sync();}cancel(){this.controller.cancel();}dispose(){}}};
@@ -295,6 +301,20 @@ function run(rearCamera) {
     assert.equal(session.presentationTick(), alarmTick);
     click("EntryClock");
     assert.equal(session.snapshot().playing, false);
+
+    // Viewer-right is -Z after a quarter turn, independent of story X.
+    // Turning the camera during the held gesture must retain the captured axis.
+    const clockInput = objects.get("Use_EntryClock").getComponent("Interactable");
+    cameraRight = new Vector(0, 0, -1);
+    clockInput.onDragStart.fire();
+    cameraRight.z = 1;
+    clockInput.onDragUpdate.fire({ dragVector: new Vector(0, 0, -8) });
+    assert.equal(session.snapshot().tick, alarmTick + 4);
+    clockInput.onDragUpdate.fire({ dragVector: new Vector(0, 0, 16) });
+    assert.equal(session.snapshot().tick, alarmTick - 4);
+    clockInput.onDragUpdate.fire({ dragVector: new Vector(0, 0, -8) });
+    clockInput.onDragEnd.fire();
+    cameraRight = undefined;
   }
   click("Sourceentrance");
   const taking = session

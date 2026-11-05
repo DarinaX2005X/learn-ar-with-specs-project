@@ -1,3 +1,5 @@
+import WorldCameraFinderProvider from "SpectaclesInteractionKit.lspkg/Providers/CameraProvider/WorldCameraFinderProvider";
+import { MuseumFonts, applyMuseumFont } from "./MuseumFonts";
 import {
   ObservationContact,
   ObservationTargetView,
@@ -100,6 +102,7 @@ export type PlayTableCommand =
   | { action: "reveal"; payload: RevealAction }
   | { action: "view"; payload: CaseViewAction };
 export interface PlayTablePorts {
+  fonts?: MuseumFonts;
   soundAnchor?(object: SceneObject): void;
   cancelSound?(): void;
   propMaterial?: Material;
@@ -530,6 +533,7 @@ export class PlayTable {
           : quat.fromEulerAngles(0, Math.PI, 0),
       );
     const text = inscription.createComponent("Component.Text");
+    applyMuseumFont(text, this.ports.fonts, "bold");
     text.text = canUse() ? label() : "";
     text.size = size[0] < 15 ? 18 : 28;
     text.depthTest = true;
@@ -736,13 +740,25 @@ export class PlayTable {
           this.state.flow.mode !== "finished" ||
           this.state.detective?.mode === "reconstruction"),
     );
+    applyMuseumFont(clock.text, this.ports.fonts, "regular");
     let startTick = 0,
       distance = 0,
       captured = -1,
       capturedGeneration = -1;
+    let screenRight: vec3 | undefined;
     clock.input.onDragStart.add(() => {
       captured = this.epoch;
       capturedGeneration = this.inputGeneration;
+      // Capture once: head turns during a held drag must not reverse its direction.
+      // Older headless hosts without the SIK camera provider retain story-X input.
+      let right: vec3 | undefined;
+      try {
+        right = WorldCameraFinderProvider?.getInstance?.()?.right();
+      } catch (_) {
+        // A legacy/headless host can have no world camera. Keep its old mapping.
+      }
+      screenRight = right && Number.isFinite(right.x) && Number.isFinite(right.y) && Number.isFinite(right.z)
+        ? new vec3(right.x, right.y, right.z) : undefined;
       this.dragging = true;
       distance = 0;
       startTick =
@@ -757,7 +773,12 @@ export class PlayTable {
         capturedGeneration !== this.inputGeneration
       )
         return;
-      distance += this.storyDelta(event.dragVector).x;
+      // SIK dragVector is the frame's world-cm origin delta, not planecast delta.
+      const delta = event.dragVector;
+      if (!delta || !Number.isFinite(delta.x) || !Number.isFinite(delta.y) || !Number.isFinite(delta.z)) return;
+      distance += screenRight
+        ? delta.x * screenRight.x + delta.y * screenRight.y + delta.z * screenRight.z
+        : this.storyDelta(delta).x;
       const tick = clamp(Math.round(startTick + distance / 2), 0, 24);
       if (this.state.reveal) this.reveal({ type: "seek", tick });
       else if (this.state.author) this.author({ kind: "setTick", tick });

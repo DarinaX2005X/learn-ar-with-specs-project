@@ -32,6 +32,8 @@
     enableFacetFinish: false
     enablePhysicalMirror: false
     engage: false
+    fontBold: false
+    fontRegular: false
     latch: false
     museum_clock_01: false
     museum_clock_02: false
@@ -55,6 +57,8 @@
     []
   DefaultScriptInputs:
     - recordingMaterial: !<reference.Material> 00000000-0000-0000-0000-000000000000
+      fontRegular: !<reference.Font> 00000000-0000-0000-0000-000000000000
+      fontBold: !<reference.Font> 00000000-0000-0000-0000-000000000000
       cloth: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
       engage: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
       latch: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
@@ -76,6 +80,8 @@
       {}
   InputLines:
     - // @input Asset.Material recordingMaterial
+    - // @input Asset.Font fontRegular
+    - // @input Asset.Font fontBold
     - // @input Asset.AudioTrackAsset cloth
     - // @input Asset.AudioTrackAsset engage
     - // @input Asset.AudioTrackAsset latch

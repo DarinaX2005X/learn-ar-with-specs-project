@@ -1,0 +1,17 @@
+{
+  "revision": "1cb311624b2ddf88e9e37873999d165a8cd28b46",
+  "files": {
+    "AtkinsonHyperlegible-Regular.otf": {
+      "sha256": "4a0397a3709c5fc99e38d05469dcfbf1b3481196e89a01b7377f3163b188258e",
+      "source": "https://raw.githubusercontent.com/googlefonts/atkinson-hyperlegible/1cb311624b2ddf88e9e37873999d165a8cd28b46/fonts/otf/AtkinsonHyperlegible-Regular.otf"
+    },
+    "AtkinsonHyperlegible-Bold.otf": {
+      "sha256": "682c9737bfb6c1d3ba4f9cd5fdc814775c097f317656aad177867cc07d7e15df",
+      "source": "https://raw.githubusercontent.com/googlefonts/atkinson-hyperlegible/1cb311624b2ddf88e9e37873999d165a8cd28b46/fonts/otf/AtkinsonHyperlegible-Bold.otf"
+    },
+    "OFL.txt": {
+      "sha256": "f32d22b3908fcad2c86a74000614ec22e6a7f66ea7e867e616026a27aebdc143",
+      "source": "https://raw.githubusercontent.com/googlefonts/atkinson-hyperlegible/1cb311624b2ddf88e9e37873999d165a8cd28b46/OFL.txt"
+    }
+  }
+}

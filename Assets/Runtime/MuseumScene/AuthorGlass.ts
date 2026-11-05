@@ -1,3 +1,4 @@
+import { MuseumFonts, applyMuseumFont } from "../MuseumFonts";
 import {
   AuthorViewSnapshot,
   AuthorRecording,
@@ -34,6 +35,7 @@ export class AuthorGlass {
   constructor(
     private parent: SceneObject,
     private material: Material,
+    private fonts: MuseumFonts = {},
   ) {
     this.camera = this.pane("AuthorCameraGlass", 1);
     this.before = this.pane("AuthorOriginalGlass", 0.45);
@@ -50,6 +52,7 @@ export class AuthorGlass {
       .getTransform()
       .setLocalPosition(new vec3(0, scale === 1 ? -11.7 : -14, 0.24));
     const text = captionObject.createComponent("Component.Text");
+    applyMuseumFont(text, this.fonts, "regular");
     text.text = "";
     text.size = scale === 1 ? 32 : 48;
     text.depthTest = true;

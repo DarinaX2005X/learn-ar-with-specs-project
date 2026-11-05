@@ -1,3 +1,4 @@
+import { MuseumFonts, applyMuseumFont } from "./MuseumFonts";
 import {
   ComparisonFocus,
   comparisonFocusWindow,
@@ -92,6 +93,7 @@ export class ComparisonHall {
     private parent: SceneObject,
     private material: Material,
     private options: ComparisonHallOptions = {},
+    private fonts: MuseumFonts = {},
   ) {}
 
   sync(
@@ -572,6 +574,7 @@ export class ComparisonHall {
     const label = global.scene.createSceneObject("ReconstructionInscription");
     label.setParent(root);
     const inscription = label.createComponent("Component.Text");
+    applyMuseumFont(inscription, this.fonts, "regular");
     inscription.size = 352;
     inscription.depthTest = true;
     inscription.horizontalAlignment = HorizontalAlignment.Center;

@@ -1,3 +1,4 @@
+import { MuseumFonts } from "./MuseumFonts";
 import { NativeMirrorBridge } from '../Scripts/TableKit/NativeMirrorBridge';
 import { RubyFacetFinish } from '../Scripts/TableKit/RubyFacetFinish';
 import {mirrorCurtainPlacement} from "../Scripts/TableKit/MirrorFramePose";
@@ -151,6 +152,7 @@ export class MuseumScene {
       engage?: AudioTrackAsset;
       latch?: AudioTrackAsset;
     },
+    private fonts: MuseumFonts = {},
   ) {
     const theatre = this.find("Theatre", root);
     if (!theatre) throw new Error("Museum Theatre is missing");
@@ -182,13 +184,13 @@ export class MuseumScene {
       stopSound: () => this.cancelInput(),
       setBenchCaseParked: (parked) => this.setBenchCaseParked(parked),
       setRoomQualification: (text) => this.viewHandles?.setQualification(text),
-    });
-    this.viewHandles = new CaseViewHandles(root, material);
-    this.paper = new CasePaper(root);
-    this.caseTitleInk = new CaseTitleInk(root);
-    this.arrivalFile = new ArrivalFile(root, material);
-    this.benchCameos = new BenchCameos(root, material);
-    this.authorGlass = new AuthorGlass(root, material);
+    }, fonts);
+    this.viewHandles = new CaseViewHandles(root, material, fonts);
+    this.paper = new CasePaper(root, fonts);
+    this.caseTitleInk = new CaseTitleInk(root, fonts);
+    this.arrivalFile = new ArrivalFile(root, material, fonts.bold ?? fonts.regular);
+    this.benchCameos = new BenchCameos(root, material, fonts.bold ?? fonts.regular);
+    this.authorGlass = new AuthorGlass(root, material, fonts);
     this.mountClock("Anchor_EntryClock", false);
     this.mountClock("Anchor_HallClock", true);
     for (const role of ["Courier", "Guard", "Conservator"] as Role[]) {

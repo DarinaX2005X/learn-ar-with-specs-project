@@ -1,3 +1,4 @@
+import { MuseumFonts, applyMuseumFont } from "./MuseumFonts";
 import { Clue, Field, AnswerValue } from "../Domain/types";
 import { DetectiveState } from "../Detective/DetectiveSession";
 import { PlayTableSnapshot } from "./PlayTable";
@@ -86,7 +87,7 @@ export class CasePaper {
   private epoch: number | undefined;
   private signature = "";
   private live = false;
-  constructor(private root: SceneObject) {
+  constructor(private root: SceneObject, private fonts: MuseumFonts = {}) {
     this.layer = global.scene.createSceneObject("CasePaperInk");
     this.layer.setParent(root);
     this.result = this.surface("CheckedFinding", [0, 9.35, -15], 37, 24, 128, true);
@@ -126,6 +127,7 @@ export class CasePaper {
       .multiply(quat.fromEulerAngles(-Math.PI / 2, 0, 0))
       .multiply(quat.fromEulerAngles(0, 0, Math.PI)));
     const text = object.createComponent("Component.Text");
+    applyMuseumFont(text, this.fonts, paper ? "bold" : "regular");
     text.text = "";
     text.size = size;
     text.depthTest = true;
