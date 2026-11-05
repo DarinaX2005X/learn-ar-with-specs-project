@@ -1,0 +1,144 @@
+- !<AssetImportMetadata/9c0f80f4-39f6-4e70-aee7-30f6aa8c783f>
+  ImportedAssetIds:
+    .hidden/edge: !<reference> 707060e8-c4d8-46c3-a4d8-9b682b5239a0
+    26ba073d67b9d0dd: !<reference> 90f28d6d-543a-4452-b983-14d544950377
+    8755cd2494d67859: !<reference> 34036409-0e14-4445-adcc-8f8a165d4e26
+    88ab437fd121cc69: !<reference> 5c148d83-fd4e-4171-86c2-3a3f12358345
+    8c2c6f3cf8d060fd: !<reference> d0a6bdef-905d-4b86-ae1f-f777728cfb8e
+    98daabd8550a18da: !<reference> 3b0b9db5-c3e8-4aec-863f-32d89d13e3b2
+    Materials/edge: !<reference> 722a1958-fb41-4e9a-9f81-314f79cfa695
+    Materials/edge|edge|GraphPassInfo: !<reference> 1308b318-eed3-4d20-8975-54edd09574f8
+    Meshes/RoleMark: !<reference> c6e5bda5-a529-49cc-9926-50cd9ddd7a84
+    Scene: !<reference> a00d2697-7486-4242-9407-5a2350b3f76e
+    d711d5cb16e2183c: !<reference> 69648dc5-b2d4-4ec3-b83d-05bdc657de75
+  ImporterName: GltfImporter
+  PrimaryAsset: !<reference> a00d2697-7486-4242-9407-5a2350b3f76e
+  PackageType: LegacyPackage
+  LegacyPackagePolicy: CanBeUnpackedTransparent
+  ExtraData:
+    {}
+  AssetDataMap:
+    Scene: !<own> 75896818-0a1f-4d51-bce6-7d85055e68ad
+  DependentFiles:
+    []
+  ImporterSettings: !<GltfImporterSettings>
+    UseLegacyImporter: false
+    WithMaterials: true
+    NamingConvention: ByCategorySanitizeV2
+    PersistentIdGenerationAlgorithm: DescriptorBasedV2
+    AnimationCurveOptimization: true
+    CustomAnimationSamplingRate: 30.000000
+    ImportVertexColor: true
+    ImportTangents: true
+    ImportMorphTargetAnimation: true
+    ConvertMetersToCentimeters: true
+    RegenerateTangents: false
+    OptimizeMesh: true
+  CompressionSettings: !<ComplexCompressionSettings>
+    Presets:
+      None Compression: !<FileCompressionSettings>
+        {}
+    ExtensionMappings:
+      mesh: None Compression
+    Overrides:
+      {}
+- !<SceneObject/34036409-0e14-4445-5233-7075e9a2b1d9>
+  PrefabRemaps:
+    []
+  Name: RoleMark
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 69648dc5-b2d4-4ec3-47c2-fa4239a8218a
+- !<SceneObject/3b0b9db5-c3e8-4aec-79c0-cd2762ec1c4d>
+  PrefabRemaps:
+    []
+  Name: glass
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    - !<own> 34036409-0e14-4445-5233-7075e9a2b1d9
+  Components:
+    []
+- !<SceneObject/5c148d83-fd4e-4171-793d-c5c0edca7cba>
+  PrefabRemaps:
+    []
+  Name: Scenes
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    - !<own> d0a6bdef-905d-4b86-51e0-08888d730471
+  Components:
+    []
+- !<RenderMeshVisual/69648dc5-b2d4-4ec3-47c2-fa4239a8218a>
+  PrefabRemaps:
+    []
+  Name: RoleMark
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 722a1958-fb41-4e9a-9f81-314f79cfa695
+  Mesh: !<reference> c6e5bda5-a529-49cc-9926-50cd9ddd7a84
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<ObjectPrefabAssetData/75896818-0a1f-4d51-bce6-7d85055e68ad>
+  Prototype: !<ObjectOwner/9a9e1522-11d3-48f5-89fb-90e57ebdb1c4>
+    PackagePath: ""
+    objects:
+      - !<own> 90f28d6d-543a-4452-467c-eb2abb6afc88
+- !<SceneObject/90f28d6d-543a-4452-467c-eb2abb6afc88>
+  PrefabRemaps:
+    []
+  Name: RoleMarkCourier
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 100.000000, y: 100.000000, z: 100.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    - !<own> 5c148d83-fd4e-4171-793d-c5c0edca7cba
+  Components:
+    []
+- !<SceneObject/d0a6bdef-905d-4b86-51e0-08888d730471>
+  PrefabRemaps:
+    []
+  Name: Scene0
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    - !<own> 3b0b9db5-c3e8-4aec-79c0-cd2762ec1c4d
+  Components:
+    []

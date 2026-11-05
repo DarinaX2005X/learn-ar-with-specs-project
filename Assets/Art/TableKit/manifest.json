@@ -1,0 +1,823 @@
+{
+  "version": 1,
+  "units": "metres in GLB, Lens import scale 100 produces cm",
+  "axes": {
+    "up": "+Y",
+    "face": "-Z"
+  },
+  "tabletopHumanHeightCm": 10.598,
+  "lifeSizeWrapperScale": 16.666666666666668,
+  "backend": "original code-authored parametric GLB",
+  "backend_reason": "articulated carved puppets, moving hand joints, parametric curtain mechanism; explicitly requested original local generator",
+  "resources": [
+    {
+      "name": "Guard",
+      "path": "Guard.glb",
+      "bytes": 684488,
+      "aabb_cm": [
+        3.8525,
+        10.598,
+        1.8165
+      ],
+      "aabb_min_cm": [
+        -1.9262,
+        0.0,
+        -1.0955
+      ],
+      "aabb_center_offset_cm": [
+        0.0,
+        5.299,
+        -0.1873
+      ],
+      "nodeNames": [
+        "glass",
+        "Hip_L",
+        "Thigh_L",
+        "Knee_L",
+        "KneeJoint_L",
+        "Shin_L",
+        "Boot_L",
+        "Sole_L",
+        "Hip_R",
+        "Thigh_R",
+        "Knee_R",
+        "KneeJoint_R",
+        "Shin_R",
+        "Boot_R",
+        "Sole_R",
+        "Jacket",
+        "Collar",
+        "Neck",
+        "Head",
+        "CarvedFace",
+        "Jaw",
+        "Ear_-1",
+        "EyeWhite_-1",
+        "Eye_-1",
+        "Brow_-1",
+        "Ear_1",
+        "EyeWhite_1",
+        "Eye_1",
+        "Brow_1",
+        "Nose",
+        "Mouth",
+        "HairCap",
+        "CapBand",
+        "WidePeakedCap",
+        "CapVisor",
+        "CapMark",
+        "Moustache_-1",
+        "Moustache_1",
+        "Epaulette_-1",
+        "Epaulette_1",
+        "Belt",
+        "Buckle",
+        "Button_7.6",
+        "Button_8.3",
+        "Button_9.0",
+        "Button_9.7",
+        "RoleMark",
+        "Shoulder_L",
+        "ShoulderJoint_L",
+        "UpperSleeve_L",
+        "Forearm_L",
+        "Elbow_L",
+        "ForeSleeve_L",
+        "Cuff_L",
+        "Hand_L",
+        "Palm_L",
+        "Finger_L0",
+        "Finger_L1",
+        "Finger_L2",
+        "Finger_L3",
+        "Thumb_L",
+        "Shoulder_R",
+        "ShoulderJoint_R",
+        "UpperSleeve_R",
+        "Forearm_R",
+        "Elbow_R",
+        "ForeSleeve_R",
+        "Cuff_R",
+        "Hand_R",
+        "Palm_R",
+        "Finger_R0",
+        "Finger_R1",
+        "Finger_R2",
+        "Finger_R3",
+        "Thumb_R"
+      ],
+      "triangles": 7520
+    },
+    {
+      "name": "Courier",
+      "path": "Courier.glb",
+      "bytes": 659224,
+      "aabb_cm": [
+        3.9702,
+        10.556,
+        1.7671
+      ],
+      "aabb_min_cm": [
+        -1.9262,
+        0.0,
+        -1.0955
+      ],
+      "aabb_center_offset_cm": [
+        0.0589,
+        5.278,
+        -0.2119
+      ],
+      "nodeNames": [
+        "glass",
+        "Hip_L",
+        "Thigh_L",
+        "Knee_L",
+        "KneeJoint_L",
+        "Shin_L",
+        "Boot_L",
+        "Sole_L",
+        "Hip_R",
+        "Thigh_R",
+        "Knee_R",
+        "KneeJoint_R",
+        "Shin_R",
+        "Boot_R",
+        "Sole_R",
+        "Jacket",
+        "Collar",
+        "Neck",
+        "Head",
+        "CarvedFace",
+        "Jaw",
+        "Ear_-1",
+        "EyeWhite_-1",
+        "Eye_-1",
+        "Brow_-1",
+        "Ear_1",
+        "EyeWhite_1",
+        "Eye_1",
+        "Brow_1",
+        "Nose",
+        "Mouth",
+        "HairCap",
+        "SoftCap",
+        "CapPeak",
+        "Satchel",
+        "SatchelFlap",
+        "BagClasp_1.55",
+        "BagClasp_2.4",
+        "ShoulderStrap",
+        "RoleMark",
+        "Curl_0",
+        "Curl_1",
+        "Curl_2",
+        "Shoulder_L",
+        "ShoulderJoint_L",
+        "UpperSleeve_L",
+        "Forearm_L",
+        "Elbow_L",
+        "ForeSleeve_L",
+        "Cuff_L",
+        "Hand_L",
+        "Palm_L",
+        "Finger_L0",
+        "Finger_L1",
+        "Finger_L2",
+        "Finger_L3",
+        "Thumb_L",
+        "Shoulder_R",
+        "ShoulderJoint_R",
+        "UpperSleeve_R",
+        "Forearm_R",
+        "Elbow_R",
+        "ForeSleeve_R",
+        "Cuff_R",
+        "Hand_R",
+        "Palm_R",
+        "Finger_R0",
+        "Finger_R1",
+        "Finger_R2",
+        "Finger_R3",
+        "Thumb_R"
+      ],
+      "triangles": 7256
+    },
+    {
+      "name": "Conservator",
+      "path": "Conservator.glb",
+      "bytes": 727924,
+      "aabb_cm": [
+        3.8525,
+        10.332,
+        2.118
+      ],
+      "aabb_min_cm": [
+        -1.9262,
+        0.0,
+        -1.0955
+      ],
+      "aabb_center_offset_cm": [
+        0.0,
+        5.166,
+        -0.0365
+      ],
+      "nodeNames": [
+        "glass",
+        "Hip_L",
+        "Thigh_L",
+        "Knee_L",
+        "KneeJoint_L",
+        "Shin_L",
+        "Boot_L",
+        "Sole_L",
+        "Hip_R",
+        "Thigh_R",
+        "Knee_R",
+        "KneeJoint_R",
+        "Shin_R",
+        "Boot_R",
+        "Sole_R",
+        "Jacket",
+        "Collar",
+        "Neck",
+        "Head",
+        "CarvedFace",
+        "Jaw",
+        "Ear_-1",
+        "EyeWhite_-1",
+        "Eye_-1",
+        "Brow_-1",
+        "Ear_1",
+        "EyeWhite_1",
+        "Eye_1",
+        "Brow_1",
+        "Nose",
+        "Mouth",
+        "HairCap",
+        "HairBun",
+        "HairWave_0",
+        "HairWave_1",
+        "HairWave_2",
+        "HairWave_3",
+        "HairWave_4",
+        "Spectacles_-1",
+        "Spectacles_1",
+        "SpectacleBridge",
+        "ApronSkirt",
+        "ApronWaistTie_-1",
+        "ApronSideBow_-1",
+        "ApronWaistTie_1",
+        "ApronSideBow_1",
+        "ApronPocket",
+        "Brush_-0.35",
+        "Brush_0",
+        "Brush_0.35",
+        "RoleMark",
+        "Shoulder_L",
+        "ShoulderJoint_L",
+        "UpperSleeve_L",
+        "Forearm_L",
+        "Elbow_L",
+        "ForeSleeve_L",
+        "Cuff_L",
+        "Hand_L",
+        "Palm_L",
+        "Finger_L0",
+        "Finger_L1",
+        "Finger_L2",
+        "Finger_L3",
+        "Thumb_L",
+        "Shoulder_R",
+        "ShoulderJoint_R",
+        "UpperSleeve_R",
+        "Forearm_R",
+        "Elbow_R",
+        "ForeSleeve_R",
+        "Cuff_R",
+        "Hand_R",
+        "Palm_R",
+        "Finger_R0",
+        "Finger_R1",
+        "Finger_R2",
+        "Finger_R3",
+        "Thumb_R"
+      ],
+      "triangles": 7996
+    },
+    {
+      "name": "Plinth",
+      "path": "Plinth.glb",
+      "bytes": 74688,
+      "aabb_cm": [
+        44.044,
+        2.912,
+        32.032
+      ],
+      "aabb_min_cm": [
+        -22.022,
+        -2.8,
+        -16.016
+      ],
+      "aabb_center_offset_cm": [
+        0.0,
+        -1.344,
+        0.0
+      ],
+      "nodeNames": [
+        "glass",
+        "WalnutFoot",
+        "TerracottaStep",
+        "BrassRim",
+        "LimestoneFloor",
+        "LowerBrassInlay",
+        "FloorJointX_-14",
+        "FloorJointX_-7",
+        "FloorJointX_0",
+        "FloorJointX_7",
+        "FloorJointX_14",
+        "FloorJointZ_-7",
+        "FloorJointZ_0",
+        "FloorJointZ_7"
+      ],
+      "triangles": 736
+    },
+    {
+      "name": "DisplayCase",
+      "path": "DisplayCase.glb",
+      "bytes": 117316,
+      "aabb_cm": [
+        4.7,
+        9.09,
+        4.7
+      ],
+      "aabb_min_cm": [
+        -2.35,
+        0.0,
+        -2.35
+      ],
+      "aabb_center_offset_cm": [
+        0.0,
+        4.545,
+        0.0
+      ],
+      "nodeNames": [
+        "glass",
+        "Foot",
+        "BaseStep",
+        "Pedestal",
+        "Rim",
+        "VelvetCushion",
+        "RubySocket",
+        "CaseUpright_-2-2",
+        "CaseUpright_-22",
+        "CaseUpright_2-2",
+        "CaseUpright_22",
+        "TopRailZ_-2",
+        "TopRailZ_2",
+        "TopRailX_-2",
+        "TopRailX_2",
+        "GlassTop",
+        "GlassSide_-1.96",
+        "GlassSide_1.96",
+        "GlassFront_-1.96",
+        "GlassFront_1.96"
+      ],
+      "triangles": 1192
+    },
+    {
+      "name": "Ruby",
+      "path": "Ruby.glb",
+      "bytes": 10540,
+      "aabb_cm": [
+        1.9401,
+        1.061,
+        1.5891
+      ],
+      "aabb_min_cm": [
+        -0.9701,
+        0.0,
+        -0.7945
+      ],
+      "aabb_center_offset_cm": [
+        0.0,
+        0.5305,
+        0.0
+      ],
+      "nodeNames": [
+        "glass",
+        "RubyGem",
+        "RubyLightFacet"
+      ],
+      "triangles": 66
+    },
+    {
+      "name": "MirrorHousing",
+      "path": "MirrorHousing.glb",
+      "bytes": 101096,
+      "aabb_cm": [
+        9.0,
+        13.7,
+        2.93
+      ],
+      "aabb_min_cm": [
+        -4.5,
+        -0.8,
+        -0.38
+      ],
+      "aabb_center_offset_cm": [
+        0.0,
+        6.05,
+        1.085
+      ],
+      "nodeNames": [
+        "glass",
+        "FrameSide_-3.4",
+        "FrameSide_3.4",
+        "FrameHorizontal_0.6",
+        "FrameHorizontal_11.4",
+        "InnerLight_-3.13",
+        "InnerLight_3.13",
+        "ApertureSideBaffle_-3.75",
+        "ApertureSideBaffle_3.75",
+        "ApertureTopBottomBaffle_-0.1",
+        "ApertureTopBottomBaffle_12.1",
+        "OpaqueBack",
+        "Crown_0",
+        "Crown_1",
+        "Crown_2",
+        "Crown_3",
+        "Crown_4"
+      ],
+      "triangles": 1024
+    },
+    {
+      "name": "Curtain",
+      "path": "Curtain.glb",
+      "bytes": 226940,
+      "aabb_cm": [
+        7.4,
+        11.13,
+        0.7596
+      ],
+      "aabb_min_cm": [
+        -3.7,
+        0.9,
+        -1.1546
+      ],
+      "aabb_center_offset_cm": [
+        0.0,
+        6.465,
+        -0.7748
+      ],
+      "nodeNames": [
+        "glass",
+        "Rail",
+        "Fold_00",
+        "Ring_00",
+        "Fold_01",
+        "Ring_01",
+        "Fold_02",
+        "Ring_02",
+        "Fold_03",
+        "Ring_03",
+        "Fold_04",
+        "Ring_04",
+        "Fold_05",
+        "Ring_05",
+        "Fold_06",
+        "Ring_06",
+        "Fold_07",
+        "Ring_07",
+        "Fold_08",
+        "Ring_08",
+        "Fold_09",
+        "Ring_09",
+        "Fold_10",
+        "Ring_10",
+        "Fold_11",
+        "Ring_11",
+        "Handle",
+        "HandleLoop",
+        "HandleFocus"
+      ],
+      "triangles": 2416
+    },
+    {
+      "name": "Camera",
+      "path": "Camera.glb",
+      "bytes": 104768,
+      "aabb_cm": [
+        2.6,
+        4.85,
+        3.9481
+      ],
+      "aabb_min_cm": [
+        -1.3,
+        0.0,
+        -2.3481
+      ],
+      "aabb_center_offset_cm": [
+        0.0,
+        2.425,
+        -0.374
+      ],
+      "nodeNames": [
+        "glass",
+        "CameraBase",
+        "Stem",
+        "CameraBody",
+        "LensHood",
+        "LensGlass",
+        "LensCatchlight"
+      ],
+      "triangles": 1152
+    },
+    {
+      "name": "MuseumWall",
+      "path": "MuseumWall.glb",
+      "bytes": 365768,
+      "aabb_cm": [
+        20.0,
+        13.0,
+        2.05
+      ],
+      "aabb_min_cm": [
+        -10.0,
+        0.0,
+        -1.55
+      ],
+      "aabb_center_offset_cm": [
+        0.0,
+        6.5,
+        -0.525
+      ],
+      "nodeNames": [
+        "glass",
+        "WallMass",
+        "Recess_-6.15",
+        "RecessSide_-6.15-1.9",
+        "RecessSide_-6.151.9",
+        "RecessLedge_-6.151.65",
+        "RecessLedge_-6.1511.55",
+        "Recess_0",
+        "RecessSide_0-3.2",
+        "RecessSide_03.2",
+        "RecessLedge_01.65",
+        "RecessLedge_011.55",
+        "Recess_6.15",
+        "RecessSide_6.15-1.9",
+        "RecessSide_6.151.9",
+        "RecessLedge_6.151.65",
+        "RecessLedge_6.1511.55",
+        "ArchVoussoir_0",
+        "ArchVoussoir_1",
+        "ArchVoussoir_2",
+        "ArchVoussoir_3",
+        "ArchVoussoir_4",
+        "ArchVoussoir_5",
+        "ArchVoussoir_6",
+        "ArchVoussoir_7",
+        "ArchVoussoir_8",
+        "ArchVoussoir_9",
+        "ArchVoussoir_10",
+        "ArchVoussoir_11",
+        "ArchVoussoir_12",
+        "ArchPier_-3.44",
+        "ArchPier_3.44",
+        "AmphoraRelief",
+        "AmphoraHandle_-1",
+        "AmphoraHandle_1",
+        "SpecimenPlaque_-6.15",
+        "FossilStem_-6.15",
+        "FossilLeaf_-6.150-1",
+        "FossilLeaf_-6.1501",
+        "FossilLeaf_-6.151-1",
+        "FossilLeaf_-6.1511",
+        "FossilLeaf_-6.152-1",
+        "FossilLeaf_-6.1521",
+        "FossilLeaf_-6.153-1",
+        "FossilLeaf_-6.1531",
+        "FossilLeaf_-6.154-1",
+        "FossilLeaf_-6.1541",
+        "FossilLeaf_-6.155-1",
+        "FossilLeaf_-6.1551",
+        "SpecimenPlaque_6.15",
+        "FossilStem_6.15",
+        "FossilLeaf_6.150-1",
+        "FossilLeaf_6.1501",
+        "FossilLeaf_6.151-1",
+        "FossilLeaf_6.1511",
+        "FossilLeaf_6.152-1",
+        "FossilLeaf_6.1521",
+        "FossilLeaf_6.153-1",
+        "FossilLeaf_6.1531",
+        "FossilLeaf_6.154-1",
+        "FossilLeaf_6.1541",
+        "FossilLeaf_6.155-1",
+        "FossilLeaf_6.1551",
+        "Pilaster_-9",
+        "Capital_-9",
+        "Pediment_-9",
+        "Flute_-9-0.32",
+        "Flute_-90",
+        "Flute_-90.32",
+        "MasonryJoint_-90",
+        "MasonryJoint_-91",
+        "MasonryJoint_-92",
+        "MasonryJoint_-93",
+        "Pilaster_9",
+        "Capital_9",
+        "Pediment_9",
+        "Flute_9-0.32",
+        "Flute_90",
+        "Flute_90.32",
+        "MasonryJoint_90",
+        "MasonryJoint_91",
+        "MasonryJoint_92",
+        "MasonryJoint_93",
+        "Cornice_0.5",
+        "Cornice_12.5"
+      ],
+      "triangles": 3556
+    },
+    {
+      "name": "AnonymousTrack",
+      "path": "AnonymousTrack.glb",
+      "bytes": 387716,
+      "aabb_cm": [
+        3.5303,
+        10.255,
+        1.6625
+      ],
+      "aabb_min_cm": [
+        -1.7652,
+        0.0,
+        -1.0675
+      ],
+      "aabb_center_offset_cm": [
+        0.0,
+        5.1275,
+        -0.2362
+      ],
+      "nodeNames": [
+        "glass",
+        "Hip_L",
+        "Thigh_L",
+        "Knee_L",
+        "KneeJoint_L",
+        "Shin_L",
+        "Foot_L",
+        "Shoulder_L",
+        "UpperArm_L",
+        "Forearm_L",
+        "Elbow_L",
+        "ForeArm_L",
+        "Hand_L",
+        "Palm_L",
+        "Hip_R",
+        "Thigh_R",
+        "Knee_R",
+        "KneeJoint_R",
+        "Shin_R",
+        "Foot_R",
+        "Shoulder_R",
+        "UpperArm_R",
+        "Forearm_R",
+        "Elbow_R",
+        "ForeArm_R",
+        "Hand_R",
+        "Palm_R",
+        "NeutralTorso",
+        "Neck",
+        "Head",
+        "BlankHead"
+      ],
+      "triangles": 4392
+    },
+    {
+      "name": "RoleMarkGuard",
+      "path": "RoleMarkGuard.glb",
+      "bytes": 5604,
+      "aabb_cm": [
+        0.42,
+        0.504,
+        0.056
+      ],
+      "aabb_min_cm": [
+        -0.21,
+        -0.252,
+        -0.028
+      ],
+      "aabb_center_offset_cm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "nodeNames": [
+        "glass",
+        "RoleMark"
+      ],
+      "triangles": 16
+    },
+    {
+      "name": "RoleMarkCourier",
+      "path": "RoleMarkCourier.glb",
+      "bytes": 9628,
+      "aabb_cm": [
+        0.441,
+        0.546,
+        0.07
+      ],
+      "aabb_min_cm": [
+        -0.2205,
+        -0.273,
+        -0.035
+      ],
+      "aabb_center_offset_cm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "nodeNames": [
+        "glass",
+        "RoleMark"
+      ],
+      "triangles": 64
+    },
+    {
+      "name": "RoleMarkConservator",
+      "path": "RoleMarkConservator.glb",
+      "bytes": 6600,
+      "aabb_cm": [
+        0.49,
+        0.49,
+        0.07
+      ],
+      "aabb_min_cm": [
+        -0.245,
+        -0.245,
+        -0.035
+      ],
+      "aabb_center_offset_cm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "nodeNames": [
+        "glass",
+        "RoleMark"
+      ],
+      "triangles": 28
+    },
+    {
+      "name": "RoleMarkAnonymous",
+      "path": "RoleMarkAnonymous.glb",
+      "bytes": 9644,
+      "aabb_cm": [
+        0.5,
+        0.6,
+        0.09
+      ],
+      "aabb_min_cm": [
+        -0.25,
+        -0.3,
+        -0.045
+      ],
+      "aabb_center_offset_cm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "nodeNames": [
+        "glass",
+        "NeutralMark"
+      ],
+      "triangles": 64
+    }
+  ],
+  "mirror": {
+    "aperture_cm": {
+      "x": [
+        -3,
+        3
+      ],
+      "y": [
+        1,
+        11
+      ]
+    },
+    "plane_z_cm": 0,
+    "front": "-Z",
+    "warning": "housing is not a reflection renderer; use clipped observed proxy geometry only"
+  },
+  "lighting": {
+    "keyDirection": [
+      -0.6,
+      1,
+      -0.7
+    ],
+    "keyColor": "#FFF1D2",
+    "fillColor": "#BFE7DF",
+    "ambientRatio": 0.38
+  }
+}

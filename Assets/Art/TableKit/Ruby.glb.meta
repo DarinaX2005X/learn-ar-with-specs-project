@@ -1,0 +1,185 @@
+- !<AssetImportMetadata/77b63d61-3586-47ef-9590-28eb692cdae8>
+  ImportedAssetIds:
+    .hidden/ruby: !<reference> 98621467-30ca-4768-b696-612a39747f3d
+    22273adc623aab9f: !<reference> ae738688-6dc6-4cb8-a5c5-baf07cdc4617
+    26ba073d67b9d0dd: !<reference> 40694365-f048-429e-81cd-bf6d4a330234
+    289ab61bdd567575: !<reference> 333d8a6d-095b-4c29-8505-a9d9f934c5b2
+    32609244eddcaed1: !<reference> ad67bd0f-12fa-45af-a114-d6798c008ec6
+    88ab437fd121cc69: !<reference> ff250d3b-43ea-4742-962d-59f0f91a82b0
+    8c2c6f3cf8d060fd: !<reference> 0467bf4c-273f-4e87-bd7a-1754c3dca09f
+    9175bf50289691bd: !<reference> c0ff9450-5feb-4980-9723-ff20cd86bac1
+    98daabd8550a18da: !<reference> 7a268a98-db4e-419a-8cbe-edcde72d6672
+    Materials/ruby: !<reference> ec778e7c-2216-4c3e-b391-ed5497281056
+    Materials/rubyLight: !<reference> 596f9f24-2d60-4a3c-89e2-3714c29a6f14
+    Materials/rubyLight|rubyLight|GraphPassInfo: !<reference> c626c18a-2a95-4318-9997-8f63a1320497
+    Materials/ruby|ruby|GraphPassInfo: !<reference> 96c014bc-e8d5-4e9f-8060-77b61cabdf59
+    Meshes/RubyGem: !<reference> c1730980-6a36-4499-b1c7-7c674c82aa42
+    Meshes/RubyLightFacet: !<reference> c9cdda5f-098f-4e5e-907a-f1a60b25daef
+    Scene: !<reference> dab4560a-99fc-4bc2-a992-7743cf6d6b40
+  ImporterName: GltfImporter
+  PrimaryAsset: !<reference> dab4560a-99fc-4bc2-a992-7743cf6d6b40
+  PackageType: LegacyPackage
+  LegacyPackagePolicy: CanBeUnpackedTransparent
+  ExtraData:
+    {}
+  AssetDataMap:
+    Scene: !<own> f9fe05fe-b5da-48be-9b90-b018cf69293a
+  DependentFiles:
+    []
+  ImporterSettings: !<GltfImporterSettings>
+    UseLegacyImporter: false
+    WithMaterials: true
+    NamingConvention: ByCategorySanitizeV2
+    PersistentIdGenerationAlgorithm: DescriptorBasedV2
+    AnimationCurveOptimization: true
+    CustomAnimationSamplingRate: 30.000000
+    ImportVertexColor: true
+    ImportTangents: true
+    ImportMorphTargetAnimation: true
+    ConvertMetersToCentimeters: true
+    RegenerateTangents: false
+    OptimizeMesh: true
+  CompressionSettings: !<ComplexCompressionSettings>
+    Presets:
+      None Compression: !<FileCompressionSettings>
+        {}
+    ExtensionMappings:
+      mesh: None Compression
+    Overrides:
+      {}
+- !<SceneObject/0467bf4c-273f-4e87-4285-e8ab3c235f60>
+  PrefabRemaps:
+    []
+  Name: Scene0
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    - !<own> 7a268a98-db4e-419a-7341-123218d2998d
+  Components:
+    []
+- !<SceneObject/333d8a6d-095b-4c29-7afa-562606cb3a4d>
+  PrefabRemaps:
+    []
+  Name: RubyGem
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> ad67bd0f-12fa-45af-5eeb-298673ff7139
+- !<SceneObject/40694365-f048-429e-7e32-4092b5ccfdcb>
+  PrefabRemaps:
+    []
+  Name: Ruby
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 100.000000, y: 100.000000, z: 100.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    - !<own> ff250d3b-43ea-4742-69d2-a60f06e57d4f
+  Components:
+    []
+- !<SceneObject/7a268a98-db4e-419a-7341-123218d2998d>
+  PrefabRemaps:
+    []
+  Name: glass
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    - !<own> 333d8a6d-095b-4c29-7afa-562606cb3a4d
+    - !<own> ae738688-6dc6-4cb8-5a3a-450f8323b9e8
+  Components:
+    []
+- !<RenderMeshVisual/ad67bd0f-12fa-45af-5eeb-298673ff7139>
+  PrefabRemaps:
+    []
+  Name: RubyGem
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> ec778e7c-2216-4c3e-b391-ed5497281056
+  Mesh: !<reference> c1730980-6a36-4499-b1c7-7c674c82aa42
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<SceneObject/ae738688-6dc6-4cb8-5a3a-450f8323b9e8>
+  PrefabRemaps:
+    []
+  Name: RubyLightFacet
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> c0ff9450-5feb-4980-68dc-00df3279453e
+- !<RenderMeshVisual/c0ff9450-5feb-4980-68dc-00df3279453e>
+  PrefabRemaps:
+    []
+  Name: RubyLightFacet
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    - !<reference> 596f9f24-2d60-4a3c-89e2-3714c29a6f14
+  Mesh: !<reference> c9cdda5f-098f-4e5e-907a-f1a60b25daef
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<ObjectPrefabAssetData/f9fe05fe-b5da-48be-9b90-b018cf69293a>
+  Prototype: !<ObjectOwner/8c19832a-a6e1-44c1-ba44-589f1598ab29>
+    PackagePath: ""
+    objects:
+      - !<own> 40694365-f048-429e-7e32-4092b5ccfdcb
+- !<SceneObject/ff250d3b-43ea-4742-69d2-a60f06e57d4f>
+  PrefabRemaps:
+    []
+  Name: Scenes
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    - !<own> 0467bf4c-273f-4e87-4285-e8ab3c235f60
+  Components:
+    []
