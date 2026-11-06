@@ -10,6 +10,7 @@ scene.roleTracks=new Map();scene.fixedProps=new Map();
 // Object.create bypasses the real constructor. Model only its finish ports here;
 // the actual finish implementations have separate native/geometry regressions.
 const finishCalls=[];
+scene.stampMotion={update(){},cancel(){},dispose(){}};
 scene.liveFinish={clear(){finishCalls.push({kind:'mirror-clear'});},dispose(){finishCalls.push({kind:'mirror-dispose'});},update(input){finishCalls.push({kind:'mirror-update',input});}};
 scene.facetFinish={clear(){finishCalls.push({kind:'facet-clear'});},dispose(){finishCalls.push({kind:'facet-dispose'});},update(){finishCalls.push({kind:'facet-update'});}};
 scene.readCaseViewViewer=()=>({eyeCm:[0,165,0],forward:[0,0,1]});

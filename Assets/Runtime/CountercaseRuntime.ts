@@ -53,7 +53,7 @@ export class CountercaseRuntime extends BaseScriptComponent {
       if (this.game) this.game.update(getDeltaTime());
       if(this.presentation)this.presentation.updateNativeFinish(this.rubyKeyLight,this.enableFacetFinish,this.enablePhysicalMirror);
     });
-    this.createEvent("OnDisableEvent").bind(() => this.foley?.cancel());
+    this.createEvent("OnDisableEvent").bind(() => { this.foley?.cancel(); this.presentation?.stampMotion.cancel(); });
     this.createEvent("OnDestroyEvent").bind(() => {
       this.foley?.cancel();
       this.foleyVoices.forEach(v=>v.dispose());
@@ -93,6 +93,7 @@ export class CountercaseRuntime extends BaseScriptComponent {
     this.game = new MuseumGame(this.sceneObject, {
       fonts,
       foley: this.foley,
+      stampMotion: this.presentation.stampMotion,
       soundAnchor: object => { this.foleyAnchor=captureFoleyOrigin(object); },
       renderScene: (state, reveal) => this.presentation.render(state, reveal),
       clearScene: () => this.presentation.clear(),

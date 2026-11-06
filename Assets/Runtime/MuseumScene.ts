@@ -1,3 +1,4 @@
+import { CheckStampMotion } from "./CheckStampMotion";
 import { RoomShellPresentation } from "./RoomShellPresentation";
 import { ComparisonSourceRig } from "./ComparisonSourceRig";
 import { MuseumFonts } from "./MuseumFonts";
@@ -40,6 +41,7 @@ import { PublicCradleTransport } from "./MuseumScene/PublicCradle";
 
 /** Native museum binding. Persistent architecture is never recreated on a role change. */
 export class MuseumScene {
+  readonly stampMotion = new CheckStampMotion();
   private rigs = new Map<SceneObject, ActorRig>();
   private digitBindings = new Map<Role, number>();
   private anonymousTemplateDigits = 0;
@@ -114,6 +116,7 @@ export class MuseumScene {
   updateNativeFinish(keyLight:SceneObject|undefined, enabled:boolean, mirrorEnabled:boolean):void {
     this.arrivalFile?.update(getDeltaTime());
     if(this.disposed)return;
+    this.stampMotion.update(getDeltaTime());
     const source=keyLight?.getComponent('Component.LightSource') as LightSource | undefined;
     const light=keyLight?.enabled && source?.enabled && source.lightType===LightType.Point && source.intensity>0
       ? keyLight.getTransform().getWorldPosition() : undefined;
@@ -1404,6 +1407,7 @@ export class MuseumScene {
     };
   }
   clear(): void {
+    this.stampMotion.cancel();
     this.restoreRoomPresentation();
     for (const rig of this.rigs.values()) rig.clearRoute();
     this.roleTracks.clear();
@@ -1452,6 +1456,7 @@ export class MuseumScene {
   dispose(): void {
     if (this.disposed) return;
     this.clear();
+    this.stampMotion.dispose();
     this.facetFinish.dispose();
     this.liveFinish.dispose();
     this.hall.dispose();
@@ -1483,6 +1488,7 @@ export class MuseumScene {
     this.disposed = true;
   }
   cancelInput(): void {
+    this.stampMotion.cancel();
     for (const audio of this.audio.values()) audio.stop(false);
   }
 }

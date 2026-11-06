@@ -43,6 +43,11 @@ export interface MuseumAuthorController {
 export interface MuseumGamePorts {
   fonts?: MuseumFonts;
   foley?: NativeMuseumFoley;
+  stampMotion?: {
+    observe(identity: string): void;
+    cancel(): void;
+    accepted(action: string, type: string, accepted: boolean, before: PublicMechanisms, after: PublicMechanisms): void;
+  };
   soundAnchor?(object: SceneObject): void;
   caseView?: Omit<CaseViewPorts, "readSession">;
   /** Fractional poses only; observations and controls still use integer ticks. */
@@ -87,7 +92,7 @@ export class MuseumGame {
     if (this.flow || this.disposed) return;
     this.table = this.ports.createTable
       ? this.ports.createTable(this.root, (a, p) => this.dispatch(a, p))
-      : new PlayTable(this.root, { fonts: this.ports.fonts, dispatch: (a, p) => this.dispatch(a, p), soundAnchor: object => this.ports.soundAnchor?.(object), cancelSound: () => this.ports.foley?.cancel() });
+      : new PlayTable(this.root, { fonts: this.ports.fonts, dispatch: (a, p) => this.dispatch(a, p), soundAnchor: object => this.ports.soundAnchor?.(object), cancelSound: () => { this.ports.foley?.cancel(); this.ports.stampMotion?.cancel(); } });
     if (this.ports.createAuthorController)
       this.controller = this.ports.createAuthorController(this.root);
     else {
@@ -327,6 +332,7 @@ export class MuseumGame {
     if (this.caseView)
       this.state = { ...this.state, view: this.caseView.snapshot() };
     this.ports.foley?.observe(this.mechanismState().identity);
+    this.ports.stampMotion?.observe(this.mechanismState().identity);
     this.state = { ...this.state, arrivalHelp: this.arrivalHelp };
     this.ports.renderScene(this.state, this.revealed);
     this.table?.render(this.state);
@@ -395,7 +401,9 @@ export class MuseumGame {
       this.render();
     }
     const type=payload && typeof payload==='object' ? String((payload as {type?:string;kind?:string}).type ?? (payload as {kind?:string}).kind ?? '') : '';
-    this.ports.foley?.accepted(action,type,accepted,before,this.mechanismState());
+    const after=this.mechanismState();
+    this.ports.foley?.accepted(action,type,accepted,before,after);
+    this.ports.stampMotion?.accepted(action,type,accepted,before,after);
     return accepted;
   }
   private dispatchCore(action: string, payload?: unknown): boolean {
