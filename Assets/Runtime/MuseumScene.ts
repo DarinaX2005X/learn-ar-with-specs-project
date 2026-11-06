@@ -1,3 +1,5 @@
+import { RoomShellPresentation } from "./RoomShellPresentation";
+import { ComparisonSourceRig } from "./ComparisonSourceRig";
 import { MuseumFonts } from "./MuseumFonts";
 import { NativeMirrorBridge } from '../Scripts/TableKit/NativeMirrorBridge';
 import { RubyFacetFinish } from '../Scripts/TableKit/RubyFacetFinish';
@@ -73,6 +75,13 @@ export class MuseumScene {
   private anonymous = new Map<string, SceneObject>();
   private hall: ComparisonHall;
   private comparisonActive = false;
+  private roomShell?: RoomShellPresentation;
+  private shellNode?: SceneObject | null;
+  private roomClock?: ComparisonSourceRig;
+  private roomToolStand?: SceneObject;
+  private roomToolStandKey = "";
+  private ordinaryRoomSource?: ComparisonSourceRig;
+  private viewerProjection?: { viewer: SceneObject; fov: number; aspect: number; horizontal: number; vertical: number };
   private covered = false;
   private labelsVisible = true;
   private casePresentation: CaseViewPresentation | undefined;
@@ -790,7 +799,7 @@ export class MuseumScene {
         .setLocalRotation(
           quat.fromEulerAngles(0, 0, closed ? 0 : (Math.PI * 5) / 12),
         );
-    this.paper?.setCovered(closed);
+    this.paper?.setCovered(closed || this.casePresentation?.kind === "room");
   }
   private hasExhibit(board: Board): boolean {
     const p = board.room.exhibit.position;
@@ -1091,6 +1100,10 @@ export class MuseumScene {
       !this.lidClosed &&
       !reveal &&
       (snapshot.flow.mode === "detective" || snapshot.flow.mode === "finished");
+    if (detective?.comparison && this.ordinaryRoomSource) {
+      this.ordinaryRoomSource.restore();
+      this.ordinaryRoomSource = undefined;
+    }
     this.comparisonActive = this.hall.sync(
       board,
       canCompare ? detective?.comparison : undefined,
@@ -1115,9 +1128,11 @@ export class MuseumScene {
     this.comparisonRoot = this.comparisonActive
       ? this.find("ComparisonWorkbench", this.root)
       : undefined;
+    this.roomShell?.hideOwnedOverlays();
     this.applyCoverState();
   }
   applyCaseView(presentation: CaseViewPresentation | undefined): void {
+    if (presentation?.kind !== "room") this.restoreRoomPresentation();
     this.casePresentation = presentation;
     const transform = this.theatre.getTransform();
     this.hall.applyCaseView(
@@ -1151,6 +1166,7 @@ export class MuseumScene {
         ),
       );
     }
+    this.applyLidPose();
     this.applyCoverState();
   }
   setCaseViewCovered(covered: boolean): void {
@@ -1167,10 +1183,151 @@ export class MuseumScene {
     this.applyCoverState();
   }
   private applyCoverState(): void {
+    this.applyRoomPresentation();
     this.theatre.enabled =
       !this.covered &&
       !(this.comparisonActive && this.casePresentation?.comparison);
     if (this.comparisonRoot) this.comparisonRoot.enabled = !this.covered;
+  }
+  private shellVisual(): SceneObject | undefined {
+    if (this.shellNode === undefined)
+      this.shellNode = this.findGlobal("MuseumBuilding") ?? null;
+    return this.shellNode ?? undefined;
+  }
+  private roomBindings(names: readonly string[]): SceneObject[] {
+    return names.map((name) => {
+      const node = this.findGlobal(name);
+      if (!node) throw new Error("Room presentation requires original " + name);
+      return node;
+    });
+  }
+  private restoreRoomPresentation(): void {
+    this.roomToolStand?.destroy();
+    this.roomToolStand = undefined;
+    this.roomToolStandKey = "";
+    this.roomClock?.restore();
+    this.roomClock = undefined;
+    this.ordinaryRoomSource?.restore();
+    this.ordinaryRoomSource = undefined;
+    this.roomShell?.restore();
+  }
+  private applyRoomPresentation(): void {
+    const presentation = this.casePresentation;
+    if (presentation?.kind !== "room") {
+      this.restoreRoomPresentation();
+      return;
+    }
+    try {
+      if (!this.roomShell) {
+        const shell = this.shellVisual();
+        if (!shell)
+          throw new Error(
+            "Room presentation requires the existing museum shell",
+          );
+        this.roomShell = new RoomShellPresentation(shell, () =>
+          [
+            "CasePaperInk",
+            "CaseLeatherTitleInk",
+            "BenchCameoPrints",
+            "FirstCaseSheetMount",
+            "Anchor_EntryClock_LiveDial",
+            "Anchor_HallClock_LiveDial",
+          ]
+            .map((name) => this.find(name, this.root))
+            .filter((node): node is SceneObject => !!node),
+        );
+      }
+      this.roomShell.apply(presentation.placement);
+      if (
+        presentation.roomSource &&
+        !presentation.comparison &&
+        !this.comparisonActive
+      ) {
+        if (!this.ordinaryRoomSource) {
+          const bindings = this.roomBindings([
+            "WorkshopRecording__brass",
+            "WorkshopRecording__recordingDarkGlass",
+            "WorkshopRecording__leather",
+            "WorkshopRecording__wood",
+            "Anchor_PinGlass",
+            "Anchor_PinHandle",
+            "PublicRecordedGlass",
+            "Use_PinGlass",
+            "Use_LoupeDetail",
+          ]);
+          const centre = bindings[4].getTransform().getWorldPosition();
+          this.ordinaryRoomSource = new ComparisonSourceRig(
+            this.root,
+            bindings[4].getTransform().getWorldRotation(),
+            centre,
+            centre,
+            "RoomOriginalRecordingRig",
+          );
+          if (!this.ordinaryRoomSource.mount(bindings))
+            throw new Error("Original room recording could not mount");
+        }
+        this.ordinaryRoomSource.presentRoom(presentation.roomSource);
+      }
+      if (presentation.roomClock) {
+        if (!this.roomClock) {
+          const bindings = this.roomBindings([
+            "WorkshopDeskClock",
+            "WorkshopClock_LiveDial",
+            "Use_WorkshopClock",
+            "Use_WorkshopClockReset",
+            "Use_WorkshopClockPrevious",
+            "Use_WorkshopClockNext",
+          ]);
+          const centre = bindings[2].getTransform().getWorldPosition();
+          this.roomClock = new ComparisonSourceRig(
+            this.root,
+            bindings[0].getTransform().getWorldRotation(),
+            centre,
+            centre,
+            "RoomOriginalClockRig",
+          );
+          if (!this.roomClock.mount(bindings))
+            throw new Error("Original room clock could not mount");
+        }
+        this.roomClock.presentRoom(presentation.roomClock, 0);
+        this.presentRoomToolStand(presentation);
+      }
+    } catch (error) {
+      this.restoreRoomPresentation();
+      this.paper?.setCovered(this.lidClosed || this.benchCaseParked);
+      throw error;
+    }
+  }
+  /** Existing originals sit on one narrow floor-standing museum tool rack.
+   * It owns no text, source data or input and is removed with the room lease. */
+  private presentRoomToolStand(presentation: CaseViewPresentation): void {
+    if (!presentation.roomClock || !presentation.roomSource) return;
+    const key = JSON.stringify([presentation.roomClock, presentation.roomSource,
+      presentation.handlePlacement, presentation.placement.originCm[1]]);
+    if (this.roomToolStandKey === key) return;
+    this.roomToolStand?.destroy();
+    const stand = global.scene.createSceneObject("RoomOriginalToolStand");
+    stand.setParent(this.root);
+    const clock = presentation.roomClock;
+    const floor = presentation.placement.originCm[1];
+    stand.getTransform().setWorldPosition(new vec3(clock.originCm[0], floor, clock.originCm[2]));
+    stand.getTransform().setWorldRotation(quat.fromEulerAngles(0, clock.yawRad, 0));
+    stand.getTransform().setWorldScale(new vec3(1, 1, 1));
+    this.roomToolStand = stand;
+    this.roomToolStandKey = key;
+    const wood = new vec4(0.12, 0.22, 0.19, 1), brass = new vec4(0.52, 0.32, 0.12, 1);
+    const clockHeight = clock.originCm[1] - floor;
+    const sourceHeight = presentation.roomSource.originCm[1] - floor;
+    const handleHeight = presentation.handlePlacement.originCm[1] - floor;
+    this.extrusion(stand, "RackFloorFoot", [[-23,0], [23,0], [23,5], [-23,5]], -12, 24, wood);
+    this.extrusion(stand, "RackUpright", [[-2,5], [2,5], [2,sourceHeight+7], [-2,sourceHeight+7]], 5, 4, brass);
+    // Clock body bottom is 18 cm below its dial-centred mounted rig.
+    this.extrusion(stand, "OriginalClockShelf", [[-20,clockHeight-18], [20,clockHeight-18],
+      [20,clockHeight-15], [-20,clockHeight-15]], -9, 19, wood);
+    this.extrusion(stand, "OriginalLoupeBracket", [[-3,sourceHeight-16], [3,sourceHeight-16],
+      [3,sourceHeight-12], [-3,sourceHeight-12]], -5, 16, brass);
+    this.extrusion(stand, "OriginalGripMount", [[-10,handleHeight-20], [10,handleHeight-20],
+      [10,handleHeight+19], [-10,handleHeight+19]], 2, 3, wood);
   }
   readCaseViewViewer(): CaseViewViewer {
     if (!this.viewer) {
@@ -1194,9 +1351,35 @@ export class MuseumScene {
     const transform = this.viewer.getTransform(),
       eye = transform.getWorldPosition(),
       forward = transform.forward;
+    const shell = this.shellVisual();
+    const camera = this.viewer.getComponent("Component.Camera") as Camera;
+    const projection = this.viewerProjection;
+    if (
+      !projection ||
+      projection.viewer !== this.viewer ||
+      projection.fov !== camera.fov ||
+      projection.aspect !== camera.aspect
+    ) {
+      const angle = (first: vec2, second: vec2): number => {
+        const a = camera.screenSpaceToWorldSpace(first, 100).sub(eye);
+        const b = camera.screenSpaceToWorldSpace(second, 100).sub(eye);
+        const denominator = a.length * b.length;
+        return Math.acos(Math.max(-1, Math.min(1, a.dot(b) / denominator)));
+      };
+      this.viewerProjection = {
+        viewer: this.viewer,
+        fov: camera.fov,
+        aspect: camera.aspect,
+        horizontal: angle(new vec2(0, 0.5), new vec2(1, 0.5)),
+        vertical: angle(new vec2(0.5, 0), new vec2(0.5, 1)),
+      };
+    }
     return {
       eyeCm: [eye.x, eye.y, eye.z],
       forward: [-forward.x, -forward.y, -forward.z],
+      floorYcm: shell?.getTransform().getWorldPosition().y,
+      horizontalFovRad: this.viewerProjection!.horizontal,
+      verticalFovRad: this.viewerProjection!.vertical,
     };
   }
   read() {
@@ -1221,6 +1404,7 @@ export class MuseumScene {
     };
   }
   clear(): void {
+    this.restoreRoomPresentation();
     for (const rig of this.rigs.values()) rig.clearRoute();
     this.roleTracks.clear();
     this.lastPoseTick = undefined;

@@ -28,7 +28,7 @@ assert.equal(detective.snapshot().verdict.status, "proved");
 let board = sealed.board;
 let active = true;
 const viewer = { eyeCm: [20, 140, 50], forward: [0, 0, -1] };
-const originalViewer = structuredClone(viewer);
+let originalViewer = structuredClone(viewer);
 let viewerUnavailable = false;
 let applied,
   covered = false,
@@ -65,6 +65,26 @@ const route = new CaseViewRouting({
     sounds++;
   },
 });
+function standAtOfferedPull() {
+  assert.equal(route.dispatch({ type: "chooseView" }), true);
+  const eyeBefore = [...viewer.eyeCm];
+  const target = route.snapshot().choicePlacement.originCm;
+  const direction = target.map((value, index) => value - viewer.eyeCm[index]);
+  const length = Math.hypot(...direction);
+  viewer.forward = direction.map((value) => value / length);
+  const entryViewer = structuredClone(viewer);
+  assert.equal(route.dispatch({ type: "standByCase" }), true);
+  assert.deepEqual(
+    viewer,
+    entryViewer,
+    "Entry never changes the tracked camera",
+  );
+  assert.deepEqual(
+    viewer.eyeCm,
+    eyeBefore,
+    "Entry never moves the tracked eye",
+  );
+}
 function clickView(id) {
   const control = caseViewControls(route.snapshot()).find((c) => c.id === id);
   assert.ok(control, "Missing physical case view handle " + id);
@@ -84,7 +104,13 @@ route.update(0.2);
 assert.equal(covered, false);
 assert.equal(secondary, true);
 assert.deepEqual(detective.snapshot(), stateBefore);
-route.dispatch({ type: "standByCase" });
+assert.equal(route.dispatch({ type: "standByCase" }), false);
+assert.equal(
+  route.snapshot().instruction,
+  "Lift your gaze to the standing pull",
+);
+standAtOfferedPull();
+originalViewer = structuredClone(viewer);
 assert.equal(applied.kind, "room");
 assert.equal(applied.placement.scale, 1);
 assert.equal(secondary, false);
@@ -116,7 +142,7 @@ route.dispatch({ type: "backToTable" });
 assert.equal(applied.kind, "table");
 assert.deepEqual(detective.snapshot(), stateBefore);
 route.dispatch({ type: "setReducedMotion", enabled: true });
-route.dispatch({ type: "standByCase" });
+standAtOfferedPull();
 assert.equal(applied.placement.scale, 1);
 route.update(0.1);
 assert.equal(covered, false);
@@ -135,7 +161,7 @@ const hypothesisBefore = detective.snapshot();
 route.sync();
 route.dispatch({ type: "viewFromHere" });
 assert.equal(applied.comparison, true);
-route.dispatch({ type: "standByCase" });
+standAtOfferedPull();
 route.dispatch({ type: "backToTable" });
 assert.deepEqual(
   detective.snapshot(),
@@ -146,7 +172,7 @@ const packing = seal(D.createPackingCase({ rearCamera: true }));
 board = packing.board;
 detective = new DetectiveSession(packing, { render() {}, clear() {} });
 route.sync();
-route.dispatch({ type: "standByCase" });
+standAtOfferedPull();
 const previousPlacement = structuredClone(applied.placement);
 detective.dispatch({ type: "source", source: "passage" });
 const changedSource = detective.snapshot();

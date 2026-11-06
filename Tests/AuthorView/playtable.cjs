@@ -304,6 +304,8 @@ new Function("require", "module", "exports", js)(
         toggleRecordingDetail: () => {},
         recordingDetailEnabled: () => false,
       };
+    if (id.endsWith("/Spatial/RoomPresentation"))
+      return require("./build/Spatial/RoomPresentation");
     if (id.includes("CaseViewRouting")) return { caseViewControls: () => [] };
     if (id.endsWith("/CaseViewHandles"))
       return { caseViewHandleSlots: () => [] };

@@ -33,6 +33,7 @@ export interface ComparisonCaseView {
   kind: "table" | "room";
   /** Story board minimum-floor origin, world centimetres. */
   placement: Placement;
+  roomSource?: Placement;
 }
 export interface ComparisonHallOptions {
   finishTimeDrag?(): void;
@@ -677,6 +678,9 @@ export class ComparisonHall {
     this.folio!.root.enabled = !this.roomMode;
     this.options.setBenchCaseParked?.(!this.roomMode);
     this.sourceRig?.setDeployed(!this.roomMode);
+    if (this.roomMode && this.presentation?.roomSource) {
+      this.sourceRig?.presentRoom(this.presentation.roomSource);
+    }
     if (this.roomMode) {
       const p = presented ?? placement;
       wing.root.getTransform().setWorldPosition(new vec3(...p.originCm));

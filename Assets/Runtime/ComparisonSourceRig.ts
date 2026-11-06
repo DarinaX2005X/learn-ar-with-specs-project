@@ -1,3 +1,4 @@
+import { Placement } from "../Spatial/SpatialStage";
 interface SavedNode {
   node: SceneObject;
   parent: SceneObject;
@@ -12,6 +13,7 @@ export class ComparisonSourceRig {
   private saved: SavedNode[] = [];
   private root?: SceneObject;
   private deployed = false;
+  private roomPose = "";
   private originalLocal?: vec3;
   private targetLocal?: vec3;
   private rotationLocal?: quat;
@@ -20,6 +22,7 @@ export class ComparisonSourceRig {
     private buildingRotation: quat,
     private originalCentre: vec3,
     private targetCentre: vec3,
+    private name = "ComparisonOriginalRecordingRig",
   ) {}
 
   mount(nodes: readonly SceneObject[]): boolean {
@@ -34,7 +37,7 @@ export class ComparisonSourceRig {
       return true;
     });
     if (roots.some(node => !node.getParent())) return false;
-    this.root = global.scene.createSceneObject("ComparisonOriginalRecordingRig");
+    this.root = global.scene.createSceneObject(this.name);
     this.root.setParent(this.parent);
     const rootTransform = this.root.getTransform();
     rootTransform.setWorldPosition(this.originalCentre);
@@ -70,13 +73,26 @@ export class ComparisonSourceRig {
     }
   }
   setDeployed(deployed: boolean): void {
-    if (!this.root) return;
+    if (!this.root || this.deployed === deployed) return;
+    this.roomPose = "";
     this.deployed = deployed;
     const transform = this.root.getTransform();
     transform.setLocalPosition(deployed ? this.targetLocal! : this.originalLocal!);
     transform.setLocalRotation(deployed
       ? this.rotationLocal!.multiply(quat.fromEulerAngles(-65 * Math.PI / 180, 0, 0))
       : this.rotationLocal!);
+  }
+  /** Move this one owned original pane and its registered targets together. */
+  presentRoom(placement: Placement, tilt = -65 * Math.PI / 180): void {
+    if (!this.root) return;
+    const key = JSON.stringify([placement.originCm, placement.yawRad, tilt]);
+    if (key === this.roomPose) return;
+    this.roomPose = key;
+    const transform = this.root.getTransform();
+    transform.setWorldPosition(new vec3(...placement.originCm));
+    transform.setWorldRotation(quat.fromEulerAngles(0, placement.yawRad, 0)
+      .multiply(quat.fromEulerAngles(tilt, 0, 0)));
+    transform.setWorldScale(new vec3(1, 1, 1));
   }
   read() { return { mounted: !!this.root, deployed: this.deployed, movedNodes: this.saved.length }; }
   restore(): void {
@@ -94,5 +110,6 @@ export class ComparisonSourceRig {
     if (this.root && !isNull(this.root)) this.root.destroy();
     this.root = undefined;
     this.deployed = false;
+    this.roomPose = "";
   }
 }

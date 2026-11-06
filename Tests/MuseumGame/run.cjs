@@ -90,6 +90,7 @@ const renderHistory = load(
 const poseSamples = [];
 let viewPresentation;
 let closed = false;
+const viewer = { eyeCm: [350, 165, -340], forward: [0, 0, 1] };
 const game = new MuseumGame(node(), {
   presentPose: (tick) => {
     poseSamples.push(tick);
@@ -101,7 +102,7 @@ const game = new MuseumGame(node(), {
       );
   },
   caseView: {
-    readViewer: () => ({ eyeCm: [350, 165, -340], forward: [0, 0, 1] }),
+    readViewer: () => viewer,
     finishTimeDrag() {},
     setPresentation: (presentation) => {
       viewPresentation = presentation;
@@ -186,7 +187,22 @@ assert.equal(game.snapshot().detective.verdict.status, "proved");
 const proofIds = game.snapshot().detective.glass.map((glass) => glass.id);
 const proofVerdict = JSON.stringify(game.snapshot().detective.verdict);
 assert(game.dispatch("view", { type: "chooseView" }));
+assert.equal(game.dispatch("view", { type: "standByCase" }), false);
+assert.equal(
+  game.snapshot().view.instruction,
+  "Lift your gaze to the standing pull",
+);
+const entryEye = [...viewer.eyeCm];
+const standingPull = game.snapshot().view.choicePlacement.originCm;
+const pullDirection = standingPull.map(
+  (value, index) => value - viewer.eyeCm[index],
+);
+const pullDistance = Math.hypot(...pullDirection);
+viewer.forward = pullDirection.map((value) => value / pullDistance);
+const entryViewer = structuredClone(viewer);
 assert(game.dispatch("view", { type: "standByCase" }));
+assert.deepEqual(viewer.eyeCm, entryEye);
+assert.deepEqual(viewer, entryViewer);
 assert.equal(game.snapshot().view.mode, "room");
 assert.equal(viewPresentation.kind, "room");
 assert(game.dispatch("view", { type: "backToTable" }));

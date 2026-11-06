@@ -43,9 +43,26 @@ assert.ok(Math.abs(slots[1].placement.originCm[2] + 19) < 1e-9);
 assert.equal(slots[2].placement.originCm[1], 101);
 assert.ok(slots.every((s) => s.placement.scale === 1));
 view.mode = "room";
+view.presentation.kind = "room";
+view.presentation.placement.scale = 1;
 assert.deepEqual(
   caseViewHandleSlots(view, bench).map((s) => s.id),
   ["CaseViewBack", "CaseViewClose"],
 );
+slots = caseViewHandleSlots(view, bench);
+assert.deepEqual(
+  slots.map((slot) => slot.placement.originCm),
+  [
+    [20, 127, -5],
+    [20, 103, -5],
+  ],
+);
+view.presentation.comparison = true;
+slots = caseViewHandleSlots(view, bench);
+assert.deepEqual(
+  slots.map((slot) => slot.id),
+  ["CaseViewBack", "CaseViewVersion", "CaseViewClose"],
+);
+assert.deepEqual(slots[1].placement, base);
 assert.deepEqual(caseViewHandleSlots(undefined, bench), []);
 console.log("Case view native grip slots match rotated physical input targets");

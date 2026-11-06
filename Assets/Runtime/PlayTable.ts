@@ -1,3 +1,4 @@
+import { roomActionAllowed } from "../Spatial/RoomPresentation";
 import { sampleTrackMotion } from "../Domain/TrackMotion";
 import { EvidenceLift } from "./EvidenceLift";
 import { rimFinding } from "./RimEvidence";
@@ -574,6 +575,7 @@ export class PlayTable {
       (ownerEpoch === undefined || ownerEpoch === this.epoch) &&
       (ownerMode === undefined || ownerMode === this.state.flow.mode) &&
       isPublicContext() &&
+      (this.state.view?.mode !== "room" || roomActionAllowed(id)) &&
       active();
     const object = this.object("Use_" + id, position);
     const collider = object.createComponent("Physics.ColliderComponent");
@@ -1998,14 +2000,14 @@ export class PlayTable {
       action.inscription
         .getTransform()
         .setLocalRotation(
-          slot.kind === "tab"
+          slot.kind === "tab" && !(this.state.view?.mode === "room" && slot.id === "CaseViewVersion")
             ? quat.fromEulerAngles(-Math.PI / 2, 0, 0)
             : quat.fromEulerAngles(0, Math.PI, 0),
         );
       action.inscription
         .getTransform()
         .setLocalPosition(
-          slot.kind === "tab"
+          slot.kind === "tab" && !(this.state.view?.mode === "room" && slot.id === "CaseViewVersion")
             ? new vec3(0, size[1] / 2 + 0.15, 0)
             : new vec3(0, 0, -size[2] / 2 - 0.15),
         );

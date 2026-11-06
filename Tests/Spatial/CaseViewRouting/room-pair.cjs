@@ -51,8 +51,28 @@ const route = new CaseViewRouting({
   setSecondaryLabelsVisible() {},
   stopSound() {},
 });
-route.dispatch({ type: "chooseView" });
-route.dispatch({ type: "standByCase" });
+function standAtOfferedPull() {
+  assert.equal(route.dispatch({ type: "chooseView" }), true);
+  const eyeBefore = [...viewer.eyeCm];
+  const target = route.snapshot().choicePlacement.originCm;
+  const direction = target.map((value, index) => value - viewer.eyeCm[index]);
+  const length = Math.hypot(...direction);
+  viewer.forward = direction.map((value) => value / length);
+  Object.assign(camera, structuredClone(viewer));
+  const entryViewer = structuredClone(viewer);
+  assert.equal(route.dispatch({ type: "standByCase" }), true);
+  assert.deepEqual(
+    viewer,
+    entryViewer,
+    "Entry never changes the tracked camera",
+  );
+  assert.deepEqual(
+    viewer.eyeCm,
+    eyeBefore,
+    "Entry never moves the tracked eye",
+  );
+}
+standAtOfferedPull();
 const before = session.snapshot(),
   placement = structuredClone(presentation),
   finishes = finish;
@@ -128,26 +148,23 @@ const slots = caseViewHandleSlots(route.snapshot(), {
   }),
   tab = slots.find((x) => x.id === "CaseViewVersion");
 assert(tab);
-assert.equal(
-  Math.hypot(
-    ...tab.placement.originCm.map(
-      (v, i) => v - presentation.handlePlacement.originCm[i],
-    ),
-  ),
-  14,
-);
-for (const other of slots.filter((x) => x.id !== "CaseViewVersion"))
-  assert(
-    Math.hypot(
-      ...other.placement.originCm.map((v, i) => v - tab.placement.originCm[i]),
-    ) > 19,
-  );
+assert.deepEqual(tab.placement, presentation.handlePlacement);
+for (const other of slots.filter((slot) => slot.id !== "CaseViewVersion")) {
+  const expectedOffset = other.id === "CaseViewBack" ? 12 : -12;
+  assert.deepEqual(other.placement.originCm, [
+    tab.placement.originCm[0],
+    tab.placement.originCm[1] + expectedOffset,
+    tab.placement.originCm[2],
+  ]);
+  // Actual PlayTable collider heights: room pulls 10 cm, version tab 8 cm.
+  assert.equal(Math.abs(expectedOffset) - (10 + 8) / 2, 3);
+}
 action = command().action;
 route.dispatch({ type: "backToTable" });
 assert.equal(route.dispatch(action), false);
 assert(!command());
 assert.equal(presentation.comparison, true);
-route.dispatch({ type: "standByCase" });
+standAtOfferedPull();
 assert.equal(presentation.versionIndex, 1);
 assert.equal(route.dispatch(action), false);
 route.dispatch(command().action);
@@ -207,7 +224,14 @@ const r2 = new CaseViewRouting({
   setSecondaryLabelsVisible() {},
   stopSound() {},
 });
-r2.dispatch({ type: "standByCase" });
+assert(r2.dispatch({ type: "chooseView" }));
+const selectedTarget = r2.snapshot().choicePlacement.originCm;
+const selectedDirection = selectedTarget.map(
+  (value, index) => value - viewer.eyeCm[index],
+);
+const selectedLength = Math.hypot(...selectedDirection);
+viewer.forward = selectedDirection.map((value) => value / selectedLength);
+assert(r2.dispatch({ type: "standByCase" }));
 r2.dispatch(
   caseViewControls(r2.snapshot()).find((x) => x.id === "CaseViewVersion")
     .action,

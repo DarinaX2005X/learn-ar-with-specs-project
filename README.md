@@ -34,7 +34,7 @@ To stage a theft from scratch, choose **Start an empty room** at the workbench. 
 
 The author places actors on tracks. For each half-second of a case, the TypeScript model tests a fixed camera's view against the room. A reflection must reach the open, front-facing part of the mirror and both legs of its sight line must clear the obstacles. Walking closer helps a player inspect the glass. It never grants the fixed camera a different angle on the crime.
 
-The detective receives a sealed recording. When they check an accusation, the game enumerates legal histories under the same movement and handling rules, then compares the observations they pinned. If two histories still fit, tabletop reconstructions at the evidence bench let you compare the two people reaching for the ruby at the same instant. A box inspection establishes where the ruby ended up. Its contents alone cannot tell you when someone put it there.
+The detective receives a sealed recording. When they check an accusation, the game enumerates legal histories under the same movement and handling rules, then compares the observations they pinned. If two histories still fit, compare them on the evidence bench. For a life-size view, choose **Stand by the case**, then look up and select the raised handle. Use **Show version 2** on the stand beside the display to see the other person reaching for the ruby at the same instant. **Back to table** returns you to the model. A box inspection establishes where the ruby ended up. Its contents alone cannot tell you when someone put it there.
 
 | In the source | What to look for |
 | --- | --- |

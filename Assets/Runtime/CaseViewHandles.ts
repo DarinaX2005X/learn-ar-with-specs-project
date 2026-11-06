@@ -19,6 +19,9 @@ function offset(base: Placement, x: number, y: number, z: number): Placement {
     yawRad: base.yawRad,
   };
 }
+export function entryStandSegment(choice: Placement, bench: Placement, foot?: Placement): readonly [readonly number[], readonly number[]] {
+  return [(foot ?? offset(bench, 0, 7, -29)).originCm, offset(choice, 0, -6.7, 0).originCm];
+}
 /** Shared physical slots. The stationary origin is the actual conservation bench.
  * Dynamic origins are already world-anchored by the explicit view action. */
 export function caseViewHandleSlots(
@@ -34,7 +37,30 @@ export function caseViewHandleSlots(
         kind: "frame",
       },
     ];
-  if (view.mode === "choice")
+  if (view.mode === "choice") {
+    const choice = view.choicePlacement;
+    if (choice)
+      return [
+        {
+          id: "CaseViewSeated",
+          placement: view.choiceBasePlacement
+            ? offset(view.choiceBasePlacement, -13, 0, 0)
+            : offset(bench, -13, 7, -15),
+          kind: "tab",
+        },
+        {
+          id: "CaseViewStanding",
+          placement: offset(choice, 13, 0, 0),
+          kind: "pull",
+        },
+        {
+          id: "CaseViewClose",
+          placement: view.choiceBasePlacement
+            ? offset(view.choiceBasePlacement, 13, 0, 0)
+            : offset(bench, 0, 7, 3),
+          kind: "latch",
+        },
+      ];
     return [
       {
         id: "CaseViewSeated",
@@ -48,8 +74,21 @@ export function caseViewHandleSlots(
       },
       { id: "CaseViewClose", placement: offset(bench, 0, 7, 3), kind: "latch" },
     ];
+  }
   const base = view.presentation?.handlePlacement;
   if (!base) return [];
+  if (view.mode === "room")
+    return [
+      { id: "CaseViewBack", placement: offset(base, 0, 12, 0), kind: "pull" },
+      ...(view.presentation?.comparison
+        ? [{ id: "CaseViewVersion", placement: base, kind: "tab" as const }]
+        : []),
+      {
+        id: "CaseViewClose",
+        placement: offset(base, 0, -12, 0),
+        kind: "latch",
+      },
+    ];
   const result: CaseViewHandleSlot[] = [
     { id: "CaseViewBack", placement: offset(base, -14, 0, 0), kind: "pull" },
     { id: "CaseViewClose", placement: offset(base, 14, 0, 0), kind: "latch" },
@@ -60,8 +99,7 @@ export function caseViewHandleSlots(
       placement: offset(base, 0, -14, 0),
       kind: "pull",
     });
-  if(view.mode==="room"&&view.presentation?.comparison)
-    result.push({id:"CaseViewVersion",placement:offset(base,0,-14,0),kind:"tab"});
+
   return result;
 }
 /** A sighting frame and its attached brass pulls, not an invisible hit-box panel.
@@ -78,6 +116,7 @@ export class CaseViewHandles {
   private disposed = false;
   private qualification: SceneObject | undefined;
   private qualificationInk: Text | undefined;
+  private entryInstruction: string | undefined;
   constructor(parent: SceneObject, material: Material, private fonts: MuseumFonts = {}) {
     this.root = global.scene.createSceneObject("CaseViewSightFrame");
     this.root.setParent(parent);
@@ -114,16 +153,68 @@ export class CaseViewHandles {
     this.root.enabled = !!view?.available;
     for (const piece of this.pieces.values()) piece.enabled = false;
     if (!view?.available) return;
-    const dynamic = view.mode === "table" || view.mode === "room";
+    const dynamic =
+      view.mode === "table" || view.mode === "room" || !!view.choicePlacement;
+    const room = view.mode === "room";
+    this.entryInstruction =
+      view.mode === "choice" ? view.instruction : undefined;
+    if (this.entryInstruction) this.setQualification(this.entryInstruction);
     const framePlacement =
-      dynamic && view.presentation
+      view.choicePlacement ??
+      (dynamic && view.presentation
         ? offset(view.presentation.handlePlacement, 0, 7, 0)
-        : offset(bench, 0, 7, -29);
+        : offset(bench, 0, 7, -29));
+    this.frame.enabled = !room;
     this.place(this.frame, framePlacement);
-    this.bridge.enabled = dynamic;
+    this.bridge.enabled = dynamic && !room;
     if (dynamic) this.place(this.bridge, framePlacement);
-    this.lowerStem.enabled = view.mode === "table" || (view.mode === "room" && !!view.presentation?.comparison);
-    if (this.lowerStem.enabled) this.place(this.lowerStem, framePlacement);
+    this.lowerStem.enabled =
+      view.mode === "table";
+    if (this.lowerStem.enabled) {
+      this.place(
+        this.lowerStem,
+        room ? view.presentation!.handlePlacement : framePlacement,
+      );
+      const stem = this.lowerStem.getChild(0).getTransform();
+      stem.setLocalPosition(new vec3(0, room ? 0 : -14, 0));
+      stem.setLocalScale(new vec3(1, room ? 2 : 1, 1));
+    }
+    if (view.mode === "choice" && view.choicePlacement) {
+      // The original lower end stays at the grasped bench frame. A single real
+      // brass stand connects it to the raised pull, even outside a narrow FOV.
+      const [lower, upper] = entryStandSegment(
+        view.choicePlacement,
+        bench,
+        view.choiceBasePlacement,
+      );
+      const start = new vec3(lower[0], lower[1], lower[2]);
+      const finish = new vec3(upper[0], upper[1], upper[2]);
+      const direction = finish.sub(start);
+      const length = direction.length;
+      this.lowerStem.enabled = length > 0.1;
+      const transform = this.lowerStem.getTransform();
+      transform.setWorldPosition(start.add(finish).uniformScale(0.5));
+      transform.setWorldRotation(
+        quat.rotationFromTo(
+          new vec3(0, 1, 0),
+          direction.uniformScale(1 / Math.max(0.1, length)),
+        ),
+      );
+      transform.setWorldScale(new vec3(1, length / 17, 1));
+      const stem = this.lowerStem.getChild(0).getTransform();
+      stem.setLocalPosition(new vec3(0, 0, 0));
+      stem.setLocalScale(new vec3(1, 1, 1));
+      if (this.qualification) {
+        const foot = view.choiceBasePlacement ?? offset(bench, 0, 7, -29);
+        this.place(this.qualification, offset(foot, 0, 8.4, 0));
+      }
+    } else if (this.qualification) {
+      const transform = this.qualification.getTransform();
+      transform.setLocalPosition(new vec3(0, 0, 0));
+      transform.setLocalRotation(quat.fromEulerAngles(0, 0, 0));
+    }
+    if (this.qualificationInk)
+      this.qualificationInk.size = view.mode === "choice" ? 48 : 24;
     for (const slot of caseViewHandleSlots(view, bench)) {
       if (slot.kind === "frame") continue;
       let piece = this.pieces.get(slot.id);
@@ -133,13 +224,28 @@ export class CaseViewHandles {
       }
       this.place(piece, slot.placement);
       piece.enabled = true;
+      if (slot.id === "CaseViewVersion") {
+        const engraving = piece
+          .getChild(piece.getChildrenCount() - 1)
+          .getComponent("Component.Text") as Text;
+        engraving.text =
+          "Possible " +
+          ((view.presentation?.versionIndex ?? 0) + 1) +
+          (view.presentation?.comparisonScope === "all"
+            ? "\nFull recording"
+            : "\nSelected clues");
+      }
       const support = this.supports.get(slot.id);
-      if (support) support.enabled = !dynamic;
+      if (support)
+        support.enabled =
+          !dynamic ||
+          (view.mode === "choice" && slot.id !== "CaseViewStanding");
     }
   }
   /** Qualification is engraved on an attached extension of the existing lower grip. */
   setQualification(value: string | undefined): void {
     if (this.disposed) return;
+    value = this.entryInstruction ?? value;
     if (!value) {
       if (this.qualification) this.qualification.enabled = false;
       return;
@@ -193,14 +299,29 @@ export class CaseViewHandles {
     }
     if (kind === "tab") {
       this.box(node, "Foot", [0, -4, 0], [8, 7, 1.2], this.brass);
-      this.box(node, "SeatedTab", [0, 0, 0], [12, 1.6, 5], this.wood);
-      if(id==="CaseViewVersion") {
-        const ink=global.scene.createSceneObject("VersionTabEngraving");
-        ink.setParent(node);ink.getTransform().setLocalPosition(new vec3(0,.83,0));
-        ink.getTransform().setLocalRotation(quat.fromEulerAngles(-Math.PI/2,0,0));
-        const text=ink.createComponent("Component.Text");applyMuseumFont(text,this.fonts,"bold");text.text="Version";text.size=18;text.depthTest=true;
-        text.horizontalAlignment=HorizontalAlignment.Center;text.verticalAlignment=VerticalAlignment.Center;
-        text.layoutRect=Rect.create(-5.5,5.5,-2,2);
+      this.box(
+        node,
+        "SeatedTab",
+        [0, 0, 0],
+        id === "CaseViewVersion" ? [16, 7, 2] : [12, 1.6, 5],
+        this.wood,
+      );
+      if (id === "CaseViewVersion") {
+        const ink = global.scene.createSceneObject("VersionTabEngraving");
+        ink.setParent(node);
+        ink.getTransform().setLocalPosition(new vec3(0, 0, -1.1));
+        ink
+          .getTransform()
+          .setLocalRotation(quat.fromEulerAngles(0, Math.PI, 0));
+        const text = ink.createComponent("Component.Text");
+        applyMuseumFont(text, this.fonts, "bold");
+        text.text = "Version";
+        text.size = 72;
+        text.depthTest = true;
+        text.verticalOverflow = VerticalOverflow.Shrink;
+        text.horizontalAlignment = HorizontalAlignment.Center;
+        text.verticalAlignment = VerticalAlignment.Center;
+        text.layoutRect = Rect.create(-7.5, 7.5, -3, 3);
       }
     } else if (kind === "pull") {
       for (const x of [-5, 5])

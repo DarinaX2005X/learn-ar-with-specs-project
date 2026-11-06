@@ -1,3 +1,7 @@
+import { clear } from "../Domain/geometry";
+import { earnedEventVisibility } from "./EarnedEventVisibility";
+import { entryPitch, raisedChoice, roomTools } from "./RoomPresentation";
+import {earnedRoomAnchor} from "./EarnedRoomFocus";
 import { Board } from "../Domain/types";
 import { DetectiveState } from "../Detective/DetectiveSession";
 import { Placement } from "./SpatialStage";
@@ -21,6 +25,8 @@ export interface CaseViewPresentation {
   source: string;
   tick: number;
   comparison: boolean;
+  roomSource?: Placement;
+  roomClock?: Placement;
   versionIndex?: 0 | 1;
   comparisonScope?: "all" | "selected";
 }
@@ -33,11 +39,16 @@ export interface CaseViewSnapshot {
   rev?: number;
   instruction?: string;
   presentation?: CaseViewPresentation;
+  choicePlacement?: Placement;
+  choiceBasePlacement?: Placement;
 }
 export interface CaseViewViewer {
   eyeCm: readonly [number, number, number];
   /** Actual tracked viewing direction. This API never has a camera setter. */
   forward: readonly [number, number, number];
+  floorYcm?: number;
+  horizontalFovRad?: number;
+  verticalFovRad?: number;
 }
 export interface CaseViewPorts {
   readSession(): { board: Board; detective: DetectiveState } | undefined;
@@ -119,6 +130,10 @@ export class CaseViewRouting {
       if(this.state.presentation)this.state.presentation.versionIndex=0;
     }
     this.state.available = true;
+    if (!comparison && this.state.mode === "room" && this.state.presentation?.comparison) {
+      this.present("table", false);
+      return;
+    }
     if (this.state.presentation) {
       if (this.state.presentation.source !== session.detective.source)
         this.present(this.state.presentation.kind, false);
@@ -159,14 +174,80 @@ export class CaseViewRouting {
     if (action.type === "chooseView") {
       this.ports.finishTimeDrag();
       this.state.generation=(this.state.generation??0)+1;
-      this.state.mode = "choice";
-      this.state.instruction = "Keep space around the case clear";
+      let viewer: CaseViewViewer;
+      try { viewer = this.ports.readViewer(); }
+      catch { this.state.instruction = "Look toward the case"; return false; }
+      if (!validViewer(viewer)) return false;
+      this.state.choicePlacement = undefined;
+      this.offerChoice(viewer, "Lift your gaze to the standing pull");
       return true;
     }
     if (action.type === "viewFromHere") return this.present("table", true);
     if (action.type === "standByCase") return this.present("room", true);
     if (action.type === "backToTable") return this.present("table", false);
     return false;
+  }
+  private choiceFor(viewer: CaseViewViewer): Placement {
+    let pitch = (-13 * Math.PI) / 180;
+    const session = this.ports.readSession();
+    const witness = session?.board.witnesses.find(
+      (candidate) => candidate.id === session.detective.source,
+    );
+    // A narrow display first frames the authorized hands, then a small natural
+    // head movement reveals the face. This guides the existing pull, not camera.
+    if (
+      session?.detective.comparison &&
+      witness &&
+      matchingSession(session) &&
+      viewer.verticalFovRad !== undefined &&
+      viewer.verticalFovRad < (35 * Math.PI) / 180
+    ) {
+      const comparison = session.detective.comparison;
+      const height =
+        viewer.floorYcm === undefined
+          ? 1.6
+          : (viewer.eyeCm[1] - viewer.floorYcm) / 100;
+      const anchor = earnedRoomAnchor(
+        session.board,
+        comparison.pair,
+        comparison.field,
+        session.detective.tick,
+        witness.yaw,
+        height,
+        viewer.horizontalFovRad,
+      );
+      if (anchor) {
+        const angles = comparison.pair.flatMap((history) =>
+          earnedEventVisibility(
+            session.board,
+            history,
+            comparison.field,
+            session.detective.tick,
+          ).targets.map((target) =>
+            Math.atan2(
+              target.y - anchor.eye.y,
+              Math.hypot(target.x - anchor.eye.x, target.z - anchor.eye.z),
+            ),
+          ),
+        );
+        pitch = (Math.min(...angles) + Math.max(...angles)) / 2;
+      }
+    }
+    return raisedChoice(viewer, pitch);
+  }
+  private offerChoice(viewer: CaseViewViewer, instruction: string): void {
+    this.state.mode = "choice";
+    this.state.choicePlacement ??= this.choiceFor(viewer);
+    if (this.state.presentation?.kind === "table") {
+      const base = clone(this.state.presentation.handlePlacement);
+      base.originCm = [
+        base.originCm[0],
+        base.originCm[1] - 14,
+        base.originCm[2],
+      ];
+      this.state.choiceBasePlacement ??= base;
+    }
+    this.state.instruction = instruction;
   }
   private present(kind: CaseViewKind, readViewer: boolean): boolean {
     if (this.transitioning) return false;
@@ -199,11 +280,63 @@ export class CaseViewRouting {
       this.state.instruction = "Look toward the case";
       return false;
     }
+    if (kind === "room") {
+      let reason: string | undefined;
+      if (session.board.room.width > 7 || session.board.room.depth > 5) {
+        reason = "Use View from here for this room";
+      } else {
+        const raised = this.state.choicePlacement ?? this.choiceFor(viewer);
+        const target = raised.originCm;
+        const pullPitch = Math.atan2(target[1] - viewer.eyeCm[1],
+          Math.hypot(target[0] - viewer.eyeCm[0], target[2] - viewer.eyeCm[2]));
+        if (Math.abs(entryPitch(viewer) - pullPitch) > 8 * Math.PI / 180) {
+          reason = "Lift your gaze to the standing pull";
+        }
+      }
+      if (reason) {
+        this.offerChoice(viewer, reason);
+        return false;
+      }
+    }
     this.anchorViewer = clone(viewer);
     const horizontal = Math.hypot(viewer.forward[0], viewer.forward[2]);
     const fx = viewer.forward[0] / horizontal,
       fz = viewer.forward[2] / horizontal;
-    const yaw = Math.atan2(fx, fz) - witness.yaw;
+    let earned: ReturnType<typeof earnedRoomAnchor>;
+    const comparison = session.detective.comparison;
+    if (kind === "room" && comparison) {
+      earned = earnedRoomAnchor(
+        session.board,
+        comparison.pair,
+        comparison.field,
+        session.detective.tick,
+        witness.yaw,
+        viewer.floorYcm === undefined ? 1.6 : (viewer.eyeCm[1] - viewer.floorYcm) / 100,
+        viewer.horizontalFovRad,
+      );
+      // If no common body-clear view exists, enter at the physically valid
+      // witness XZ/yaw with a local Back handle. FOV alone never disables 1:1.
+    }
+    const measuredHeight = viewer.floorYcm === undefined ? undefined :
+      (viewer.eyeCm[1] - viewer.floorYcm) / 100;
+    const storyEye = earned?.eye ?? { ...witness.position,
+      // Keep the ordinary witness XZ/yaw and fixed recording optics, while the
+      // full-size shell floor stays at its original physical-world height.
+      y: kind === "room" && measuredHeight !== undefined ? measuredHeight : witness.position.y,
+    };
+    if (kind === "room") {
+      const onFloor = storyEye.x >= .25 && storyEye.z >= .25 &&
+        storyEye.x <= session.board.room.width - .25 && storyEye.z <= session.board.room.depth - .25;
+      const inPublicWall = [.5, 1, storyEye.y].some(height => {
+        const point = { x: storyEye.x, y: height, z: storyEye.z };
+        return !clear(point, point, session.board.room.walls);
+      });
+      if (!onFloor || inPublicWall) {
+        this.offerChoice(viewer, "Use View from here for this room");
+        return false;
+      }
+    }
+    const yaw = Math.atan2(fx, fz) - (earned?.yaw ?? witness.yaw);
     const c = Math.cos(yaw),
       s = Math.sin(yaw);
     const rotate = (x: number, z: number): [number, number] => [
@@ -217,7 +350,7 @@ export class CaseViewRouting {
             session.board.room.width * 50 * scale,
             session.board.room.depth * 50 * scale,
           )
-        : rotate(witness.position.x * 100, witness.position.z * 100);
+        : rotate(storyEye.x * 100, storyEye.z * 100);
     const originCm: [number, number, number] =
       kind === "table"
         ? [
@@ -227,17 +360,22 @@ export class CaseViewRouting {
           ]
         : [
             viewer.eyeCm[0] - anchor[0],
-            viewer.eyeCm[1] - witness.position.y * 100,
+            viewer.eyeCm[1] - storyEye.y * 100,
             viewer.eyeCm[2] - anchor[1],
           ];
+    const tools = kind === "room" ? roomTools(viewer, session.board, { originCm, scale, yawRad: yaw }) : undefined;
+    const handleForwardCm = kind === "room" && !tools ? 35 : earned ? 65 : 55;
+    const handleRightCm = kind === "room" && !tools ? 0 : earned ? 32 : 0;
     const presentation: CaseViewPresentation = {
       kind,
       placement: { originCm, scale, yawRad: yaw },
-      handlePlacement: {
+      roomSource: tools?.source,
+      roomClock: tools?.clock,
+      handlePlacement: tools?.handles ?? {
         originCm: [
-          viewer.eyeCm[0] + fx * 55,
+          viewer.eyeCm[0] + fx * handleForwardCm + fz * handleRightCm,
           viewer.eyeCm[1] - 25,
-          viewer.eyeCm[2] + fz * 55,
+          viewer.eyeCm[2] + fz * handleForwardCm - fx * handleRightCm,
         ],
         scale: 1,
         yawRad: Math.atan2(fx, fz),
@@ -251,14 +389,20 @@ export class CaseViewRouting {
     // A brief physical frame cover hides instant relocation. No model sweeps
     // through the eyes, including reduced motion; there is no camera flight.
     this.ports.setFrameCovered(true);
+    const previousPresentation = this.state.presentation;
     try {
       this.ports.setPresentation(clone(presentation));
       this.ports.setSecondaryLabelsVisible(kind === "table");
       this.state.generation=(this.state.generation??0)+1;
       this.state.mode = kind;
       this.state.presentation = presentation;
-      this.state.instruction =
-        kind === "room" ? "Keep the space around you clear" : undefined;
+      this.state.choicePlacement = undefined;
+      this.state.choiceBasePlacement = undefined;
+      this.state.instruction = kind === "room" ? "Keep the space around you clear" : undefined;
+    } catch (error) {
+      this.ports.setPresentation(previousPresentation ? clone(previousPresentation) : undefined);
+      this.state.instruction = "View could not open; use View from here";
+      return false;
     } finally {
       this.coverSeconds = this.state.reducedMotion ? 0.08 : 0.12;
     }
@@ -277,6 +421,8 @@ export class CaseViewRouting {
       this.state.mode = "museum";
       this.state.presentation = undefined;
       this.state.instruction = undefined;
+      this.state.choicePlacement = undefined;
+      this.state.choiceBasePlacement = undefined;
     } finally {
       this.ports.setFrameCovered(false);
     }
