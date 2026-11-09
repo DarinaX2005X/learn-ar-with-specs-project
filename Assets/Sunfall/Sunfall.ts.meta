@@ -1,0 +1,97 @@
+- !<AssetImportMetadata/2e6e33ae-00cb-4f26-92aa-66cb6c5e4093>
+  ImportedAssetIds:
+    TypeScriptAsset: !<reference> a0884ead-504c-4419-8935-2ab1379b5ffe
+  ImporterName: TypeScriptAssetImporter
+  PrimaryAsset: !<reference> a0884ead-504c-4419-8935-2ab1379b5ffe
+  PackageType: NotAPackage
+  LegacyPackagePolicy: ~
+  ExtraData:
+    {}
+  AssetDataMap:
+    TypeScriptAsset: !<own> e496b605-f3dd-4b36-958f-728b9ca0cac0
+  DependentFiles:
+    []
+  ImporterSettings: !<AssetImporterSettings>
+    {}
+  CompressionSettings: !<own> 00000000-0000-0000-0000-000000000000
+- !<TypeScriptAssetData/e496b605-f3dd-4b36-958f-728b9ca0cac0>
+  SvgIcon: ""
+  SetupScript:
+    code: ""
+  Description: ""
+  VersionMajor: 0
+  VersionMinor: 0
+  VersionPatch: 0
+  VersionPrerelease: ""
+  UpdateOrder: 0
+  ComponentUid: 62224821-fec0-405a-a474-913b4bdb4556
+  ExportUid: 00000000-0000-0000-0000-000000000000
+  PackagePolicy: CanBeUnpacked
+  ScriptInputsHidden:
+    autoMarkAll: false
+    camera: false
+    demoScript: false
+    dockAtStart: false
+    font: false
+    matAdd: false
+    matAlpha: false
+    startDay: false
+    startMinutes: false
+    texDisc: false
+    texGlow: false
+    texRamp: false
+    texRing: false
+    texShaft: false
+    texSun: false
+    texWindow: false
+    timeScale: false
+    windowAzimuth: false
+  ScriptTypesHidden:
+    {}
+  ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
+  DeclarationFile: !<reference> 00000000-0000-0000-0000-000000000000
+  Tags:
+    []
+  Attachments:
+    []
+  DefaultScriptInputs:
+    - camera: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      matAdd: !<reference.Material> 00000000-0000-0000-0000-000000000000
+      matAlpha: !<reference.Material> 00000000-0000-0000-0000-000000000000
+      texWindow: !<reference.Texture> 00000000-0000-0000-0000-000000000000
+      texShaft: !<reference.Texture> 00000000-0000-0000-0000-000000000000
+      texGlow: !<reference.Texture> 00000000-0000-0000-0000-000000000000
+      texSun: !<reference.Texture> 00000000-0000-0000-0000-000000000000
+      texRamp: !<reference.Texture> 00000000-0000-0000-0000-000000000000
+      texDisc: !<reference.Texture> 00000000-0000-0000-0000-000000000000
+      texRing: !<reference.Texture> 00000000-0000-0000-0000-000000000000
+      font: !<reference.Font> 00000000-0000-0000-0000-000000000000
+      windowAzimuth: !<float> 200.000000
+      autoMarkAll: false
+      startDay: !<float> -1.000000
+      demoScript: ""
+      dockAtStart: false
+      timeScale: !<float> 1.000000
+      startMinutes: !<float> -1.000000
+  ScriptTypes:
+    -
+      {}
+  InputLines:
+    - // @input SceneObject camera
+    - // @input Asset.Material matAdd
+    - // @input Asset.Material matAlpha
+    - // @input Asset.Texture texWindow
+    - // @input Asset.Texture texShaft
+    - // @input Asset.Texture texGlow
+    - // @input Asset.Texture texSun
+    - // @input Asset.Texture texRamp
+    - // @input Asset.Texture texDisc
+    - // @input Asset.Texture texRing
+    - // @input Asset.Font font
+    - // @input float windowAzimuth = 200
+    - // @input bool autoMarkAll
+    - // @input float startDay = -1
+    - // @input string demoScript
+    - // @input bool dockAtStart
+    - // @input float timeScale = 1
+    - // @input float startMinutes = -1

@@ -1,0 +1,33 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Sunfall cover</title>
+<style>
+@font-face { font-family: "Bricolage"; src: url("../fonts/BricolageGrotesque.ttf"); font-weight: 200 800; font-stretch: 75% 100%; }
+html, body { margin: 0; }
+#c { position: relative; overflow: hidden; font-family: "Bricolage"; color: #2a211b;
+  background: radial-gradient(900px 700px at 78% 18%, rgba(255,190,110,.55), rgba(255,190,110,0) 70%), linear-gradient(180deg, #f2e9de, #e7d9c6); }
+.win { position: absolute; overflow: hidden; border-radius: 30px; box-shadow: 0 40px 90px rgba(40,25,10,.3), 0 8px 18px rgba(40,25,10,.18); }
+.win img { width: 100%; height: 100%; object-fit: cover; display: block; filter: brightness(1.12) contrast(1.08) saturate(1.12); }
+.word { position: absolute; font-weight: 800; letter-spacing: -0.03em; white-space: nowrap; }
+.line { position: absolute; font-weight: 650; white-space: nowrap; letter-spacing: -0.01em; }
+.plate { background: #f39431; color: #fbf2e4; border-radius: 14px; padding: 0 .18em; }
+.sun { position: absolute; border-radius: 50%; background: radial-gradient(circle at 40% 38%, #fff7e6 0%, #ffd88f 45%, #f6a43c 100%); box-shadow: 0 0 60px 20px rgba(255,180,80,.55); }
+svg { position: absolute; left: 0; top: 0; overflow: visible; }
+</style></head>
+<body>
+<div id="c"></div>
+<script>
+const P = new URLSearchParams(location.search);
+const W = +(P.get('w') || 1500), H = +(P.get('h') || 1000), IMG = P.get('img') || 'footage/finalB/00211.jpg';
+const c = document.getElementById('c'); c.style.width = W + 'px'; c.style.height = H + 'px';
+const s = H / 1000;
+const winW = 560 * s, winH = 760 * s, winX = W - winW - 110 * s, winY = (H - winH) / 2 + 30 * s;
+c.innerHTML = `
+<svg width="${W}" height="${H}"><path d="M ${winX - 260 * s} ${winY + 260 * s} Q ${winX + winW * 0.3} ${winY - 280 * s} ${winX + winW + 60 * s} ${winY + 40 * s}" fill="none" stroke="#f6b25e" stroke-width="${5 * s}" stroke-linecap="round"/></svg>
+<div class="win" style="left:${winX}px;top:${winY}px;width:${winW}px;height:${winH}px"><img src="${IMG}"></div>
+<div class="sun" style="left:${winX + winW * 0.72}px;top:${winY - 92 * s}px;width:${118 * s}px;height:${118 * s}px"></div>
+<div class="word" style="left:${90 * s}px;top:${250 * s}px;font-size:${210 * s}px">Sunfall</div>
+<div class="line" style="left:${98 * s}px;top:${540 * s}px;font-size:${64 * s}px">Where will the <span class="plate">sun</span></div>
+<div class="line" style="left:${98 * s}px;top:${626 * s}px;font-size:${64 * s}px">land in your room</div>
+<div class="line" style="left:${100 * s}px;top:${760 * s}px;font-size:${34 * s}px;color:#7a6c60;font-weight:600">A lens for Snap Specs</div>`;
+document.fonts.ready.then(() => { window.READY = true; });
+</script></body></html>

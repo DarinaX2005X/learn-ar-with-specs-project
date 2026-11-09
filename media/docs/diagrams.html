@@ -1,0 +1,215 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Sunfall diagrams</title>
+<style>
+@font-face { font-family: "Bricolage"; src: url("../fonts/BricolageGrotesque.ttf"); font-weight: 200 800; font-stretch: 75% 100%; }
+@font-face { font-family: "InterV"; src: url("../fonts/Inter.ttf"); font-weight: 100 900; }
+:root { --bg: #f2e9de; --bg2: #e9dccb; --ink: #2a211b; --mut: #7a6c60; --sun: #f39431; --warm: #ffc677; --dec: #6f80a6; --cream: #fbf2e4; }
+html, body { margin: 0; background: #ddd; }
+.fig { width: 1600px; position: relative; overflow: hidden; background: var(--bg); color: var(--ink); font-family: "InterV"; margin-bottom: 40px; }
+.fig svg { display: block; }
+.h { font-family: "Bricolage"; font-weight: 800; letter-spacing: -0.02em; }
+.plate { background: var(--sun); color: var(--cream); border-radius: 10px; padding: 0 .16em; }
+text { font-family: "InterV"; }
+.t-h { font-family: "Bricolage"; font-weight: 800; }
+</style></head>
+<body>
+
+<!-- 1. system map -->
+<div class="fig" id="map" style="height:860px"><svg id="mapS" width="1600" height="860"></svg></div>
+
+<!-- 2. dragging the sun -->
+<div class="fig" id="drag" style="height:960px"><svg id="dragS" width="1600" height="960"></svg></div>
+
+<!-- 3. sun hours plans -->
+<div class="fig" id="hours" style="height:800px"><svg id="hoursS" width="1600" height="800"></svg></div>
+
+<!-- 4. room model -->
+<div class="fig" id="room" style="height:1000px"><svg id="roomS" width="1600" height="1000"></svg></div>
+
+<script src="sundata.js"></script>
+<script>
+const NS = 'http://www.w3.org/2000/svg';
+function el(tag, parent, attrs = {}, text) { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (text !== undefined) e.textContent = text; parent.appendChild(e); return e; }
+function defs(svg) {
+  const d = el('defs', svg);
+  for (const [id, col] of [['ah', '#2a211b'], ['ahs', '#f39431'], ['ahd', '#6f80a6']]) {
+    const m = el('marker', d, { id, viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 9, markerHeight: 9, orient: 'auto-start-reverse' });
+    el('path', m, { d: 'M0,0 L10,5 L0,10 Z', fill: col });
+  }
+  const g = el('radialGradient', d, { id: 'sunG', cx: '40%', cy: '38%', r: '60%' });
+  el('stop', g, { offset: '0%', 'stop-color': '#fff7e6' }); el('stop', g, { offset: '45%', 'stop-color': '#ffd88f' }); el('stop', g, { offset: '100%', 'stop-color': '#f6a43c' });
+  const h = el('radialGradient', d, { id: 'halo' });
+  el('stop', h, { offset: '0%', 'stop-color': 'rgba(255,180,80,.55)' }); el('stop', h, { offset: '100%', 'stop-color': 'rgba(255,180,80,0)' });
+  return d;
+}
+function sunDot(svg, x, y, r) { el('circle', svg, { cx: x, cy: y, r: r * 2.4, fill: 'url(#halo)' }); el('circle', svg, { cx: x, cy: y, r, fill: 'url(#sunG)' }); }
+// multi-line text
+function txt(svg, x, y, lines, o = {}) {
+  const t = el('text', svg, { x, y, 'font-size': o.size || 22, fill: o.color || '#2a211b', 'font-weight': o.weight || 500, 'text-anchor': o.anchor || 'start', 'font-family': o.head ? 'Bricolage' : 'InterV' });
+  (Array.isArray(lines) ? lines : [lines]).forEach((ln, i) => el('tspan', t, { x, dy: i ? (o.lh || (o.size || 22) * 1.3) : 0 }, ln));
+  return t;
+}
+// a node: title (head) + body lines, with a fill
+function node(svg, x, y, w, h, title, body, o = {}) {
+  el('rect', svg, { x, y, width: w, height: h, rx: o.rx || 22, fill: o.fill || '#fbf5ec', stroke: o.stroke || 'none', 'stroke-width': 2 });
+  if (o.shadow !== false) svg.lastChild.setAttribute('filter', 'url(#sh)');
+  txt(svg, x + 26, y + 44, title, { size: o.ts || 27, weight: 800, head: true, color: o.tc || '#2a211b' });
+  if (body) txt(svg, x + 26, y + 44 + (o.ts || 27) * 1.25 + 4, body, { size: 20, color: o.bc || '#5b4f45', weight: 500 });
+}
+function arrow(svg, d, col = '#2a211b', dash) { return el('path', svg, { d, fill: 'none', stroke: col, 'stroke-width': 3, 'stroke-linecap': 'round', 'marker-end': `url(#${col === '#f39431' ? 'ahs' : col === '#6f80a6' ? 'ahd' : 'ah'})`, ...(dash ? { 'stroke-dasharray': dash } : {}) }); }
+function shadowDef(svg) { const f = el('filter', svg.querySelector('defs'), { id: 'sh', x: '-10%', y: '-10%', width: '130%', height: '140%' }); el('feDropShadow', f, { dx: 0, dy: 6, stdDeviation: 9, 'flood-color': '#5a3c1e', 'flood-opacity': .16 }); }
+
+// ================= 1. SYSTEM MAP =================
+(function () {
+  const s = document.getElementById('mapS'); defs(s); shadowDef(s);
+  txt(s, 64, 92, 'How a frame of Sunfall is made', { size: 52, head: true, weight: 800 });
+  // inputs
+  node(s, 64, 166, 330, 124, 'Date and time', ['set by your drag, the', 'Now button or Play the day']);
+  node(s, 64, 312, 330, 124, 'Where you are', ['New York, 40.7° N', 'window faces 200° (SSW)']);
+  // hub
+  node(s, 520, 230, 360, 150, 'Sun position', ['NOAA solar ephemeris', 'Solar.ts, about 0.1° accurate', 'June 21 noon: 72.7°'], { fill: '#ffe1b8' });
+  sunDot(s, 840, 262, 22);
+  // sun direction
+  node(s, 520, 470, 360, 126, 'Sun direction', ['a unit vector in room space:', 'x out of the window, y up']);
+  // room model
+  node(s, 520, 650, 360, 160, 'Room model', ['floor, 4 walls, sofa, table,', 'console, desk, 3 windows', 'Room.ts (world mesh on Specs)'], { fill: '#e9dccb' });
+  // drag loop
+  node(s, 64, 560, 330, 150, 'Pinch and drag', ['the hand ray picks the nearest', 'of 7,703 sun positions', 'between June 21 and Dec 21'], { fill: '#2a211b', tc: '#fbf2e4', bc: '#e8dccd' });
+  // outputs
+  const ox = 1010, ow = 530;
+  node(s, ox, 150, ow, 128, 'Light on the floor and furniture', ['each window is projected along the sun', 'onto 7 surfaces and clipped to each one'], { fill: '#ffd9a6' });
+  node(s, ox, 298, ow, 120, 'Shafts and dust', ['11 light sheets and 90 motes', 'from the window to the patch']);
+  node(s, ox, 430, ow, 128, 'Sun-hour map', ['8 cm floor cells checked every', '10 minutes from sunrise to sunset'], { fill: '#ffe9cc' });
+  node(s, ox, 580, ow, 128, 'Plant card', ['hours of sun on one spot today,', 'on December 21 and on June 21']);
+  // arrows
+  arrow(s, 'M394,226 C455,226 470,270 514,280');
+  arrow(s, 'M394,368 C455,368 470,330 514,330');
+  arrow(s, 'M700,380 L700,462');
+  arrow(s, 'M880,500 C945,500 940,214 1002,214');
+  arrow(s, 'M880,520 C950,520 950,354 1002,354');
+  arrow(s, 'M880,545 C950,545 950,494 1002,494');
+  arrow(s, 'M880,566 C950,566 950,644 1002,644');
+  arrow(s, 'M880,720 C980,720 960,250 1002,246', '#7a6c60', '6 8');
+  arrow(s, 'M880,745 C1000,745 975,520 1002,520', '#7a6c60', '6 8');
+  // drag loop: from sun direction back to the hand, and up to date/time
+  arrow(s, 'M514,560 C460,560 440,610 400,620', '#f39431');
+  arrow(s, 'M180,556 C180,500 170,470 170,442', '#f39431');
+  txt(s, 412, 640, ['compare'], { size: 18, color: '#b5651d', weight: 600 });
+  txt(s, 64, 760, ['The orange loop runs on every', 'frame of a drag. Dashed lines:', 'the room decides where light lands.'], { size: 19, color: '#5b4f45' });
+})();
+
+// ================= 2. DRAGGING THE SUN =================
+(function () {
+  const s = document.getElementById('dragS'); defs(s); shadowDef(s);
+  txt(s, 64, 92, 'Dragging the sun', { size: 52, head: true });
+  txt(s, 560, 82, ['The sky as seen through the window. Every dot is a sun position', 'the lens precomputes for every 3rd day between the solstices and', 'every 6 minutes. Your hand snaps to the nearest one.'], { size: 21, color: '#5b4f45' });
+  const X0 = 110, X1 = 1490, Y0 = 880, Y1 = 380; // az 110..290, el 0..75
+  const px = az => X0 + (az - 110) / 180 * (X1 - X0), py = e => Y0 - e / 75 * (Y0 - Y1);
+  el('line', s, { x1: X0, x2: X1, y1: Y0, y2: Y0, stroke: '#2a211b', 'stroke-width': 3 });
+  txt(s, X0, Y0 + 40, 'south-east', { size: 20, color: '#7a6c60' }); txt(s, px(200), Y0 + 40, 'straight out of the window (200°)', { size: 20, color: '#7a6c60', anchor: 'middle' }); txt(s, X1, Y0 + 40, 'west', { size: 20, color: '#7a6c60', anchor: 'end' });
+  for (const e of [25, 50, 75]) { el('line', s, { x1: X0, x2: X1, y1: py(e), y2: py(e), stroke: '#2a211b', 'stroke-opacity': .08, 'stroke-width': 2 }); txt(s, X0 - 14, py(e) + 7, e + '°', { size: 18, color: '#7a6c60', anchor: 'end' }); }
+  // grid dots
+  for (const [d, m, az, e] of SUN.grid) { if (az < 110 || az > 290) continue; el('circle', s, { cx: px(az), cy: py(e), r: 2.1, fill: '#2a211b', 'fill-opacity': .22 }); }
+  const path = (name, col, w) => { const pts = SUN.paths[name].filter(p => p[1] >= 108 && p[1] <= 292 && p[2] > -1); el('path', s, { d: 'M' + pts.map(p => px(p[1]).toFixed(1) + ',' + py(Math.max(0, p[2])).toFixed(1)).join(' L'), fill: 'none', stroke: col, 'stroke-width': w, 'stroke-linecap': 'round' }); return pts; };
+  const jun = path('jun', '#f39431', 5), dec = path('dec', '#6f80a6', 5), nov = path('nov', '#2a211b', 3);
+  const lab = (pts, mins, txtS, col, dy) => { const p = pts.find(q => q[0] === mins); if (p) txt(s, px(p[1]), py(p[2]) + dy, txtS, { size: 22, color: col, weight: 700, anchor: 'middle' }); };
+  lab(jun, 780, 'June 21', '#c86b12', -22); lab(dec, 720, 'December 21', '#4f5f86', 44); { const p = nov.find(q => q[0] === 480); txt(s, px(p[1]) - 14, py(p[2]) + 4, 'November 9', { size: 22, color: '#2a211b', weight: 700, anchor: 'end' }); }
+  // hour ticks on nov
+  for (const h of [9, 10, 11, 12, 13, 14, 15, 16]) { const p = nov.find(q => q[0] === h * 60); if (!p) continue; el('circle', s, { cx: px(p[1]), cy: py(p[2]), r: 5, fill: '#2a211b' }); if (h !== 11) txt(s, px(p[1]), py(p[2]) + 30, (h > 12 ? h - 12 : h) + (h >= 12 ? ' pm' : ' am'), { size: 16, color: '#5b4f45', anchor: 'middle' }); }
+  // sun being dragged
+  const sp = nov.find(q => q[0] === 11 * 60 + 40); sunDot(s, px(sp[1]), py(sp[2]), 20);
+  // along arrow
+  const a1 = nov.find(q => q[0] === 13 * 60), a2 = nov.find(q => q[0] === 15 * 60 + 30);
+  arrow(s, `M${px(a1[1]) + 10},${py(a1[2]) - 40} Q${(px(a1[1]) + px(a2[1])) / 2},${py(a1[2]) - 60} ${px(a2[1])},${py(a2[2]) - 40}`, '#2a211b');
+  node(s, 1060, 200, 420, 104, 'Along an arc', ['the hour changes'], { ts: 26 });
+  el('path', s, { d: `M1270,304 C1270,420 ${(px(a1[1]) + px(a2[1])) / 2},${py(a1[2]) - 120} ${(px(a1[1]) + px(a2[1])) / 2},${py(a1[2]) - 62}`, fill: 'none', stroke: '#7a6c60', 'stroke-width': 1.5, 'stroke-dasharray': '4 5' });
+  // across arrow at noon
+  const jn = jun.find(q => q[0] === 780), dn = dec.find(q => q[0] === 720);
+  arrow(s, `M${px(dn[1]) - 60},${py(dn[2]) - 14} L${px(jn[1]) - 60},${py(jn[2]) + 26}`, '#f39431');
+  arrow(s, `M${px(jn[1]) - 90},${py(jn[2]) + 26} L${px(dn[1]) - 90},${py(dn[2]) - 14}`, '#6f80a6');
+  node(s, 64, 200, 440, 132, 'Across the arcs', ['the date changes; the lens keeps', 'the date unless the hand clearly', 'moves up or down the sky'], { ts: 26 });
+  el('path', s, { d: `M504,266 C600,266 ${px(jn[1]) - 75},${py(jn[2]) - 40} ${px(jn[1]) - 75},${py(jn[2]) + 40}`, fill: 'none', stroke: '#7a6c60', 'stroke-width': 1.5, 'stroke-dasharray': '4 5' });
+
+})();
+
+// ================= 3. SUN-HOUR PLANS =================
+(function () {
+  const s = document.getElementById('hoursS'); defs(s); shadowDef(s);
+  txt(s, 64, 92, 'Hours of direct sun on the floor', { size: 52, head: true });
+  txt(s, 64, 140, ['The same floor on three days, seen from above. Computed with the lens code for this room in New York.'], { size: 22, color: '#5b4f45' });
+  const panels = [['dec', 'December 21'], ['nov', 'November 9'], ['jun', 'June 21']];
+  const W = 470, sc = W / 620, Hh = 490 * sc; // z range 620 horizontal, x range 490 vertical (window wall on top)
+  const ramp = h => { // cream -> warm -> deep orange
+    const t = Math.min(1, h / 5); const a = [251, 240, 222], b = [255, 198, 119], c = [226, 104, 30];
+    const m = t < .5 ? a.map((v, i) => v + (b[i] - v) * t * 2) : b.map((v, i) => v + (c[i] - v) * (t - .5) * 2);
+    return `rgb(${m.map(v => Math.round(v)).join(',')})`; };
+  panels.forEach(([k, title], pi) => {
+    const D = SUN[k]; const ox = 64 + pi * (W + 46), oy = 270;
+    const PX = z => ox + (z + 540) * sc, PY = x => oy + (220 - x) * sc;
+    el('rect', s, { x: ox, y: oy, width: W, height: Hh, fill: '#fbf0e0', rx: 6 });
+    const step = 8 * sc; let best = 0, bi = null;
+    D.xs.forEach((x, i) => D.zs.forEach((z, j) => { const h = D.H[i][j]; if (h > best) { best = h; bi = [x, z]; } if (h <= 0) return; el('rect', s, { x: PX(z) - step / 2, y: PY(x) - step / 2, width: step + .4, height: step + .4, fill: ramp(h) }); }));
+    // furniture
+    const box = (x0, z0, x1, z1, lab) => { el('rect', s, { x: PX(z0), y: PY(x1), width: (z1 - z0) * sc, height: (x1 - x0) * sc, fill: '#d9c9b3', stroke: '#b9a68c', 'stroke-width': 1.5, rx: 4 }); if (lab) txt(s, PX((z0 + z1) / 2), PY((x0 + x1) / 2) + 6, lab, { size: 15, color: '#6f5f50', anchor: 'middle', weight: 600 }); };
+    box(-152, -150, 132, -8, 'sofa'); box(-250, -540, 160, -500, ''); box(-60, 35, 215, 80, '');
+    el('circle', s, { cx: PX(-290), cy: PY(0), r: 62 * sc, fill: '#d9c9b3', stroke: '#b9a68c', 'stroke-width': 1.5 }); txt(s, PX(-290), PY(0) + 5, 'table', { size: 15, color: '#6f5f50', anchor: 'middle', weight: 600 });
+    // window wall and windows
+    el('line', s, { x1: ox, x2: ox + W, y1: oy, y2: oy, stroke: '#2a211b', 'stroke-width': 4 });
+    for (const [z0, z1] of [[-120, -24], [-293, -194], [-473, -369]]) el('line', s, { x1: PX(z0), x2: PX(z1), y1: oy, y2: oy, stroke: '#f39431', 'stroke-width': 10, 'stroke-linecap': 'round' });
+    el('rect', s, { x: ox, y: oy, width: W, height: Hh, fill: 'none', stroke: '#2a211b', 'stroke-width': 2, rx: 6 });
+    // best spot
+    if (bi) { el('circle', s, { cx: PX(bi[1]), cy: PY(bi[0]), r: 9, fill: 'none', stroke: '#2a211b', 'stroke-width': 3 }); }
+    const hh = Math.floor(best + 1e-6), mm = Math.round((best - hh) * 60);
+    txt(s, ox, oy - 52, title, { size: 32, head: true, weight: 800 });
+    txt(s, ox, oy - 18, `best spot: ${hh} h${mm ? ' ' + mm + ' min' : ''} of sun`, { size: 21, color: '#5b4f45' });
+  });
+  // legend
+  const lx = 64, ly = 270 + Hh + 50;
+  for (let i = 0; i <= 50; i++) el('rect', s, { x: lx + i * 6, y: ly, width: 6.5, height: 18, fill: ramp(i / 10) });
+  txt(s, lx, ly + 44, '0 h', { size: 18, color: '#5b4f45' }); txt(s, lx + 300, ly + 44, '5 h', { size: 18, color: '#5b4f45', anchor: 'end' });
+  el('line', s, { x1: 440, x2: 480, y1: ly + 9, y2: ly + 9, stroke: '#f39431', 'stroke-width': 10, 'stroke-linecap': 'round' }); txt(s, 494, ly + 16, 'windows', { size: 18, color: '#5b4f45' });
+  el('circle', s, { cx: 620, cy: ly + 9, r: 9, fill: 'none', stroke: '#2a211b', 'stroke-width': 3 }); txt(s, 640, ly + 16, 'the spot the lens labels', { size: 18, color: '#5b4f45' });
+  txt(s, 1536, ly + 16, 'In June the sun is high, so the patch stays near the wall.', { size: 18, color: '#5b4f45', anchor: 'end' });
+})();
+
+// ================= 4. ROOM MODEL =================
+(function () {
+  const s = document.getElementById('roomS'); defs(s); shadowDef(s);
+  txt(s, 64, 92, 'Measuring the Preview room by hand', { size: 52, head: true });
+  txt(s, 64, 140, ['Interactive Preview rooms return no hit tests, so we placed labeled marker grids', 'and compared screenshots from several camera positions.'], { size: 22, color: '#5b4f45' });
+  const img = el('image', s, { href: '../film/shots/w1c.jpg', x: 64, y: 200, width: 574, height: 660, preserveAspectRatio: 'xMidYMid slice' });
+  el('rect', s, { x: 64, y: 200, width: 574, height: 660, fill: 'none', stroke: '#2a211b', 'stroke-width': 2, rx: 4 });
+  el('rect', s, { x: 64, y: 800, width: 574, height: 60, fill: 'rgba(42,33,27,.72)' }); txt(s, 84, 838, 'labeled markers every 50 cm on the window wall', { size: 19, color: '#fbf2e4', weight: 600 });
+  // side elevation of the window wall with numbers
+  const ox = 720, oy = 230, sc = 1.18; // z -540..80 -> width 620*1.18 = 731; y -178..84 -> 262*1.18 = 309
+  const PX = z => ox + (z + 540) * sc, PY = y => oy + (84 - y) * sc;
+  txt(s, ox, oy - 20, 'The window wall, x = 220 cm', { size: 26, head: true });
+  el('rect', s, { x: PX(-540), y: PY(84), width: 620 * sc, height: 262 * sc, fill: '#fbf0e0', stroke: '#2a211b', 'stroke-width': 2 });
+  for (const [z0, z1] of [[-473, -369], [-293, -194], [-120, -24]]) {
+    el('rect', s, { x: PX(z0), y: PY(81), width: (z1 - z0) * sc, height: 206 * sc, fill: '#ffe1b8', stroke: '#f39431', 'stroke-width': 3 });
+    el('line', s, { x1: PX((z0 + z1) / 2), x2: PX((z0 + z1) / 2), y1: PY(81), y2: PY(-125), stroke: '#f39431', 'stroke-width': 2 });
+    el('line', s, { x1: PX(z0), x2: PX(z1), y1: PY(-10), y2: PY(-10), stroke: '#f39431', 'stroke-width': 2 });
+    txt(s, PX((z0 + z1) / 2), PY(-125) + 30, `${z1 - z0} cm`, { size: 18, color: '#5b4f45', anchor: 'middle', weight: 600 });
+  }
+  el('line', s, { x1: PX(-540) - 30, x2: PX(-540) - 30, y1: PY(0), y2: PY(-178), stroke: '#2a211b', 'stroke-width': 2, 'marker-end': 'url(#ah)', 'marker-start': 'url(#ah)' });
+  txt(s, PX(-540) - 8, PY(-89), ['178 cm'], { size: 18, anchor: 'start', weight: 600 });
+  el('line', s, { x1: PX(-540) - 50, x2: PX(80), y1: PY(0), y2: PY(0), stroke: '#2a211b', 'stroke-dasharray': '6 6', 'stroke-width': 1.5 });
+  txt(s, PX(80) + 10, PY(0) + 6, 'eye level', { size: 18, color: '#5b4f45' });
+  txt(s, PX(80) + 10, PY(-178) + 6, 'floor', { size: 18, color: '#5b4f45' });
+  // plan below
+  const oy2 = 640, sc2 = .62, W = 620 * sc2;
+  const QX = z => ox + (z + 540) * sc2, QY = x => oy2 + (220 - x) * sc2;
+  txt(s, ox, oy2 - 20, 'Furniture that catches or blocks light, seen from above', { size: 26, head: true });
+  el('rect', s, { x: ox, y: oy2, width: W, height: 490 * sc2, fill: '#fbf0e0', stroke: '#2a211b', 'stroke-width': 2 });
+  const box = (x0, z0, x1, z1) => el('rect', s, { x: QX(z0), y: QY(x1), width: (z1 - z0) * sc2, height: (x1 - x0) * sc2, fill: '#d9c9b3', stroke: '#b9a68c', 'stroke-width': 1.5, rx: 3 });
+  box(-152, -150, 132, -8); box(-250, -540, 160, -500); box(-60, 35, 215, 80);
+  el('circle', s, { cx: QX(-290), cy: QY(0), r: 62 * sc2, fill: '#d9c9b3', stroke: '#b9a68c', 'stroke-width': 1.5 });
+  for (const [z0, z1] of [[-120, -24], [-293, -194], [-473, -369]]) el('line', s, { x1: QX(z0), x2: QX(z1), y1: oy2, y2: oy2, stroke: '#f39431', 'stroke-width': 8 });
+  txt(s, QX(-79), QY(-10) - 8, ['sofa', 'seat 50 cm', 'back 83 cm'], { size: 16, anchor: 'middle', weight: 600, color: '#5b4f45', lh: 20 });
+  txt(s, QX(-290), QY(0) - 4, ['table', '33 cm'], { size: 16, anchor: 'middle', weight: 600, color: '#5b4f45', lh: 20 });
+  const rot = (x, y, t) => { const e = txt(s, x, y, t, { size: 15, anchor: 'middle', weight: 600, color: '#5b4f45' }); e.setAttribute('transform', `rotate(-90 ${x} ${y})`); };
+  rot(QX(-520) + 5, QY(-45), 'console 35 cm'); rot(QX(57) + 5, QY(80), 'desk 78 cm');
+  txt(s, ox + W + 40, oy2 + 40, ['Light lands on the floor, the walls and', 'the tops of the sofa, table and console.', '', 'The same boxes hide light that would', 'fall behind them and mark floor cells', 'the sun-hour map skips.', '', 'On Specs all of this comes from the', 'world mesh instead.'], { size: 20, color: '#5b4f45', lh: 29 });
+})();
+window.READY = true;
+</script></body></html>

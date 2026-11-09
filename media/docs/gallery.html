@@ -1,0 +1,29 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Sunfall gallery</title>
+<style>
+@font-face { font-family: "Bricolage"; src: url("../fonts/BricolageGrotesque.ttf"); font-weight: 200 800; font-stretch: 75% 100%; }
+@font-face { font-family: "InterV"; src: url("../fonts/Inter.ttf"); font-weight: 100 900; }
+html, body { margin: 0; }
+#c { position: relative; width: 1500px; height: 1000px; overflow: hidden; font-family: "Bricolage"; color: #2a211b;
+  background: radial-gradient(900px 600px at 80% 0%, rgba(255,190,110,.45), rgba(255,190,110,0) 70%), linear-gradient(180deg, #f2e9de, #e7d9c6); }
+h1 { position: absolute; left: 44px; top: 34px; margin: 0; font-size: 64px; font-weight: 800; letter-spacing: -0.02em; white-space: nowrap; }
+.plate { background: #f39431; color: #fbf2e4; border-radius: 14px; padding: 0 .16em; }
+.plate.blue { background: #6f80a6; }
+.row { position: absolute; left: 44px; right: 44px; top: 140px; bottom: 40px; display: flex; gap: 24px; justify-content: center; }
+.shot { position: relative; flex: 0 0 auto; height: 100%; aspect-ratio: 1393 / 1590; border-radius: 26px; overflow: hidden; box-shadow: 0 30px 70px rgba(60,35,10,.28), 0 6px 16px rgba(60,35,10,.16); }
+.shot img { width: 100%; height: 100%; object-fit: cover; display: block; filter: brightness(1.1) contrast(1.06) saturate(1.1); }
+.shot .lab { position: absolute; left: 22px; bottom: 20px; font-size: 34px; font-weight: 800; color: #fbf2e4; text-shadow: 0 3px 18px rgba(10,6,2,.6); }
+.wide { flex: 1 1 auto; height: 100%; border-radius: 26px; overflow: hidden; background: #f2e9de; box-shadow: 0 30px 70px rgba(60,35,10,.2); }
+.wide img { width: 100%; height: 100%; object-fit: contain; display: block; }
+</style></head>
+<body><div id="c"></div>
+<script>
+const P = new URLSearchParams(location.search);
+// title: words separated by |, the word in [brackets] gets a plate, {braces} a blue plate
+const title = (P.get('t') || '').split('|').map(w => w.startsWith('[') ? `<span class="plate">${w.slice(1, -1)}</span>` : w.startsWith('{') ? `<span class="plate blue">${w.slice(1, -1)}</span>` : w).join(' ');
+const imgs = (P.get('i') || '').split(',').filter(Boolean);
+const labs = (P.get('l') || '').split(',');
+const wide = P.get('w');
+document.getElementById('c').innerHTML = `${title ? `<h1>${title}</h1>` : ''}<div class="row"${title ? '' : ' style="top:40px"'}>${wide ? `<div class="wide"><img src="${wide}"></div>` : imgs.map((src, k) => `<div class="shot"><img src="${src}">${labs[k] ? `<div class="lab">${labs[k]}</div>` : ''}</div>`).join('')}</div>`;
+Promise.all([document.fonts.ready, ...[...document.images].map(i => i.decode().catch(() => 0))]).then(() => { window.READY = true; });
+</script></body></html>

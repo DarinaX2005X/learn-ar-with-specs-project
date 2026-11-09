@@ -1,62 +1,148 @@
-# Countercase
+<img src="docs/banner.svg" alt="Sunfall: where will the sun land in your room" width="100%">
 
-Countercase is a walk-through museum mystery for two on SPECS. Stage a ruby theft for a friend and hand them the case. They enter through the foyer, wind the clock back and follow the recording through the museum to find out who could have reached the display.
+Sunfall is a lens for Snap Specs that shows where sunlight will fall in your room at any hour of any day of the year. You look at the window, take the sun in your hand and move it: along its arc the hour changes, up or down the sky the date changes, and the patch of light from your window slides across the real floor, walls and furniture as it would on that day.
 
-<img src="docs/media/mirror-recording.webp" width="720" alt="The author pulls the curtain across the guard. Two stills from the entrance camera at six seconds show the courier in both, and the guard only while the mirror is open.">
+<img src="docs/stack.svg" alt="Lens Studio 5.23, Snap Specs, Spectacles Interaction Kit, TypeScript, NOAA solar ephemeris, Lens Studio MCP, Claude Code, Python, Playwright, ffmpeg" width="720">
 
-At six seconds, the entrance camera sees the courier. In the open mirror it also sees the guard across the room. That leaves the conservator at the display. Draw the curtain in a copy of the case and the courier still has an alibi. Now either the guard or the conservator could have taken the ruby.
+<table>
+<tr>
+<td width="33%"><img src="docs/drag-sun.webp" alt="Dragging the sun moves the light across the room"></td>
+<td width="33%"><img src="docs/play-day.webp" alt="Play the day paints the hours of sun on the floor"></td>
+<td width="33%"><img src="docs/seasons.webp" alt="Noon in December, June and December again"></td>
+</tr>
+<tr>
+<td>Drag the sun and the light follows</td>
+<td>Play the day to map the hours of sun</td>
+<td>Noon on December 21 and on June 21</td>
+</tr>
+</table>
 
-[Illustrated cover](docs/media/cover.webp) · [The open case](docs/media/gallery-03.png) · [The two possible thefts](docs/media/gallery-04.png)
+These loops are real Lens Studio Preview recordings of the lens.
 
-## Play in Lens Studio
 
-1. Install Git LFS and run `git lfs install`. Clone this repository with `git clone` and its HTTPS URL. The museum models and Snap packages use LFS. If your checkout contains pointer files, run `git lfs pull` from the repository root. Open **Countercase.esproj** there in **Lens Studio 5.23.2** and let asset import and TypeScript compilation finish. [Lens Studio 5.23.2](https://ar.snap.com/download/v5-23-2)
-2. Open **Window → Preview** and choose **Interactive** in the preview-source picker. The first case begins in the foyer. Look for the clock and the case file on the wooden desk.
-3. Focus the Preview. Use **W/A/S/D** to walk and **right-drag** to look around. Drag the clock face to your left to rewind or to your right to advance. For a precise time, use **Previous frame** or **Next frame** at its sides until the clock reads **6.0 s**. Click the face to play or pause. The control below it, **Replay from alarm**, starts the recording again at the alarm. [Interactive Preview controls](https://developers.snap.com/lens-studio/lens-studio-workflow/previewing-your-lens#interactive-preview-mode)
-4. Find the entrance camera in the hall and choose **Watch this view**. At the evidence bench, the desk clock shows the time beside **Replay**. Its brass **−** and **+** keys step half a second. Drag the courier from the recording under the loupe to the outlined evidence glass. You can also select the courier and use the pin handle beside the glass. Choose the conservator and press **Check accusation**. Read the names on the paper. The courier's alibi still allows two people to have taken the ruby.
-5. At the same instant, select the figure in the mirror on the recording. Pin that sighting and check the accusation again. After the case is solved, choose **Replay the evidence** at the bench. Your pins are still there. Select the courier's glass, **Remove evidence** and check again. **Undo evidence removal** restores the pin for another check. Each object also accepts a simulated point and pinch.
+## Who it's for
 
-For a wide desktop walkthrough, use **No Simulation** in the Interactive Preview and set **Settings → Device Type Override → SPECS**. This keeps the hand controls available. We captured the foyer in a landscape Preview at roughly 2:1 and a 60° field of view. Lens Studio 5.23.2 kept those settings when we reopened the project, but reset the panel height and viewing angle. Resize the Preview to landscape and right-drag slightly down until you see the clock face, the glass on the desk and the display through the arch. Switch to the SPECS device profile to check the glasses' field of view. [Snap's Preview settings for glasses](https://developers.snap.com/spectacles/get-started/start-building/preview-panel)
+You usually see an apartment once, at whatever hour the agent could meet you, and then you live there for a year. At home the same question comes back in smaller forms: will the plant by the window get enough sun in January, will the desk catch glare at 3 pm, which corner stays warm in winter? People answer it by guessing or by waiting a year.
 
-### Give someone your version
+Sunfall is for people deciding where things go in a room (plants, a desk, a reading chair) and for people viewing a flat they are about to rent or buy, who need to know what the light is like at the times they can't visit.
 
-<img src="docs/media/readme-loop.webp" width="720" alt="Two shots from Lens Studio Preview. An anonymous figure walks past the detective's camera. In the author's staging view, the conservator lifts the ruby from its socket.">
+## Try it in Lens Studio
 
-In the first shot, the detective sees an anonymous figure pass the camera. The second shot comes from the author's rehearsal. The conservator's fingers close around the ruby before the hand lifts it from the socket.
+1. Install [Lens Studio 5.23.2](https://ar.snap.com/download/v5-23-2) and Git LFS (`git lfs install`), clone this repository and open `Sunfall.esproj`. Wait until the assets import and TypeScript compiles.
+2. Open **Preview**, choose **Interactive**, the **Sunlit Room** environment and the **SPECS** device.
+3. Walk with **W A S D**, go down and up with **Q E**, look around with a right-drag. A left click is a pinch.
+4. Turn right to face the three curtained windows and click the middle one. Light comes in and the sun appears above the window.
+5. Look up and to the left, take the sun and drag it. Sideways changes the hour, up and down changes the date.
+6. Glance down for the three buttons: **Play the day**, **Add a plant** (then click a spot on the floor) and **Now**.
 
-Use the **Stage a theft** file to copy the current case. Move the mirror curtain, then use the lid at the workbench to **Test case**. If two thefts fit the recording, **Keep different thefts** lets you keep that as the puzzle. Choose **Pass the case** and let the next player **Open the case** in the same session. They receive the recording and physical clues. The casting and private staging stay with the author.
+Inputs on the `Sunfall` script component:
 
-The shelf also holds **The Packing Room**. There, seeing who lifted the ruby settles only part of the case. Choose **Inspect rim** at the display. The evidence glass lists whose marks were found. Compare those names with sightings near the partition and the final contents of the boxes to investigate who carried the ruby away. Copies, edits and investigations live for the current Lens session.
+| Input | Default | What it does |
+| --- | --- | --- |
+| `windowAzimuth` | 200 | The compass bearing the window faces, in degrees (200 is south-south-west) |
+| `startDay`, `startMinutes` | today, 10:30 am | The date and time the lens opens on (`startDay = -1` means today) |
+| `autoMarkAll` | off | Lights every known window at start instead of waiting for pinches |
+| `dockAtStart` | off | Shows the buttons right away instead of after the first drag |
+| `timeScale` | 1 | Slows every animation down, for recording the Preview on slow machines |
+| `demoScript` | empty | A list of timed actions (`mark`, `grab`, `sun`, `press`, `floor`) that drives the lens with a visible hand cursor, for repeatable recordings |
 
-To stage a theft from scratch, choose **Start an empty room** at the workbench. Pick the display and camera from the tray, then point to the floor to place each one. Place all three figures the same way, with one close enough to reach the display. At the moment you want the theft to happen, select that figure's base and choose **Take ruby** at the display. Use **Test case** to find out what the next player can prove.
+## What you can do
 
-## How the evidence works
+<table>
+<tr>
+<td width="33%"><img src="docs/shot-mark.jpg" alt="Pinch a window that gets sun"></td>
+<td width="33%"><img src="docs/shot-drag.jpg" alt="The sun on its arc with the hour and the date"></td>
+<td width="33%"><img src="docs/shot-heat.jpg" alt="The sun-hour map on the floor"></td>
+</tr>
+<tr>
+<td><b>Mark the windows.</b> Pinch each window that lets sun in. It snaps to the frame, and its light comes in at once.</td>
+<td><b>Drag the sun.</b> The arc for today stays on screen with hour labels. While you drag, the June 21 and December 21 arcs appear, so you can see the whole year's range.</td>
+<td><b>Play the day.</b> The sun runs from sunrise to sunset in nine seconds and paints a map of sun hours on the floor. The spot that gets the most is labeled.</td>
+</tr>
+<tr>
+<td><img src="docs/shot-plant-far.jpg" alt="A plant marker with its hours seen from across the room"></td>
+<td><img src="docs/shot-plant.jpg" alt="The plant card up close"></td>
+<td><img src="docs/shot-dec.jpg" alt="Noon light on December 21"></td>
+</tr>
+<tr>
+<td><b>Add a plant.</b> Pinch the floor where a pot will stand. From across the room the card shows only the number of hours.</td>
+<td><b>Walk up to it.</b> Closer than about two meters the card adds what grows in that light and the hours on December 21 and June 21.</td>
+<td><b>Compare seasons.</b> The same noon in December: the sun is low and the light reaches across the floor to the sofa.</td>
+</tr>
+</table>
 
-The author places actors on tracks. For each half-second of a case, the TypeScript model tests a fixed camera's view against the room. A reflection must reach the open, front-facing part of the mirror and both legs of its sight line must clear the obstacles. Walking closer helps a player inspect the glass. It never grants the fixed camera a different angle on the crime.
-
-The detective receives a sealed recording. When they check an accusation, the game enumerates legal histories under the same movement and handling rules, then compares the observations they pinned. If two histories still fit, compare them on the evidence bench. For a life-size view, choose **Stand by the case**, then look up and select the raised handle. Use **Show version 2** on the stand beside the display to see the other person reaching for the ruby at the same instant. **Back to table** returns you to the model. A box inspection establishes where the ruby ended up. Its contents alone cannot tell you when someone put it there.
-
-| In the source | What to look for |
+| December 21, noon | June 21, noon |
 | --- | --- |
-| [Case model](Assets/Domain/) | Actor tracks, sight lines, mirror intersections, sealed recordings and competing explanations |
-| [Player actions](Assets/Runtime/PlayTable.ts) | The clock, curtain, witness camera, evidence glass, case lid and accusation stamp |
-| [Case flow](Assets/Runtime/MuseumGame.ts) | Handoff between author and detective, replay and reveal |
-| [Museum art](Assets/Art/TableKit/) | The connected building, carved figures and props used at the evidence stations |
+| <img src="docs/shot-dec.jpg" alt="December noon" width="100%"> | <img src="docs/shot-jun.jpg" alt="June noon" width="100%"> |
 
-## Run the checks
+**Now** brings the sun back to the current time. You can keep up to three plants; when you add a fourth, the oldest one goes away.
 
-These checks run from the repository root in PowerShell with Node.js and npm.
+## How it works
 
-```powershell
-.\Tests\Domain\run.ps1
-.\Tests\Detective\run.ps1
-.\Tests\MuseumGame\run.ps1
-```
+<img src="docs/map.png" alt="How a frame of Sunfall is made" width="100%">
 
-The first run needs npm access for the pinned TypeScript compiler. The domain checks exercise the mirror and alternative histories. The other suites exercise pinning, accusation, changing a case and handing it over.
+### The sun
 
-In **Lens Studio Interactive Preview**, the public-recording LEAF scenario pinned the courier first and the guard second. It checked that an accusation changed from two possible suspects to one, then removed and restored the courier pin to check the result both ways. In the author scenario, closing the curtain in a trial removed the guard from the camera recording at six seconds. Discarding that edit brought the guard back. Both scenarios use simulated input. Physical SPECS testing remains open. [LEAF scenarios for Lens Studio](Assets/Tests/Leaf/)
+[`Assets/Sunfall/Solar.ts`](Assets/Sunfall/Solar.ts) implements the NOAA low-precision solar ephemeris, which gives the azimuth and elevation of the sun for any date, time and place to about 0.1°. We checked it against published values: in New York the sun stands at 72.7° on June 21 at 12:57 pm and at 25.8° on December 21 at 11:55 am. The direction is then turned into room coordinates relative to the window, whose outward normal is `+X`.
 
-## Materials
+### Dragging the sun
 
-Countercase uses Snap's SPECS Base Template, Spectacles Interaction Kit 2.0, Spectacles UI Kit 2.0 and LEAF 2.0. The museum geometry, puppet rigs, evidence rules and case scripts were made for this project. The two framed paintings and the illustrated project poster were generated for Countercase. The oak and plaster textures were generated procedurally. The paper labels use Braille Institute's Atkinson Hyperlegible. [TableKit asset notes](Assets/Art/TableKit/README.md) · [Font files and license](Assets/Art/Fonts/AtkinsonHyperlegible/) · [Snap's Interaction Kit guide](https://developers.snap.com/spectacles/spectacles-frameworks/spectacles-interaction-kit/get-started)
+<img src="docs/drag.png" alt="Dragging the sun: along an arc the hour changes, across the arcs the date changes" width="100%">
+
+When the lens starts, it computes the sun direction for every third day between June 21 and December 21 and every six minutes from 4 am to 9 pm: 7,703 directions above or near the horizon. During a drag it compares the direction your hand points with all of them and takes the closest, then refines the minute. It keeps the current date unless your hand moves at least 2° further up or down the sky than the best match on that date, so a sideways drag never jumps between days.
+
+### The light on the room
+
+Each window is a rectangle with a cross bar. For every surface that can catch light (the floor, the four walls and the tops of the sofa, the coffee table and the console), the lens projects the window corners along the sun direction onto that surface's plane, clips the polygon to the surface with Sutherland and Hodgman clipping, and builds a mesh. The result has sharp edges and the cross bar falls in the right place, even when the patch is split between the floor and a wall. The brightness of each patch follows the angle at which the sunlight meets the surface.
+
+Between the window and the patch there are eleven sheets of light and ninety drifting motes of dust, and the curtain of a lit window glows. Furniture is also drawn as invisible boxes that write only depth, so light that would fall behind the sofa is hidden.
+
+### Hours of sun
+
+<img src="docs/hours.png" alt="Hours of direct sun on the floor for December 21, November 9 and June 21" width="100%">
+
+The floor is split into 8 cm cells. For each cell, every ten minutes from sunrise to sunset, the lens checks whether the straight line toward the sun leaves the room through a window without hitting furniture, and adds up the hours. To stay fast it only tests cells inside the floor shadow of each window for that moment. The same test gives the numbers on a plant card for today, December 21 and June 21.
+
+The maps above were computed by a Python port of the same code for this room. In June the sun is high, so the light stays in a strip by the wall; in December it reaches across the room, and the brightest spot on November 9 gets 4 hours, the same number the lens labels.
+
+### The room
+
+On Specs the surfaces would come from the world mesh. Lens Studio's Interactive Preview rooms don't answer world queries: our first probe cast 576 rays and got back a single flat test plane. So [`Assets/Sunfall/Room.ts`](Assets/Sunfall/Room.ts) describes the Sunlit Room preview by hand.
+
+<img src="docs/room.png" alt="Measuring the Preview room with marker grids" width="100%">
+
+We placed grids of labeled markers at a guessed floor height and on the window wall, took Preview screenshots from several camera positions, and used the parallax between them to find the floor (178 cm below eye level), the window wall and the three window bays. The furniture boxes were fitted the same way.
+
+## Designing for glasses
+
+- **The display adds light and can't darken anything**, and sunlight is exactly what an additive display draws well. Everything in the lens is light: warm patches, shafts, a glowing sun, cream text.
+- **The main control is the sun itself.** There are only three buttons, 6 cm discs that follow you lazily about half a meter ahead and below eye level. They appear when you glance down and hide while you drag.
+- **Text is short and sized for distance.** Labels face you, the hint at the start is one line, and the plant card shows just the number until you walk up to it.
+- **The first ten seconds teach the gesture.** The lens asks for one pinch on a window, the light comes in, and the next hint points at the sun.
+
+## Project layout
+
+| Path | What's there |
+| --- | --- |
+| [`Assets/Sunfall/Sunfall.ts`](Assets/Sunfall/Sunfall.ts) | The lens: windows, light projection, shafts and dust, sun drag, sun-hour map, plants, buttons, demo autopilot |
+| [`Assets/Sunfall/Solar.ts`](Assets/Sunfall/Solar.ts) | Sun position, sunrise and sunset, date and time labels |
+| [`Assets/Sunfall/Room.ts`](Assets/Sunfall/Room.ts) | Surfaces, windows and furniture of the Preview room, ray casts and the sun-hour test |
+| `Assets/Sunfall/Textures` | Window light, light shafts, glow, sun, heat ramp and button discs, generated with Python |
+| `Assets/Sunfall/Materials` | An additive material for light and an alpha material for text and UI |
+| [`devpost/design-brief.md`](devpost/design-brief.md) | The planning brief written with the Devpost Learn skill pack |
+| `docs/` | Images for this README |
+| [`media/`](media/README.md) | The code that renders the demo video, the README diagrams and the gallery, plus the three raw Preview takes |
+
+## How it was built
+
+We planned the lens with the [Devpost Learn skill pack](https://github.com/challengepost/learn-specs); its design brief is in [`devpost/design-brief.md`](devpost/design-brief.md). Claude Code built it in Lens Studio through the Lens Studio MCP: it created the scene object and materials, set script inputs, imported textures, recompiled TypeScript, ran the lens, moved the Preview camera and took Preview screenshots, which we used to measure the room and to review each change.
+
+The demo video is made in code as well ([`media/`](media/README.md)). It is an HTML page with one `renderAt(time)` function, rendered frame by frame with Playwright and encoded with ffmpeg; the music and every sound effect are synthesized in Python and placed on the picture's events. The lens footage in it is a real Lens Studio Preview recording. The Preview runs at about 3 frames per second on our laptop, so we recorded it with `timeScale = 0.1`, driven by `demoScript`, and sped the recording back up ten times.
+
+## Limits of this version
+
+- The city is New York and the window direction is an inspector input. On Specs both would come from the device location and compass.
+- The room is the measured Preview room. On Specs the surfaces would come from the world mesh and windows would be found automatically.
+- Buildings and trees outside are not taken into account, so the lens shows the sun a window could get, not what a neighbour's wall might block.
+
+Fonts: [Atkinson Hyperlegible](https://brailleinstitute.org/freefont) (SIL Open Font License).

@@ -1,0 +1,357 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Sunfall film</title>
+<style>
+@font-face { font-family: "Bricolage"; src: url("../fonts/BricolageGrotesque.ttf"); font-weight: 200 800; font-stretch: 75% 100%; }
+:root { --plaster: #efe6da; --ink: #2a211b; --sun: #f39431; --cream: #fbf2e4; --dusk: #1d2331; --coral: #e8735a; --blue: #6f80a6; }
+html, body { margin: 0; background: #000; }
+#stage { position: relative; width: 1920px; height: 1080px; overflow: hidden; background: var(--dusk); font-family: "Bricolage", sans-serif; color: var(--ink); }
+.layer { position: absolute; inset: 0; }
+#all { position: absolute; inset: 0; transform-origin: 960px 540px; }
+#world { position: absolute; inset: 0; transform-origin: 0 0; }
+#fill { position: absolute; left: -120px; top: -120px; width: 2160px; height: 1320px; object-fit: cover; filter: blur(42px) brightness(.55) saturate(1.2); }
+#win { position: absolute; overflow: hidden; border-radius: 30px; box-shadow: 0 40px 100px rgba(10,6,2,.55); }
+#win img { position: absolute; left: 0; top: 0; width: 100%; height: 100%; object-fit: cover; filter: brightness(1.12) contrast(1.08) saturate(1.12); }
+#scrim { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(20,14,10,0) 55%, rgba(20,14,10,.55) 100%); }
+.word { position: absolute; left: 0; top: 0; white-space: nowrap; font-weight: 800; letter-spacing: -0.02em; transform-origin: 50% 60%; will-change: transform, opacity, filter; }
+.plate { position: absolute; border-radius: 16px; }
+.chip { position: absolute; padding: 10px 22px; border-radius: 999px; font-weight: 650; font-size: 26px; white-space: nowrap; background: rgba(29,35,49,.82); color: var(--cream); }
+svg { overflow: visible; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="bg" class="layer"></div>
+  <div id="all">
+    <svg id="sky" class="layer" width="1920" height="1080"></svg>
+    <div id="world"><img id="fill"><div id="win"><img id="frame"><img id="frame2"><div id="scrim"></div></div></div>
+    <svg id="fx" class="layer" width="1920" height="1080"></svg>
+    <div id="shots" class="layer"></div>
+    <div id="band" class="layer" style="background:linear-gradient(180deg, rgba(16,12,9,0) 72%, rgba(16,12,9,.72) 100%)"></div>
+    <div id="type" class="layer"></div>
+    <div id="sun" style="position:absolute;left:0;top:0"></div>
+  </div>
+</div>
+<script>
+const W = 1920, H = 1080, FPS = 30, DUR = 77;
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const seg = (t, a, b) => clamp((t - a) / (b - a));
+const lerp = (a, b, k) => a + (b - a) * k;
+const expoOut = p => p >= 1 ? 1 : 1 - Math.pow(2, -10 * p);
+const expoIn = p => p <= 0 ? 0 : Math.pow(2, 10 * p - 10);
+const cubicIO = p => p < .5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
+const spring = (t, z = .55, w = 13) => { if (t <= 0) return 0; const wd = w * Math.sqrt(1 - z * z); return 1 - Math.exp(-z * w * t) * (Math.cos(wd * t) + z * w / wd * Math.sin(wd * t)); };
+const $ = id => document.getElementById(id);
+const stage = $('stage'), all = $('all'), world = $('world'), fill = $('fill'), win = $('win'), frame = $('frame'), frame2 = $('frame2'), scrim = $('scrim'), typeL = $('type'), sky = $('sky'), fx = $('fx'), sunEl = $('sun'), bg = $('bg'), shotsL = $('shots');
+const NS = 'http://www.w3.org/2000/svg';
+const svgEl = (tag, parent, attrs = {}) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); parent.appendChild(e); return e; };
+const EVENTS = []; window.EVENTS = EVENTS;
+
+// ---------------- kinetic phrase: words land with blur to sharp, leave with blur upward ----------------
+class Phrase {
+  constructor(words, o) {
+    Object.assign(this, { x: 960, y: 500, size: 120, weight: 800, color: 'var(--ink)', align: 'center', plate: -1, plateColor: 'var(--sun)', plateText: 'var(--cream)', shadow: false, id: '' }, o);
+    this.root = document.createElement('div'); this.root.style.position = 'absolute'; this.root.style.inset = '0'; typeL.appendChild(this.root);
+    this.items = words.map((w, i) => {
+      let pl = null;
+      if (i === this.plate) { pl = document.createElement('div'); pl.className = 'plate'; pl.style.background = this.plateColor; this.root.appendChild(pl); }
+      const el = document.createElement('div'); el.className = 'word'; el.textContent = w.text;
+      el.style.fontSize = this.size + 'px'; el.style.fontWeight = this.weight; el.style.color = w.color || this.color;
+      if (this.shadow) el.style.textShadow = '0 4px 24px rgba(10,6,2,.55)';
+      this.root.appendChild(el);
+      EVENTS.push({ id: `${this.id}-${i}`, t: w.t, kind: 'word', x: this.x / W });
+      return { el, pl, t: w.t, color: w.color || this.color };
+    });
+  }
+  layout() { if (this.laid) return; this.laid = true; let cx = 0; const sp = this.size * 0.25; for (const it of this.items) { it.el.style.transform = 'none'; it.w = it.el.offsetWidth; it.x = cx; cx += it.w + sp; } this.width = cx - sp; }
+  render(t, out = 1e9, dir = -1) {
+    this.layout();
+    const vis = t > this.items[0].t - 0.5 && t < out + 0.6; this.root.style.display = vis ? 'block' : 'none'; if (!vis) return;
+    const ox = this.align === 'center' ? this.x - this.width / 2 : this.x;
+    this.items.forEach((it, i) => {
+      const e = expoOut(seg(t, it.t - 0.3, it.t));
+      const st = expoIn(seg(t, out + i * 0.035, out + 0.28 + i * 0.035));
+      const o = e * (1 - st);
+      it.el.style.opacity = o;
+      const blur = 16 * (1 - e) + 16 * st;
+      it.el.style.filter = blur > .3 ? `blur(${blur.toFixed(1)}px)` : 'none';
+      const dy = (1 - e) * this.size * 0.35 + st * this.size * 0.6 * dir;
+      const sc = 1.14 - 0.14 * e + 0.08 * st;
+      it.el.style.transform = `translate(${ox + it.x}px, ${this.y + dy}px) scale(${sc})`;
+      if (it.pl) {
+        const pp = expoOut(seg(t, it.t + 0.04, it.t + 0.42));
+        const px = this.size * 0.15;
+        it.pl.style.opacity = o; it.pl.style.width = (it.w + px * 2) * pp + 'px'; it.pl.style.height = this.size * 1.1 + 'px';
+        it.pl.style.transform = `translate(${ox + it.x - px}px, ${this.y + dy - this.size * 0.02}px)`;
+        it.el.style.color = pp > .5 ? this.plateText : it.color;
+      }
+    });
+  }
+}
+const cap = (words, start, opts = {}) => new Phrase(words.map((w, i) => ({ text: w, t: start + i * (opts.step || 0.16) })), Object.assign({ x: 960, y: 948, size: 66, color: 'var(--cream)', shadow: true }, opts));
+
+// ---------------- sun ----------------
+sunEl.innerHTML = `<div style="position:absolute;left:-170px;top:-170px;width:340px;height:340px;border-radius:50%;background:radial-gradient(circle, rgba(255,214,150,.8) 0%, rgba(255,170,80,.35) 30%, rgba(255,150,60,0) 70%)"></div>
+<div style="position:absolute;left:-38px;top:-38px;width:76px;height:76px;border-radius:50%;background:radial-gradient(circle at 40% 38%, #fff7e6 0%, #ffd88f 45%, #f6a43c 100%);box-shadow:0 0 34px rgba(255,190,90,.95)"></div>`;
+const placeSun = (x, y, s = 1, o = 1) => { sunEl.style.transform = `translate(${x}px,${y}px) scale(${s})`; sunEl.style.opacity = o; };
+const arcPts = (cx, cy, rx, ry, a0, a1, N = 80) => { const p = []; for (let i = 0; i <= N; i++) { const a = lerp(a0, a1, i / N); p.push([cx + rx * Math.cos(a), cy - ry * Math.sin(a)]); } return p; };
+const toD = pts => 'M' + pts.map(p => p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' L');
+const along = (pts, k) => { const i = clamp(k) * (pts.length - 1), a = Math.floor(i), b = Math.min(pts.length - 1, a + 1), u = i - a; return [lerp(pts[a][0], pts[b][0], u), lerp(pts[a][1], pts[b][1], u)]; };
+const arcMain = svgEl('path', sky, { fill: 'none', stroke: '#f6b25e', 'stroke-width': 5, 'stroke-linecap': 'round' });
+const arcA = svgEl('path', sky, { fill: 'none', stroke: '#f39431', 'stroke-width': 4, 'stroke-dasharray': '2 14', 'stroke-linecap': 'round' });
+const arcB = svgEl('path', sky, { fill: 'none', stroke: '#6f80a6', 'stroke-width': 4, 'stroke-dasharray': '2 14', 'stroke-linecap': 'round' });
+const horizon = svgEl('line', sky, { stroke: '#cdbca6', 'stroke-width': 3 });
+
+// ---------------- light patch (becomes the footage window) ----------------
+const pdefs = svgEl('defs', fx); const pg = svgEl('linearGradient', pdefs, { id: 'pg', x1: 0, y1: 0, x2: 1, y2: 1 });
+svgEl('stop', pg, { offset: 0, 'stop-color': '#ffe2b0' }); svgEl('stop', pg, { offset: 1, 'stop-color': '#f7a24a' });
+const patch = svgEl('polygon', fx, { fill: 'url(#pg)' });
+const mullV = svgEl('line', fx, { stroke: '#1d2331', 'stroke-width': 14 }), mullH = svgEl('line', fx, { stroke: '#1d2331', 'stroke-width': 14 });
+const quad = (c, ux, uy, vx, vy) => [[c[0] - ux - vx, c[1] - uy - vy], [c[0] + ux - vx, c[1] + uy - vy], [c[0] + ux + vx, c[1] + uy + vy], [c[0] - ux + vx, c[1] - uy + vy]];
+
+// ---------------- footage ----------------
+const CLIPS = { U: { dir: 'finalU5', n: 735 }, B: { dir: 'finalB', n: 615 }, S: { dir: 'finalS', n: 450 } };
+// moments in the takes, in seconds of lens time (the takes were recorded at a tenth of real speed and sped back up)
+const LENS = { grab: 4.3, decEnd: 12.6, bLit: .2, markFrom: .6, lookFrom: 13.9, plantFrom: 17.2, cardX: .2, cardY: .15, dayFrom: 1.5, sFrom: .8, sJun: 4.0, sDec: 10.0 };
+const WIN = { x: 575, y: 34, w: 770, h: 880 };
+function setSrc(src) { if (frame.getAttribute('src') !== src) { frame.setAttribute('src', src); fill.setAttribute('src', src); } frame2.style.opacity = 0; }
+function showClip(name, sec) {
+  const c = CLIPS[name]; const f = clamp(Math.floor(sec * FPS) + 1, 1, c.n);
+  setSrc(`footage/${c.dir}/${String(f).padStart(5, '0')}.jpg`);
+}
+// piecewise-linear time map: film seconds -> seconds into the raw take (sped up between actions)
+function warp(lt, keys) { for (let i = 1; i < keys.length; i++) if (lt <= keys[i][0]) { const [a0, b0] = keys[i - 1], [a1, b1] = keys[i]; return lerp(b0, b1, clamp((lt - a0) / (a1 - a0))); } return keys[keys.length - 1][1] + (lt - keys[keys.length - 1][0]); }
+function placeWinBox() { win.style.left = WIN.x + 'px'; win.style.top = WIN.y + 'px'; win.style.width = WIN.w + 'px'; win.style.height = WIN.h + 'px'; }
+// camera on the footage world: zoom s about a focus point in footage coords (0..1); the focus drifts to frame centre as we zoom
+function camera(s, fxN = .5, fyN = .5, rot = 0) {
+  const px = WIN.x + WIN.w * fxN, py = WIN.y + WIN.h * fyN;
+  const k = clamp((s - 1) / 0.4);
+  const sx = lerp(px, 960, k), sy = lerp(py, 540, k);
+  world.style.transform = `translate(${sx - px * s}px, ${sy - py * s}px) scale(${s}) rotate(${rot}deg)`;
+}
+function showWorld(o = 1) { world.style.display = o > 0.001 ? 'block' : 'none'; world.style.opacity = o; }
+
+// ---------------- copy ----------------
+const T = { open: 0, title: 9, who: 13, mark: 18.5, look: 22.5, plant: 25, day: 32, seasons: 43, math: 51, proj: 57, add: 62.5, measure: 67, end: 72 };
+// opening: the drag itself, straight away
+const oc = [
+  cap(['Grab', 'the', 'sun', 'and', 'drag', 'it'], .3, { plate: 2, id: 'o0' }),
+  cap(['The', 'light', 'follows', 'the', 'real', 'sun'], 3.1, { plate: 1, id: 'o1' }),
+  cap(['Pull', 'it', 'toward', 'winter'], 6.1, { plate: 3, plateColor: 'var(--blue)', id: 'o2' }),
+];
+const ocOut = [2.75, 5.75, T.title - .35];
+const title = new Phrase([{ text: 'Sunfall', t: T.title + .25 }], { y: 330, size: 260, color: 'var(--cream)', shadow: true, id: 'title' });
+const tag = cap(['See', 'where', 'the', 'sun', 'will', 'fall', 'in', 'your', 'room'], T.title + .85, { plate: 3, plateText: '#2a211b', step: .11, id: 'tag' });
+const w = (words, t0, step = .13) => words.map((x, i) => ({ text: x, t: t0 + i * step }));
+const who1 = new Phrase(w(['You', 'see', 'a', 'flat', 'once'], T.who + .2), { y: 330, size: 140, color: 'var(--cream)', shadow: true, id: 'w1' });
+const who2 = new Phrase(w(['at', '6 pm', 'in', 'July'], T.who + .85), { y: 500, size: 140, color: '#c9d3ee', shadow: true, id: 'w2' });
+const who3 = new Phrase(w(['and', 'live', 'there', 'all', 'year'], T.who + 2.55), { y: 420, size: 140, color: 'var(--cream)', shadow: true, plate: 4, plateText: '#2a211b', id: 'w3' });
+const who4 = new Phrase(w(['Will', 'the', 'monstera'], T.who + 3.8), { y: 330, size: 124, color: 'var(--cream)', shadow: true, id: 'w4' });
+const who5 = new Phrase(w(['get', 'enough', 'light', 'in', 'January'], T.who + 4.15, .12), { y: 490, size: 124, color: '#ffb08f', shadow: true, id: 'w5' });
+const jc = [
+  cap(['Pinch', 'the', 'windows', 'that', 'get', 'sun'], T.mark + .2, { plate: 2, id: 'j0' }),
+  cap(['Glance', 'down', 'for', 'the', 'buttons'], T.look + .15, { id: 'j1' }),
+  cap(['Put', 'a', 'plant', 'where', 'it', 'will', 'stand'], T.plant + .2, { plate: 2, plateColor: 'var(--coral)', id: 'j2' }),
+  cap(['It', 'shows', 'the', 'hours', 'of', 'sun', 'there'], T.plant + 3.9, { plate: 3, id: 'j3' }),
+];
+const jcOut = [T.look - .35, T.plant - .35, T.plant + 3.55, T.day - .35];
+const chip = document.createElement('div'); chip.className = 'chip'; chip.textContent = 'Lens Studio Preview, sped up'; typeL.appendChild(chip);
+const dc = [
+  cap(['Play', 'the', 'day'], T.day + .2, { plate: 2, size: 92, id: 'd0' }),
+  cap(['Sunrise', 'to', 'sunset', 'in', 'nine', 'seconds'], T.day + 1.8, { id: 'd1' }),
+  cap(['Each', 'spot', 'keeps', 'its', 'hours', 'of', 'sun'], T.day + 8.9, { plate: 4, plateColor: 'var(--coral)', id: 'd2' }),
+];
+const dcOut = [T.day + 1.5, T.day + 8.55, T.seasons - .35];
+const seasonCap = cap(['Same', 'room', 'same', 'noon'], T.seasons + .3, { id: 's0' });
+const dateWord = document.createElement('div'); dateWord.className = 'word'; dateWord.style.fontSize = '150px'; dateWord.style.color = 'var(--cream)'; dateWord.style.textShadow = '0 6px 30px rgba(10,6,2,.5)'; typeL.appendChild(dateWord);
+// drawn explanations, played 1.5x faster than they were designed
+const KM = 1.5, KP = 1.45, KA = 1.5, KE = 1.5;
+const mathT = new Phrase(w(['The', 'real', 'sun', 'path'], T.math + .2, .12), { y: 90, size: 110, id: 'm1' });
+const mathS = cap(['NOAA', 'solar', 'position', 'for', 'your', 'city', 'and', 'date'], T.math + .8, { color: 'var(--ink)', shadow: false, size: 54, y: 960, step: .09, id: 'm2' });
+const degs = [0, 1, 2, 3].map(() => { const d = document.createElement('div'); d.className = 'word'; typeL.appendChild(d); return d; });
+const projT = new Phrase(w(['Each', 'window', 'is', 'cast', 'along', 'the', 'sun'], T.proj + .2, .11), { y: 80, size: 88, id: 'p1' });
+const projS = cap(['onto', 'the', 'floor', 'walls', 'and', 'furniture'], T.proj + 1.2, { color: 'var(--ink)', shadow: false, size: 60, y: 960, plate: 2, step: .11, id: 'p2' });
+const projG = svgEl('g', fx, {});
+const addA = new Phrase(w(['Specs', 'add', 'light', 'to', 'what', 'you', 'see'], T.add + .2, .11), { y: 300, size: 100, color: 'var(--cream)', id: 'a1' });
+const addB = new Phrase(w(['They', 'cannot', 'darken', 'it'], T.add + 1.3, .12), { y: 430, size: 100, color: '#8e9ab8', id: 'a2' });
+const addC = new Phrase(w(['Sunlight', 'is', 'what', 'they', 'draw', 'best'], T.add + 2.4, .12), { y: 600, size: 100, color: 'var(--cream)', plate: 5, plateText: '#2a211b', id: 'a3' });
+const measT = new Phrase(w(['Preview', 'rooms', 'have', 'no', 'world', 'mesh'], T.measure + .2, .12), { y: 90, size: 96, id: 'me1' });
+const measS = cap(['so', 'we', 'measured', 'this', 'one', 'with', 'marker', 'grids'], T.measure + 1.2, { color: 'var(--ink)', shadow: false, size: 60, y: 960, plate: 6, plateColor: 'var(--blue)', step: .11, id: 'me2' });
+const SHOTS = ['shots/w1c.jpg', 'shots/w2c.jpg', 'shots/calib-A-c.jpg'];
+const shotEls = SHOTS.map(src => { const d = document.createElement('div'); d.style.cssText = 'position:absolute;left:0;top:0;overflow:hidden;border-radius:24px;box-shadow:0 30px 80px rgba(40,25,10,.35)'; const im = document.createElement('img'); im.src = src; im.style.cssText = 'width:100%;height:100%;object-fit:cover;filter:brightness(1.35) contrast(1.1)'; d.appendChild(im); shotsL.appendChild(d); return d; });
+const endW = new Phrase([{ text: 'Sunfall', t: T.end + 1.0 }], { y: 380, size: 240, id: 'end' });
+const endS = cap(['A', 'lens', 'for', 'Snap', 'Specs'], T.end + 1.6, { color: 'var(--ink)', shadow: false, size: 60, y: 690, id: 'end2' });
+const WHIPS = [[T.title, 1], [T.mark, -1], [T.day, 1], [T.seasons, -1], [T.math, 1], [T.proj, -1], [T.measure, 1]];
+const PUNCH = [T.look, T.plant];
+WHIPS.forEach(([t], i) => EVENTS.push({ id: 'whip' + i, t, kind: 'whip', x: .5 }));
+// lens actions the sound follows (seconds into the film)
+[['grab', .3], ['mark1', T.mark + 1.0], ['mark2', T.mark + 2.2], ['add', T.plant + .3], ['floor', T.plant + 1.8], ['play', T.day + .5], ['card', T.plant + 4.0]].forEach(([k, v]) => EVENTS.push({ id: 'A' + k, t: v, kind: 'action', x: .5 }));
+
+function setBg(night, sx, sy, warm) {
+  const a = `rgba(255,190,110,${(.38 * warm).toFixed(3)})`;
+  bg.style.background = `radial-gradient(900px 700px at ${sx}px ${sy}px, ${a}, rgba(255,190,110,0) 70%), ` + (night ? 'linear-gradient(180deg,#1d2331,#272e40)' : 'linear-gradient(180deg,#f2e9de,#e7dac7)');
+}
+
+window.renderAt = function (t) {
+  const night = t < T.math || (t >= T.add && t < T.measure);
+  let sun = { x: -300, y: -300, s: 1, o: 0 };
+  let cam = 'none';
+  showWorld(0); patch.setAttribute('opacity', 0); mullV.setAttribute('opacity', 0); mullH.setAttribute('opacity', 0);
+  for (const a of [arcMain, arcA, arcB, horizon]) a.setAttribute('opacity', 0);
+  win.style.clipPath = 'none'; world.style.transform = 'none'; world.style.filter = 'none'; fill.style.opacity = 1; scrim.style.opacity = 0; frame.style.opacity = 1;
+  placeWinBox();
+
+  // ===== OPEN: the sun is dragged and the light moves, from the first frame
+  if (t < T.title) {
+    showWorld(1); showClip('U', LENS.grab - .3 + t * (LENS.decEnd - LENS.grab + .3) / T.title); scrim.style.opacity = .9;
+    const toSun = cubicIO(seg(t, 0, 1.2)) * (1 - cubicIO(seg(t, 7.6, 9)));
+    camera(1.04 + .2 * toSun, lerp(.5, .45, toSun), lerp(.5, .3, toSun), -.5 * toSun);
+  }
+  oc.forEach((c, i) => c.render(t, ocOut[i]));
+
+  // ===== TITLE and WHO over the lit room, dimmed
+  if (t >= T.title && t < T.mark) {
+    const lt = t - T.title;
+    showWorld(1); showClip('B', LENS.bLit + lt * .16); scrim.style.opacity = .9;
+    camera(1.06 + .1 * cubicIO(seg(lt, 0, T.mark - T.title)), .5, .6, .3 * Math.sin(lt * .4));
+    const dim = t < T.who ? .55 : .38;
+    world.style.filter = `brightness(${lerp(1, dim, seg(lt, 0, .5)).toFixed(3)})`;
+    if (t >= T.who) { const k = seg(t, T.who - .2, T.who + .3); world.style.filter = `brightness(${lerp(.55, .38, k).toFixed(3)}) blur(${(6 * k).toFixed(1)}px)`; }
+  }
+  title.render(t, T.who - .4); tag.render(t, T.who - .35);
+  who1.render(t, T.who + 2.25); who2.render(t, T.who + 2.3); who3.render(t, T.who + 3.55); who4.render(t, T.mark - .45); who5.render(t, T.mark - .4);
+
+  // ===== JOURNEY: three moments of the same take
+  if (t >= T.mark && t < T.day) {
+    const lt = t - T.mark;
+    showWorld(1); scrim.style.opacity = .9;
+    if (t < T.look) { showClip('U', LENS.markFrom + lt); camera(1.02 + .05 * Math.sin(Math.PI * seg(lt, 1.2, 2.2)), .5, .55); }
+    else if (t < T.plant) { const l = t - T.look; showClip('U', LENS.lookFrom + l); camera(1.04 + .03 * l / 2.5, .5, .62); }
+    else { const l = t - T.plant; showClip('U', LENS.plantFrom + l); const z = cubicIO(seg(l, 3.6, 5.0)); camera(1.03 + .3 * z, lerp(.5, LENS.cardX, z), lerp(.6, LENS.cardY, z)); }
+  }
+  const jOn = t >= T.mark && t < T.seasons - .3;
+  chip.style.display = jOn || t < T.title - .3 ? 'block' : 'none';
+  { const o = t < T.title ? expoOut(seg(t, .2, .7)) * (1 - seg(t, T.title - .8, T.title - .3)) : expoOut(seg(t, T.mark + .3, T.mark + .8)) * (1 - seg(t, T.seasons - .8, T.seasons - .3)); chip.style.opacity = o; chip.style.transform = `translate(80px, ${60 - 16 * (1 - o)}px)`; }
+  jc.forEach((c, i) => c.render(t, jcOut[i]));
+
+  // ===== DAY
+  if (t >= T.day && t < T.seasons) {
+    const lt = t - T.day;
+    showWorld(1); showClip('B', LENS.dayFrom + lt); scrim.style.opacity = .9;
+    const s = 1.02 + .12 * cubicIO(seg(lt, 1.5, 8.5)) - .08 * cubicIO(seg(lt, 8.8, 10.2));
+    camera(s, .5, lerp(.6, .68, seg(lt, 1.5, 8.5)), .4 * Math.sin(lt * .3));
+  }
+  dc.forEach((c, i) => c.render(t, dcOut[i]));
+
+  // ===== SEASONS: the real lens pulls the sun June and back; the date rolls in place
+  if (t >= T.seasons && t < T.math) {
+    // hold on each solstice, move fast between them (the take holds Dec 21, June 21 at lens 6.3..8.2, Dec 21 again from 12.4)
+    const lt = t - T.seasons, ls = warp(lt, [[0, .3], [1.2, 2], [2.6, 6.3], [4.2, 8.2], [5.6, 12.4], [8, 14.5]]);
+    showWorld(1); showClip('S', ls); scrim.style.opacity = .9;
+    camera(1.06 + .04 * Math.sin(lt * .5), .5, .6);
+    const jun = lt >= 1.9 && lt < 4.9;
+    let o = expoOut(seg(lt, .1, .5)) * (1 - seg(lt, 7.4, 7.8)), r = 1, moved = 0;
+    if (lt >= 1.2 && lt < 1.9) o *= 1 - seg(lt, 1.2, 1.9);
+    else if (lt >= 1.9 && lt < 4.2) { r = expoOut(seg(lt, 1.9, 2.6)); moved = 1; }
+    else if (lt >= 4.2 && lt < 4.9) o *= 1 - seg(lt, 4.2, 4.9);
+    else if (lt >= 4.9) { r = expoOut(seg(lt, 4.9, 5.6)); moved = 1; }
+    o *= moved ? r : 1;
+    dateWord.style.display = 'block'; dateWord.textContent = jun ? 'June 21' : 'Dec 21';
+    dateWord.style.color = jun ? '#ffc47a' : '#c9d3ee';
+    const wd = dateWord.offsetWidth;
+    dateWord.style.opacity = o; dateWord.style.filter = `blur(${((1 - r) * 14).toFixed(1)}px)`;
+    dateWord.style.transform = `translate(${960 - wd / 2}px, ${690 + (1 - r) * 70}px)`;
+  } else dateWord.style.display = 'none';
+  seasonCap.render(t, T.math - .35);
+
+  // ===== MATH: the real sun paths
+  if (t >= T.math && t < T.proj) {
+    const lt = (t - T.math) * KM; const c = [960, 900];
+    const jun = arcPts(c[0], c[1], 720, 560, Math.PI * .98, Math.PI * .02), dec = arcPts(c[0], c[1], 480, 240, Math.PI * .9, Math.PI * .1);
+    const kj = cubicIO(seg(lt, .5, 2.2)), kd = cubicIO(seg(lt, 1.2, 2.9));
+    arcA.setAttribute('d', toD(jun.slice(0, 1 + Math.round(80 * kj)))); arcA.setAttribute('opacity', 1);
+    arcB.setAttribute('d', toD(dec.slice(0, 1 + Math.round(80 * kd)))); arcB.setAttribute('opacity', 1);
+    horizon.setAttribute('x1', 160); horizon.setAttribute('x2', 1760); horizon.setAttribute('y1', c[1]); horizon.setAttribute('y2', c[1]); horizon.setAttribute('opacity', expoOut(seg(lt, .2, .8)));
+    const sp = along(jun, cubicIO(seg(lt, 3.0, 7.6))); sun = { x: sp[0], y: sp[1], s: .8, o: seg(lt, 2.6, 3.0) * (1 - seg(lt, 8.4, 8.9)) };
+    const top = along(jun, .5), topD = along(dec, .5);
+    const vals = [[(72.7 * expoOut(seg(lt, 2.2, 3.4))).toFixed(1) + '°', top[0] + 50, top[1] - 120, 90, '#f39431', seg(lt, 2.2, 2.6)], ['June 21, 12:57 pm', top[0] + 54, top[1] - 28, 32, '#7a6c60', seg(lt, 2.4, 2.8)], [(25.8 * expoOut(seg(lt, 2.7, 3.9))).toFixed(1) + '°', topD[0] + 40, topD[1] - 116, 90, '#6f80a6', seg(lt, 2.7, 3.1)], ['Dec 21, 11:55 am', topD[0] + 44, topD[1] - 24, 32, '#7a6c60', seg(lt, 2.9, 3.3)]];
+    degs.forEach((d, i) => { const [tx, x, y, sz, col, o] = vals[i]; d.style.display = 'block'; d.textContent = tx; d.style.fontSize = sz + 'px'; d.style.color = col; d.style.opacity = o; d.style.transform = `translate(${x}px, ${y + 20 * (1 - o)}px)`; d.style.fontWeight = sz > 50 ? 800 : 600; });
+    cam = `scale(${1.08 - .08 * cubicIO(seg(lt, 0, 3))}) translate(${-30 * Math.sin(lt * .25)}px, 0)`;
+  } else degs.forEach(d => d.style.display = 'none');
+  mathT.render(t, T.proj - .4); mathS.render(t, T.proj - .35);
+
+  // ===== PROJECTION
+  projG.style.display = (t >= T.proj && t < T.add) ? 'block' : 'none';
+  if (t >= T.proj && t < T.add) { const lt = (t - T.proj) * KP; drawProjection(lt); cam = `scale(${1.12 - .1 * cubicIO(seg(lt, 0, 3))}) translate(${20 * Math.sin(lt * .3)}px, ${-10 * Math.sin(lt * .2)}px)`; }
+  projT.render(t, T.add - .4); projS.render(t, T.add - .35);
+
+  // ===== ADDITIVE
+  addA.render(t, T.measure - .45); addB.render(t, T.measure - .4); addC.render(t, T.measure - .35);
+  if (t >= T.add && t < T.measure) { const lt = (t - T.add) * KA; sun = { x: 960, y: 900 - 50 * seg(lt, 3.4, 4.8), s: 1.3 + .5 * seg(lt, 3.4, 5.2), o: seg(lt, 3.3, 3.8) * (1 - seg(lt, 6.2, 6.7)) }; cam = `scale(${1 + .02 * lt / 7})`; }
+
+  // ===== MEASURING: real calibration shots fly in as a fan
+  measT.render(t, T.end - .45); measS.render(t, T.end - .4);
+  shotEls.forEach((el, i) => {
+    const lt = (t - T.measure) * KE; const show = t >= T.measure && lt > .7 + i * .35 && lt < 7.9; el.style.display = show ? 'block' : 'none'; if (!show) return;
+    const p = spring(lt - (.8 + i * .4), .6, 11), out = expoIn(seg(lt, 7.0 + i * .06, 7.6 + i * .06));
+    el.style.width = '560px'; el.style.height = '640px'; el.style.opacity = clamp(p) * (1 - out);
+    el.style.transform = `perspective(1400px) translate(${130 + i * 590 + (1 - p) * 420}px, ${250 + (1 - p) * 160 - out * 120}px) rotateY(${(1 - p) * -40 + (i - 1) * 6}deg) rotate(${(i - 1) * 2}deg)`;
+  });
+  if (t >= T.measure && t < T.end) { const lt = (t - T.measure) * KE; cam = `scale(${1 + .05 * cubicIO(seg(lt, 1, 7))}) translate(${-20 * seg(lt, 1, 7)}px,0)`; }
+
+  // ===== END
+  endW.render(t); endS.render(t);
+  if (t >= T.end) {
+    const lt = t - T.end; const arc = arcPts(960, 860, 760, 600, Math.PI * .96, Math.PI * .5);
+    const k = cubicIO(seg(lt, 0, 1.0)); const p = along(arc, k);
+    sun = { x: p[0], y: p[1], s: 1 + .05 * Math.sin(lt * 2), o: seg(lt, 0, .3) };
+    arcMain.setAttribute('d', toD(arc.slice(0, 1 + Math.round(80 * k)))); arcMain.setAttribute('opacity', .6 * (1 - seg(lt, 1.6, 2.4)));
+    cam = `scale(${1 + (lt > 1.0 ? .035 * Math.exp(-(lt - 1.0) * 5) : 0)})`;
+  }
+
+  // punch-in on hard cuts inside the take
+  for (const p0 of PUNCH) { const k = seg(t, p0, p0 + .35); if (k > 0 && k < 1) cam = (cam === 'none' ? '' : cam) + ` scale(${1 + .06 * (1 - expoOut(k))})`; }
+  // whip between scenes: everything travels sideways with directional blur
+  let blur = 0;
+  for (const [t0, dir] of WHIPS) {
+    const k = seg(t, t0 - .2, t0 + .2);
+    if (k > 0 && k < 1) { const off = (k < .5 ? -k * 2 : (1 - k) * 2) * -dir * 420; cam = (cam === 'none' ? '' : cam) + ` translate(${off}px,0)`; blur = Math.sin(k * Math.PI) * 34; }
+  }
+  document.getElementById('band').style.opacity = world.style.display === 'none' ? 0 : 1;
+  all.style.transform = cam; all.style.filter = blur > .3 ? `blur(${blur.toFixed(1)}px)` : 'none';
+
+  placeSun(sun.x, sun.y, sun.s, sun.o);
+  setBg(night, sun.o > .05 ? sun.x : 960, sun.o > .05 ? sun.y : 300, .4 + .6 * sun.o);
+  stage.style.background = night ? '#1d2331' : '#efe6da';
+};
+
+// ---------------- projection diagram ----------------
+const P = {};
+(function () { const g = projG; P.floor = svgEl('polygon', g, { fill: '#dccdb8' }); P.back = svgEl('polygon', g, { fill: '#e6d9c7' }); P.side = svgEl('polygon', g, { fill: '#cfbea6' }); P.win = svgEl('polygon', g, { fill: '#fff4e0', stroke: '#2a211b', 'stroke-width': 4 }); P.mv = svgEl('line', g, { stroke: '#2a211b', 'stroke-width': 4 }); P.rays = [0, 1, 2, 3].map(() => svgEl('line', g, { stroke: '#f39431', 'stroke-width': 3, 'stroke-dasharray': '12 10' })); P.pf = svgEl('polygon', g, { fill: '#ffc677' }); P.pw = svgEl('polygon', g, { fill: '#ffb050' }); })();
+function iso(x, y, z) { return [1080 + x * 1.9 - z * 1.05, 990 - y * 1.9 - z * .52]; }
+function clipPoly(poly, f) { const out = []; for (let i = 0; i < poly.length; i++) { const a = poly[i], b = poly[(i + 1) % poly.length], fa = f(a), fb = f(b); if (fa >= 0) out.push(a); if ((fa >= 0) !== (fb >= 0)) { const u = fa / (fa - fb); out.push([lerp(a[0], b[0], u), lerp(a[1], b[1], u), lerp(a[2], b[2], u)]); } } return out; }
+function drawProjection(lt) {
+  const pts = arr => arr.map(p => iso(...p).map(v => v.toFixed(1)).join(',')).join(' ');
+  P.back.setAttribute('points', pts([[-300, 0, 0], [320, 0, 0], [320, 260, 0], [-300, 260, 0]]));
+  P.floor.setAttribute('points', pts([[-300, 0, 0], [320, 0, 0], [320, 0, 520], [-300, 0, 520]]));
+  P.side.setAttribute('points', pts([[-300, 0, 0], [-300, 0, 520], [-300, 260, 520], [-300, 260, 0]]));
+  const x0 = -40, x1 = 90, y0 = 70, y1 = 220;
+  const cs = [[x0, y0, 0], [x1, y0, 0], [x1, y1, 0], [x0, y1, 0]];
+  P.win.setAttribute('points', pts(cs)); const a = iso((x0 + x1) / 2, y0, 0), b = iso((x0 + x1) / 2, y1, 0); P.mv.setAttribute('x1', a[0]); P.mv.setAttribute('y1', a[1]); P.mv.setAttribute('x2', b[0]); P.mv.setAttribute('y2', b[1]);
+  const ang = lerp(-.25, 1.05, cubicIO(seg(lt, 1.2, 7))), el = .62;
+  const d = [-Math.sin(ang) * Math.cos(el), -Math.sin(el), Math.cos(ang) * Math.cos(el)];
+  const hit = cs.map(c => { const t = -c[1] / d[1]; return [c[0] + d[0] * t, 0, c[2] + d[2] * t]; });
+  const k = expoOut(seg(lt, .6, 1.5));
+  P.rays.forEach((r, i) => { const A = iso(...cs[i]), B = iso(...hit[i]); r.setAttribute('x1', A[0]); r.setAttribute('y1', A[1]); r.setAttribute('x2', lerp(A[0], B[0], k)); r.setAttribute('y2', lerp(A[1], B[1], k)); });
+  P.pf.setAttribute('points', pts(clipPoly(hit, p => p[0] + 300))); P.pf.setAttribute('opacity', k);
+  const wh = cs.map(c => { const t = (-300 - c[0]) / d[0]; return d[0] < 0 ? [-300, c[1] + d[1] * t, c[2] + d[2] * t] : [-300, -999, 0]; });
+  const wp = clipPoly(wh, p => p[1]); P.pw.setAttribute('points', wp.length > 2 ? pts(wp) : ''); P.pw.setAttribute('opacity', k);
+}
+
+window.DUR = DUR; window.FPS = FPS;
+document.fonts.ready.then(() => { window.READY = true; renderAt(0); });
+</script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+studioVersion:
+  major: 5
+  minor: 23
+  patch: 2
+  build: 26081320
+  type: Public
+coreVersion: 372
+clientVersion: 14.16
+updateCheckpoint: 102
+sceneId: 0a1ccb1a-fe88-4fbb-9883-e3af3c75fd99
+metaInfo:
+  hints:
+    []
+  tags:
+    []
+  lensName: Sunfall
+  lensDescriptors:
+    - AI_MUTATED
+  lensApplicableContext:
+    - live_camera
+    - reply_camera
+    - video_chat
+  lensApplicability:
+    - Front
+    - Back
+  lensClientCompatibilities:
+    - Spectacles
+  platformBundlesEnabled: false
+  iconHash: ""
+  videoPreviewHash: ""
+  fromTemplateName: Spectacles
+  fromTemplateUrl: Lens Studio 5.21.0.26041305
+  activationCamera: Front
+  sourceMapEnabled: false
+  shaderCacheInvalidationEnabled: false
+  usingMinClientVersions: false
+  androidMinClientVersion:
+    major: 0
+    minor: 0
+    patch: 0
+    build: 0
+  iOSMinClientVersion:
+    major: 0
+    minor: 0
+    patch: 0
+    build: 0
+  documentId: 36b500c6-1424-4311-a150-43da6cd2be0d
+  originalDocumentId: 36b500c6-1424-4311-a150-43da6cd2be0d
+  packageId: ""
+  packageVersion: ""
+  spkPrivilegeLevel: Generic
+  gluboEnabled: false
+targetPlatform: Spectacles
